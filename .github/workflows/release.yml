@@ -4,10 +4,17 @@ name: Release
 # The release tag must be v<version>, matching the version of both packages.
 # Uses PyPI trusted publishing: no token is stored in the repository. Each project on PyPI
 # trusts this repository, this workflow (release.yml) and the environment "pypi".
+# To finish a release whose publish step failed part way, run this workflow by hand with the
+# release tag: files already on PyPI are skipped.
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish again, for example v0.1.0"
+        required: true
 
 permissions:
   contents: read
@@ -17,14 +24,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag || github.ref }}
       - uses: astral-sh/setup-uv@v5
       - name: Check that the tag matches both package versions
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
         run: |
-          tag="${GITHUB_REF_NAME#v}"
+          ref="${INPUT_TAG:-$GITHUB_REF_NAME}"
+          tag="${ref#v}"
           for f in pyproject.toml packages/plantgraph/pyproject.toml; do
             v=$(uv run --no-project python -c "import tomllib,sys; print(tomllib.load(open(sys.argv[1],'rb'))['project']['version'])" "$f")
             if [ "$v" != "$tag" ]; then
-              echo "::error::release tag $GITHUB_REF_NAME does not match version $v in $f"
+              echo "::error::release tag $ref does not match version $v in $f"
               exit 1
             fi
           done
@@ -54,3 +66,5 @@ jobs:
           name: dist
           path: dist
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true
