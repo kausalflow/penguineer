@@ -33,6 +33,7 @@ def test_every_command_is_registered():
         "data health",
         "graph check",
         "graph draft",
+        "graph lags",
         "init",
         "investigate",
     ]

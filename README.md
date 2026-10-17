@@ -4,7 +4,7 @@ Find the root cause of off-spec lots from historian and LIMS exports, on a lapto
 
 penguineer reads files and writes files. Its engines are deterministic Python; an LLM is optional and never decides a ranking. Every command is defined once as a Pydantic parameter model, a result model and a function, and the CLI, the `--json` output and the Python API are generated from that one definition. [Alchemist](https://github.com/kausalflow/alchemist) imports penguineer as a library and adds the UI, runners and project management on top.
 
-> Status: early skeleton. `init`, `data health` and `graph check` work; `graph draft`, `investigate` and `bench homeostat` are registered with their parameters but not built yet (they exit with code 4).
+> Status: early skeleton. `init`, `data health`, `graph check` and `graph lags` work; `graph draft`, `investigate` and `bench homeostat` are registered with their parameters but not built yet (they exit with code 4).
 
 ## Documentation
 
@@ -62,6 +62,7 @@ The tests in `tests/test_homeostat_live.py` run on that week. They are skipped w
 | `penguineer init` | Create a project folder: `penguineer.yaml`, empty `graph.yaml`, folders | works |
 | `penguineer data health --data FILE [--graph graph.yaml]` | Gaps, frozen tags, spikes, out-of-range values, duplicate and non-existent timestamps → `health.json` | works |
 | `penguineer graph check --graph graph.yaml` | Schema and plant rules, plus the queue of inferred edges to confirm | works |
+| `penguineer graph lags --data FILE --graph graph.yaml` | Estimate dead times along `flows_to` edges from the data (prewhitened cross-correlation) | works |
 | `penguineer graph draft --tags tags.csv` | Draft the plant graph from a tag list and optional DEXPI P&ID | stub |
 | `penguineer investigate --lot L --lims lims.csv --data FILE` | Align in material time, rank root-cause hypotheses, write the report | stub |
 | `penguineer bench homeostat` | Score the pipeline on homeostat plants with injected faults | stub |
@@ -89,8 +90,8 @@ src/penguineer/
   core/                command registry, RunContext, run records, errors
   cli/                 Typer app generated from the registry
   commands/            one module per command: Params, Result, run()
-  io/                  historian and graph readers
-  engines/             deterministic engines (data health so far)
+  io/                  historian, LIMS, graph and Homeostat Live readers
+  engines/             deterministic engines: data health, dead times
   graph/               graph check
 tests/                 unit, CLI, to_argv round-trip property tests, schema snapshot
 examples/demo/         a small plant with injected data faults

@@ -19,6 +19,7 @@ nav = [
     "concepts/commands.md",
     "concepts/plant-graph.md",
     "concepts/data-health.md",
+    "concepts/dead-times.md",
   ] },
   { "Guides" = [
     "guides/homeostat-live.md",

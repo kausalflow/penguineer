@@ -730,6 +730,249 @@
         "type": "object"
       }
     },
+    "graph lags": {
+      "params": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "accept": [
+              ".csv",
+              ".parquet"
+            ],
+            "description": "Historian export, CSV or Parquet, wide or long",
+            "format": "file-path",
+            "title": "Data",
+            "type": "string",
+            "ui": "file"
+          },
+          "graph": {
+            "accept": [
+              ".yaml",
+              ".yml"
+            ],
+            "description": "Plant graph whose flows_to edges get dead times",
+            "format": "file-path",
+            "title": "Graph",
+            "type": "string",
+            "ui": "file"
+          },
+          "in_place": {
+            "default": false,
+            "description": "Write the estimates back into --graph and log them in its history",
+            "title": "In Place",
+            "type": "boolean"
+          },
+          "max_lag_minutes": {
+            "default": 240.0,
+            "description": "Longest dead time to search",
+            "exclusiveMinimum": 0,
+            "title": "Max Lag Minutes",
+            "type": "number"
+          },
+          "step_seconds": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Grid step (default: the slower tag's median period)",
+            "title": "Step Seconds"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Time zone of naive timestamps in the export",
+            "title": "Timezone",
+            "type": "string"
+          },
+          "z_threshold": {
+            "default": 5.0,
+            "description": "Peak strength needed to keep a lag",
+            "exclusiveMinimum": 0,
+            "title": "Z Threshold",
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "graph"
+        ],
+        "title": "GraphLagsParams",
+        "type": "object"
+      },
+      "result": {
+        "$defs": {
+          "EdgeLag": {
+            "properties": {
+              "edge_id": {
+                "title": "Edge Id",
+                "type": "string"
+              },
+              "estimate": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/LagEstimate"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "from_id": {
+                "title": "From Id",
+                "type": "string"
+              },
+              "from_tag": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "From Tag"
+              },
+              "status": {
+                "$ref": "#/$defs/LagStatus"
+              },
+              "to_id": {
+                "title": "To Id",
+                "type": "string"
+              },
+              "to_tag": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "To Tag"
+              }
+            },
+            "required": [
+              "edge_id",
+              "from_id",
+              "to_id",
+              "from_tag",
+              "to_tag",
+              "status"
+            ],
+            "title": "EdgeLag",
+            "type": "object"
+          },
+          "LagEstimate": {
+            "properties": {
+              "ar_order": {
+                "title": "Ar Order",
+                "type": "integer"
+              },
+              "corr": {
+                "description": "Cross-correlation of the prewhitened series at the lag",
+                "title": "Corr",
+                "type": "number"
+              },
+              "high_min": {
+                "description": "High end of the interval, minutes",
+                "title": "High Min",
+                "type": "number"
+              },
+              "lag_min": {
+                "description": "Estimated dead time in minutes",
+                "title": "Lag Min",
+                "type": "number"
+              },
+              "low_min": {
+                "description": "Low end of the interval, minutes",
+                "title": "Low Min",
+                "type": "number"
+              },
+              "n": {
+                "description": "Grid points used",
+                "title": "N",
+                "type": "integer"
+              },
+              "significant": {
+                "description": "z above the threshold",
+                "title": "Significant",
+                "type": "boolean"
+              },
+              "step_s": {
+                "description": "Grid step in seconds",
+                "title": "Step S",
+                "type": "number"
+              },
+              "z": {
+                "description": "Peak correlation in units of its noise level, |corr| \u221an",
+                "title": "Z",
+                "type": "number"
+              }
+            },
+            "required": [
+              "lag_min",
+              "low_min",
+              "high_min",
+              "corr",
+              "z",
+              "significant",
+              "n",
+              "step_s",
+              "ar_order"
+            ],
+            "title": "LagEstimate",
+            "type": "object"
+          },
+          "LagStatus": {
+            "enum": [
+              "estimated",
+              "no_clear_lag",
+              "kept_confirmed",
+              "no_tags",
+              "no_data"
+            ],
+            "title": "LagStatus",
+            "type": "string"
+          }
+        },
+        "properties": {
+          "edges": {
+            "items": {
+              "$ref": "#/$defs/EdgeLag"
+            },
+            "title": "Edges",
+            "type": "array"
+          },
+          "graph": {
+            "title": "Graph",
+            "type": "string"
+          },
+          "graph_out": {
+            "description": "Where the updated graph was written",
+            "title": "Graph Out",
+            "type": "string"
+          },
+          "updated": {
+            "title": "Updated",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "graph",
+          "graph_out",
+          "updated",
+          "edges"
+        ],
+        "title": "GraphLagsResult",
+        "type": "object"
+      }
+    },
     "init": {
       "params": {
         "additionalProperties": false,

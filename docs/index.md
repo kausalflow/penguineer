@@ -7,7 +7,7 @@ It reads files and writes files. The engines are deterministic Python, and an LL
 [Alchemist](https://github.com/kausalflow/alchemist) imports penguineer as a library and adds the UI, runners, project management, the data catalog, staging and sealing on top. penguineer has none of those itself.
 
 !!! note "Status"
-    This is an early skeleton. `init`, `data health` and `graph check` work. `graph draft`, `investigate` and `bench homeostat` are registered with their full parameters but exit with code 4 ("not implemented yet").
+    This is an early skeleton. `init`, `data health`, `graph check` and `graph lags` work. `graph draft`, `investigate` and `bench homeostat` are registered with their full parameters but exit with code 4 ("not implemented yet").
 
 ## Where to go next
 
