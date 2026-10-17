@@ -5,6 +5,7 @@ from penguineer.commands import (  # noqa: F401
     data_health,
     graph_check,
     graph_draft,
+    graph_lags,
     init,
     investigate,
 )

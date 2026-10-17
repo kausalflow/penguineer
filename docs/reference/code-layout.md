@@ -8,8 +8,8 @@ src/penguineer/
   core/                   command registry, RunContext, run records, errors
   cli/                    the Typer app generated from the registry, the CLI reference renderer
   commands/               one module per command: Params, Result, run()
-  io/                     historian, plant graph and Homeostat Live readers
-  engines/                deterministic engines (data health so far)
+  io/                     historian, LIMS, plant graph and Homeostat Live readers
+  engines/                deterministic engines: data health, dead times
   graph/                  graph check
 tests/                    unit, CLI, round-trip property, schema snapshot and Homeostat Live tests
 examples/demo/            a small plant with injected data faults

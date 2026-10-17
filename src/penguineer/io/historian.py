@@ -109,26 +109,34 @@ def read_historian(
 
 
 def _normalize_timestamps(df: pl.DataFrame, timezone: str) -> tuple[pl.DataFrame, int]:
-    ts = df["timestamp"]
+    ts, nonexistent = to_utc(df["timestamp"], timezone)
+    df = df.with_columns(ts.alias("timestamp")).drop_nulls(["timestamp"])
+    return df, nonexistent
+
+
+def to_utc(ts: pl.Series, timezone: str) -> tuple[pl.Series, int]:
+    """Parse a timestamp column to UTC microseconds.
+
+    Naive times are read in ``timezone``; local times that do not exist (the daylight-saving
+    gap) become null and are counted.
+    """
     if ts.dtype == pl.String:
         parsed = ts.str.to_datetime(time_unit="us", strict=False)
         if parsed.null_count() > ts.null_count():
             bad = ts.filter(parsed.is_null() & ts.is_not_null()).head(3).to_list()
-            raise UsageError(f"unparseable timestamps, for example {bad}")
+            raise UsageError(f"unparseable timestamps in {ts.name!r}, for example {bad}")
         ts = parsed
     elif ts.dtype == pl.Date:
         ts = ts.cast(pl.Datetime("us"))
     if not isinstance(ts.dtype, pl.Datetime):
-        raise UsageError(f"timestamp column has type {ts.dtype}, expected date-time")
+        raise UsageError(f"column {ts.name!r} has type {ts.dtype}, expected date-time")
 
     nonexistent = 0
     if ts.dtype.time_zone is None:
         before = ts.null_count()
         ts = ts.dt.replace_time_zone(timezone, ambiguous="earliest", non_existent="null")
         nonexistent = ts.null_count() - before
-    ts = ts.dt.convert_time_zone("UTC").dt.cast_time_unit("us")
-    df = df.with_columns(ts.alias("timestamp")).drop_nulls(["timestamp"])
-    return df, nonexistent
+    return ts.dt.convert_time_zone("UTC").dt.cast_time_unit("us"), nonexistent
 
 
 def _aware(dt: datetime, timezone: str) -> datetime:

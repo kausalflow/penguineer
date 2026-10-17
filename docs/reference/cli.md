@@ -53,6 +53,20 @@ Draft the plant graph from a tag list and an optional P&ID; every edge is inferr
 | `--out` | path | `graph.yaml` | Where to write the drafted graph |
 | `--llm` | `none` \| `local` \| `api` | `none` | LLM for relations rules cannot infer |
 
+## `penguineer graph lags`
+
+Estimate dead times along flows_to edges from data; confirmed edges are never changed.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `--data` | existing file | required | Historian export, CSV or Parquet, wide or long |
+| `--graph` | existing file | required | Plant graph whose flows_to edges get dead times |
+| `--max-lag-minutes` | float | `240.0` | Longest dead time to search |
+| `--step-seconds` | float |  | Grid step (default: the slower tag's median period) |
+| `--z-threshold` | float | `5.0` | Peak strength needed to keep a lag |
+| `--timezone` | str | `UTC` | Time zone of naive timestamps in the export |
+| `--in-place` | bool | `False` | Write the estimates back into --graph and log them in its history |
+
 ## `penguineer init`
 
 Create a project folder for one unit: penguineer.yaml, an empty graph.yaml, folders.

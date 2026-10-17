@@ -78,6 +78,12 @@ def test_lab_results_match_the_dictionary(window, dictionary):
     assert lab["value"].dtype == pl.Float64
     assert (lab["reported_at"] > lab["sampled_at"]).all()
 
+    from penguineer.io.lims import read_lims
+
+    lims = read_lims(window.lab)
+    assert lims.frame.height == lab.height
+    assert lims.frame["sampled_at"].min() >= SINCE
+
 
 def test_graph_from_dictionary(window, dictionary, graph_path):
     from penguineer.io.graph import load_graph
