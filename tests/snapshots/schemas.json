@@ -26,9 +26,25 @@
               }
             ],
             "default": null,
-            "description": "Folder of exported homeostat scenario bundles",
+            "description": "Folder of exported scenario bundles (default: generate them with Homeostat into .penguineer/bench/ in the project)",
             "title": "Bundles",
             "ui": "folder"
+          },
+          "faults": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Fault types to generate (default: all)",
+            "title": "Faults"
           },
           "limit": {
             "anyOf": [
@@ -44,10 +60,45 @@
             "description": "Run at most this many scenarios",
             "title": "Limit"
           },
+          "out": {
+            "anyOf": [
+              {
+                "format": "path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Folder for bench.json and scenarios.csv (default: the run folder)",
+            "title": "Out"
+          },
+          "per_fault": {
+            "default": 12,
+            "description": "Plants per fault type to generate",
+            "maximum": 500,
+            "minimum": 1,
+            "title": "Per Fault",
+            "type": "integer"
+          },
           "scenarios": {
             "$ref": "#/$defs/Split",
             "default": "validation",
             "description": "Which scenario split to run"
+          },
+          "split_seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Seed of the split (train and validation have fixed public seeds; the hidden split needs its secret one)",
+            "title": "Split Seed"
           }
         },
         "title": "BenchHomeostatParams",
@@ -55,6 +106,29 @@
       },
       "result": {
         "$defs": {
+          "FaultTypeRow": {
+            "properties": {
+              "hit_at_1": {
+                "title": "Hit At 1",
+                "type": "number"
+              },
+              "hit_at_3": {
+                "title": "Hit At 3",
+                "type": "number"
+              },
+              "n": {
+                "title": "N",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "n",
+              "hit_at_1",
+              "hit_at_3"
+            ],
+            "title": "FaultTypeRow",
+            "type": "object"
+          },
           "Split": {
             "enum": [
               "train",
@@ -66,13 +140,72 @@
           }
         },
         "properties": {
+          "by_fault_type": {
+            "additionalProperties": {
+              "$ref": "#/$defs/FaultTypeRow"
+            },
+            "title": "By Fault Type",
+            "type": "object"
+          },
           "data_fault_catch_rate": {
-            "title": "Data Fault Catch Rate",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Fault Catch Rate"
+          },
+          "errors": {
+            "description": "Scenarios where investigate stopped with an error",
+            "title": "Errors",
+            "type": "integer"
+          },
+          "hit_at_1": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit At 1"
           },
           "hit_at_3": {
-            "title": "Hit At 3",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hit At 3"
+          },
+          "hit_at_3_interval": {
+            "anyOf": [
+              {
+                "maxItems": 2,
+                "minItems": 2,
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "95% Wilson interval",
+            "title": "Hit At 3 Interval"
           },
           "n_scenarios": {
             "title": "N Scenarios",
@@ -83,21 +216,44 @@
             "title": "Report",
             "type": "string"
           },
+          "scenarios_csv": {
+            "format": "path",
+            "title": "Scenarios Csv",
+            "type": "string"
+          },
+          "skipped": {
+            "description": "Generated plants where no lot went off spec",
+            "title": "Skipped",
+            "type": "integer"
+          },
           "split": {
             "$ref": "#/$defs/Split"
           },
           "wrong_confident_rate": {
-            "title": "Wrong Confident Rate",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wrong Confident Rate"
           }
         },
         "required": [
           "split",
           "n_scenarios",
+          "skipped",
+          "errors",
+          "hit_at_1",
           "hit_at_3",
+          "hit_at_3_interval",
           "wrong_confident_rate",
           "data_fault_catch_rate",
-          "report"
+          "by_fault_type",
+          "report",
+          "scenarios_csv"
         ],
         "title": "BenchHomeostatResult",
         "type": "object"

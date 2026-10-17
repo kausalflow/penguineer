@@ -39,8 +39,15 @@ class Effect:
         return float(np.clip((abs(self.z) - 2.0) / 4.0, 0.0, 1.0))
 
 
-def effect_size(event: np.ndarray, reference: np.ndarray) -> Effect | None:
-    """How far the event window sits from the reference, in reference scales."""
+def effect_size(
+    event: np.ndarray, reference: np.ndarray, scale_floor: float = 0.0
+) -> Effect | None:
+    """How far the event window sits from the reference, in reference scales.
+
+    ``scale_floor`` is a lower bound on the scale, such as the spread of the tag's level from
+    one earlier lot to the next: a tag that wanders slowly is not "moved" by being elsewhere
+    in this lot than in the last few.
+    """
     ev = event[np.isfinite(event)]
     ref = reference[np.isfinite(reference)]
     if ev.size < 3 or ref.size < 10:
@@ -48,7 +55,7 @@ def effect_size(event: np.ndarray, reference: np.ndarray) -> Effect | None:
     med_r, scale = robust_location_scale(ref)
     med_e = float(np.median(ev))
     floor = max(noise_scale(ref), 1e-9 * max(1.0, abs(med_r)))
-    scale = max(scale, floor)
+    scale = max(scale, floor, scale_floor)
     delta = med_e - med_r
     return Effect(delta, delta / scale, int(ev.size), int(ref.size))
 
@@ -105,6 +112,30 @@ def lag_correlation(candidate: np.ndarray, quality: np.ndarray) -> tuple[float, 
     if a.std() == 0 or b.std() == 0:
         return None
     return float(np.corrcoef(a, b)[0, 1]), int(ok.sum())
+
+
+def smooth(x: np.ndarray, n: int) -> np.ndarray:
+    """Centred moving mean over ``n`` points, ignoring NaNs (NaN where none are finite)."""
+    if n <= 1:
+        return x
+    ok = np.isfinite(x)
+    v = np.where(ok, x, 0.0)
+    k = np.ones(n)
+    total = np.convolve(v, k, mode="same")
+    count = np.convolve(ok.astype(float), k, mode="same")
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(count > 0, total / count, np.nan)
+
+
+def level_spread(x: np.ndarray, windows: list[np.ndarray]) -> float:
+    """Standard deviation of the median of ``x`` over earlier windows (0 with fewer than 4)."""
+    meds = []
+    for m in windows:
+        v = x[m]
+        v = v[np.isfinite(v)]
+        if v.size >= 3:
+            meds.append(float(np.median(v)))
+    return float(np.std(meds, ddof=1)) if len(meds) >= 4 else 0.0
 
 
 def explained_fraction(

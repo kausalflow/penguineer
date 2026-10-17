@@ -13,8 +13,12 @@ Run investigate on homeostat plants with injected faults and score it.
 | Option | Type | Default | Description |
 |---|---|---|---|
 | `--scenarios` | `train` \| `validation` \| `hidden` | `validation` | Which scenario split to run |
-| `--bundles` | existing folder |  | Folder of exported homeostat scenario bundles |
+| `--bundles` | existing folder |  | Folder of exported scenario bundles (default: generate them with Homeostat into .penguineer/bench/ in the project) |
+| `--per-fault` | int | `12` | Plants per fault type to generate |
+| `--faults` | str, repeatable |  | Fault types to generate (default: all) |
+| `--split-seed` | int |  | Seed of the split (train and validation have fixed public seeds; the hidden split needs its secret one) |
 | `--limit` | int |  | Run at most this many scenarios |
+| `--out` | path |  | Folder for bench.json and scenarios.csv (default: the run folder) |
 
 ## `penguineer data health`
 

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from jinja2 import Environment, select_autoescape
 
-from penguineer.engines.investigate import CALIBRATION, Investigation
+from penguineer.engines.investigate import Investigation
 from penguineer.report import plots
 from penguineer.report.model import EvidenceItem, Report
 
@@ -66,7 +66,7 @@ def build_report(inv: Investigation, out_dir: Path, *, run_id: str, version: str
         evidence=items,
         health=inv.health,
         notes=inv.notes,
-        calibration=CALIBRATION,
+        calibration=inv.calibration.describe(),
     )
     (out_dir / "report.json").write_text(report.model_dump_json(indent=2))
     render(report, out_dir)

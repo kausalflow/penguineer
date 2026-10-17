@@ -160,7 +160,7 @@ FAULTS: dict[str, FaultType] = {
         ),
         FaultType(
             "reactor_sensor_drift",
-            {"target": "TIC-301", "fault": "sensor_drift", "magnitude": {"uniform": [1.0, 3.0]}},
+            {"target": "TIC-301", "fault": "sensor_drift", "magnitude": {"uniform": [3.0, 6.0]}},
             ("TT-301",),
             "measurement_fault",
             data_fault=True,
@@ -178,11 +178,11 @@ FAULTS: dict[str, FaultType] = {
             description="The catalyst loses activity; nothing measured moves but the product.",
         ),
         FaultType(
-            "valve_stuck",
-            {"target": "TIC-301", "fault": "valve_stuck"},
-            ("R-301", "TIC-301", "TIC-301.out", "TV-301"),
-            "lost_control",
-            description="The reactor's heating valve sticks; the temperature wanders.",
+            "feed_b_flow",
+            {"target": "MX-101.flow_b.mean", "action": "shift", "value": {"uniform": [-6.0, -3.0]}},
+            ("S-B", "FT-102"),
+            "process",
+            description="Feed B's flow drops, which changes the feed ratio and the residence.",
         ),
     )
 }
