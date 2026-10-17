@@ -1030,7 +1030,7 @@
 <li>On GitHub, create a release from <code>main</code> with the tag <code>v&lt;version&gt;</code>, for example <code>v0.1.0</code>. The workflow stops if the tag does not match the version.</li>
 </ol>
 <p>If publishing fails part way (for example PyPI errors after uploading one of the two packages), run the Release workflow by hand from the Actions tab with the release tag as input. Files already on PyPI are skipped.</p>
-<p>PyPI side, done once per project (<code>penguineer</code> and <code>plantgraph</code>): add a trusted publisher with owner <code>kausalflow</code>, repository <code>penguineer</code>, workflow <code>release.yml</code> and environment <code>pypi</code>. Before a project's first release, add it as a pending publisher under <em>Your account &gt; Publishing</em>.</p>
+<p>PyPI side, done once per project: add a trusted publisher with owner <code>kausalflow</code>, repository <code>penguineer</code> and workflow <code>release.yml</code>, with environment <code>pypi</code> for <code>penguineer</code> and <code>pypi-plantgraph</code> for <code>plantgraph</code>. Before a project's first release, add it as a pending publisher under <em>Your account &gt; Publishing</em>. The two environments differ on purpose: PyPI cannot create a new project with a token that already matches an existing project's publisher.</p>
 
 
 
