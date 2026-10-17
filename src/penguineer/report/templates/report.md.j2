@@ -1,0 +1,58 @@
+{% set ev = r.event %}
+# Lot {{ ev.lot }}: {{ ev.property }} {{ ev.direction }}
+
+{{ ev.property }} was **{{ ev.value | num }}{% if ev.unit %} {{ ev.unit }}{% endif %}**{% if ev.spec_low is not none %} (spec low {{ ev.spec_low | num }}){% endif %}{% if ev.spec_high is not none %} (spec high {{ ev.spec_high | num }}){% endif %}, sampled at {{ ev.sample_point or ev.sampled_node }} on {{ ev.sampled_at | when }} UTC.
+
+penguineer {{ r.penguineer_version }}, run {{ r.run_id }}.
+
+## Hypotheses
+
+| # | Cause | Kind | Score | Confidence | Summary |
+|---|---|---|---|---|---|
+{% for h in r.hypotheses %}
+| {{ h.rank }} | `{{ h.cause_tag or h.cause_node }}` | {{ h.kind | replace("_", " ") }} | {{ "%.2f" | format(h.score) }} | {{ h.confidence }} | {{ h.summary }} |
+{% endfor %}
+
+{% for h in r.hypotheses %}
+### #{{ h.rank }} {{ h.cause_tag or h.cause_node }}
+
+Path: {{ h.graph_path | join(" → ") }}, dead time {{ h.dead_time_min | num }} min.
+
+{% for t in h.tests %}
+- {{ t.name | replace("_", " ") }}: {% if t.strength is not none %}{{ "%.2f" | format(t.strength) }}{% else %}not run{% endif %}, {{ t.detail }}
+{% endfor %}
+{% for x in h.ruled_out %}
+- explains away `{{ x.cause }}`: {{ x.reason }}
+{% endfor %}
+{% for id in h.evidence %}{% set e = evidence.get(id) %}
+{% if e and e.path %}
+
+![{{ e.title }}]({{ e.path }})
+{% elif e %}
+- {{ e.id }}: {{ e.title }}
+{% endif %}
+{% endfor %}
+
+{% endfor %}
+## Ruled out
+
+{% for x in r.ruled_out %}
+- `{{ x.cause }}`: {{ x.reason }}
+{% else %}
+Nothing was ruled out.
+{% endfor %}
+
+## How this was worked out
+
+- Lot window: {{ ev.window_start | when }} to {{ ev.window_end | when }} at {{ ev.sampled_node }}
+- Quality onset: {% if ev.onset %}{{ ev.onset | when }} ({{ ev.proxy_tag }}){% else %}unknown{% endif %}
+
+- Regime: {% for k, v in r.regime.items() %}{{ k }} = {{ v | num }}{% if not loop.last %}, {% endif %}{% else %}one regime{% endfor %}
+
+- Reference lots: {% for w in r.reference %}{{ w.lot }} ({{ w.value | num }}){% if not loop.last %}, {% endif %}{% endfor %}
+
+- Candidates tested: {{ r.candidates }} tags on a {{ r.grid_step_s | num }} s grid
+- Confidence: {{ r.calibration }}
+{% for n in r.notes %}
+- Note: {{ n }}
+{% endfor %}

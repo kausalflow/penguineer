@@ -48,12 +48,9 @@ def test_invalid_value_is_exit_2(demo_csv, tmp_path):
 
 
 def test_stub_commands_exit_4(demo_csv, tmp_path):
-    res = invoke(
-        "investigate", "--lot", "L1", "--lims", demo_csv, "--data", demo_csv, "--project", tmp_path
-    )
+    res = invoke("graph", "draft", "--tags", demo_csv, "--project", tmp_path)
     assert res.exit_code == 4
     assert "not implemented yet" in res.output
-    assert invoke("graph", "draft", "--tags", demo_csv, "--project", tmp_path).exit_code == 4
     assert invoke("bench", "homeostat", "--project", tmp_path).exit_code == 4
 
 

@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot {{ r.event.lot }}: {{ r.event.property }} investigation</title>
+<style>
+  :root { --ink: #111827; --muted: #6b7280; --line: #e5e7eb; --bad: #b42318; --soft: #f9fafb;
+          --high: #067647; --medium: #b54708; --low: #6b7280; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #fff; }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .lead { font-size: 16px; margin: 16px 0; }
+  .bad { color: var(--bad); font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 16px 0; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; }
+  .high { background: var(--high); } .medium { background: var(--medium); } .low { background: var(--low); }
+  .kind { color: var(--muted); font-size: 13px; }
+  .bar { display: inline-block; height: 8px; background: #1d4ed8; border-radius: 4px; vertical-align: middle; }
+  img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; margin-top: 8px; }
+  code { font-size: 13px; background: var(--soft); padding: 1px 4px; border-radius: 4px; }
+  ul { padding-left: 20px; }
+</style>
+</head>
+<body>
+<main>
+{% set ev = r.event %}
+<h1>Lot {{ ev.lot }}: {{ ev.property }} {{ ev.direction }}</h1>
+<div class="meta">penguineer {{ r.penguineer_version }} · run {{ r.run_id }} · {{ r.created_at | when }} UTC</div>
+
+<p class="lead">
+  {{ ev.property }} was <span class="bad">{{ ev.value | num }}{% if ev.unit %} {{ ev.unit }}{% endif %}</span>
+  {% if ev.spec_low is not none and ev.spec_high is not none %}(spec {{ ev.spec_low | num }} to {{ ev.spec_high | num }})
+  {% elif ev.spec_low is not none %}(spec ≥ {{ ev.spec_low | num }})
+  {% elif ev.spec_high is not none %}(spec ≤ {{ ev.spec_high | num }}){% endif %},
+  sampled at {{ ev.sample_point or ev.sampled_node }} on {{ ev.sampled_at | when }}.
+  {% if r.hypotheses %}The leading hypothesis: {{ r.hypotheses[0].summary }}{% else %}No hypothesis stood out.{% endif %}
+</p>
+
+{% set overview = r.evidence[0] if r.evidence and r.evidence[0].kind == "plot" else none %}
+{% if overview %}<img src="{{ overview.path }}" alt="{{ overview.title }}">{% endif %}
+
+<h2>Hypotheses</h2>
+{% for h in r.hypotheses %}
+<div class="card">
+  <h3>#{{ h.rank }} {{ h.cause_tag or h.cause_node }} <span class="badge {{ h.confidence }}">{{ h.confidence }}</span></h3>
+  <div class="kind">{{ h.kind | replace("_", " ") }} · score {{ "%.2f" | format(h.score) }} · path {{ h.graph_path | join(" → ") }} · dead time {{ h.dead_time_min | num }} min</div>
+  <p>{{ h.summary }}</p>
+  {% if h.tests %}
+  <table>
+    <tr><th>Test</th><th>Strength</th><th>Detail</th></tr>
+    {% for t in h.tests %}
+    <tr><td>{{ t.name | replace("_", " ") }}</td>
+        <td>{% if t.strength is not none %}<span class="bar" style="width: {{ (t.strength * 80) | round | int }}px"></span> {{ "%.2f" | format(t.strength) }}{% else %}not run{% endif %}</td>
+        <td>{{ t.detail }}</td></tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+  {% if h.ruled_out %}<p><strong>Explains away:</strong></p><ul>{% for x in h.ruled_out %}<li><code>{{ x.cause }}</code>: {{ x.reason }}</li>{% endfor %}</ul>{% endif %}
+  {% if h.health_warnings %}<p><strong>Health warnings:</strong> {{ h.health_warnings | join(", ") }}</p>{% endif %}
+  {% for id in h.evidence %}{% set e = evidence.get(id) %}
+    {% if e and e.path %}<img src="{{ e.path }}" alt="{{ e.title }}">{% elif e %}<p class="kind">{{ e.id }}: {{ e.title }}</p>{% endif %}
+  {% endfor %}
+</div>
+{% endfor %}
+
+<h2>Ruled out</h2>
+{% if r.ruled_out %}
+<table>
+  <tr><th>Candidate</th><th>Why</th></tr>
+  {% for x in r.ruled_out %}<tr><td><code>{{ x.cause }}</code></td><td>{{ x.reason }}</td></tr>{% endfor %}
+</table>
+{% else %}<p>Nothing was ruled out.</p>{% endif %}
+
+<h2>How this was worked out</h2>
+<table>
+  <tr><th>Lot window</th><td>{{ ev.window_start | when }} to {{ ev.window_end | when }} at {{ ev.sampled_node }}</td></tr>
+  <tr><th>Quality onset</th><td>{% if ev.onset %}{{ ev.onset | when }} ({{ ev.proxy_tag }}){% else %}unknown{% endif %}</td></tr>
+  <tr><th>Regime</th><td>{% for k, v in r.regime.items() %}{{ k }} = {{ v | num }}{% if not loop.last %}, {% endif %}{% else %}one regime{% endfor %}</td></tr>
+  <tr><th>Reference lots</th><td>{% for w in r.reference %}{{ w.lot }} ({{ w.value | num }}){% if not loop.last %}, {% endif %}{% endfor %}</td></tr>
+  <tr><th>Candidates tested</th><td>{{ r.candidates }} tags, on a {{ r.grid_step_s | num }} s grid in material time</td></tr>
+  <tr><th>Confidence</th><td>{{ r.calibration }}</td></tr>
+</table>
+{% if r.notes %}<ul>{% for n in r.notes %}<li>{{ n }}</li>{% endfor %}</ul>{% endif %}
+
+{% if r.health %}
+<h2>Data health on the candidate tags</h2>
+<table>
+  <tr><th>ID</th><th>Tag</th><th>Check</th><th>Severity</th><th>From</th><th>Detail</th></tr>
+  {% for f in r.health %}<tr><td>{{ f.id }}</td><td><code>{{ f.tag }}</code></td><td>{{ f.check }}</td><td>{{ f.severity }}</td><td>{{ f.start | when }}</td><td>{{ f.detail }}</td></tr>{% endfor %}
+</table>
+{% endif %}
+</main>
+</body>
+</html>
