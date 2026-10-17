@@ -9,3 +9,6 @@ build/
 .hypothesis/
 .penguineer/
 runs/
+tests/.cache/
+.homeostat-cache/
+site/
