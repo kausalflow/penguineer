@@ -40,6 +40,18 @@ The setpoint `FIC-102.SP` is constant all day and is not reported, because the g
 
 Each run writes `runs/<run_id>/run.json` and `health.json` under the project folder (`--project`, default the current folder). Add `--json` to print the result model instead of the summary.
 
+## Investigate an off-spec lot
+
+`examples/offspec/` holds three days of a small plant in which lot L0803-A came out low on purity. Its cause is known: the feed preheater fouled.
+
+```bash
+uv run penguineer investigate --lot L0803-A \
+  --lims examples/offspec/lims.csv --data examples/offspec/historian.csv \
+  --graph examples/offspec/graph.yaml --lots examples/offspec/lots.csv
+```
+
+The preheater outlet temperature TI-101 comes first, with high confidence. The report lands in `reports/<run_id>/report.html`; [here is that report](examples/lot-report/index.html){ target="_blank" }, and [Investigating an off-spec lot](concepts/investigate.md) explains each step.
+
 ## Start a project for your own unit
 
 ```bash

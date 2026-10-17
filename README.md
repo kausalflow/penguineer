@@ -4,7 +4,7 @@ Find the root cause of off-spec lots from historian and LIMS exports, on a lapto
 
 penguineer reads files and writes files. Its engines are deterministic Python; an LLM is optional and never decides a ranking. Every command is defined once as a Pydantic parameter model, a result model and a function, and the CLI, the `--json` output and the Python API are generated from that one definition. [Alchemist](https://github.com/kausalflow/alchemist) imports penguineer as a library and adds the UI, runners and project management on top.
 
-> Status: early skeleton. `init`, `data health`, `graph check` and `graph lags` work; `graph draft`, `investigate` and `bench homeostat` are registered with their parameters but not built yet (they exit with code 4).
+> Status: early skeleton. `init`, `data health`, `graph check`, `graph lags` and `investigate` work; `graph draft` and `bench homeostat` are registered with their parameters but not built yet (they exit with code 4).
 
 ## Documentation
 
@@ -45,6 +45,23 @@ The demo data has exactly those four faults injected (see `scripts/make_demo_dat
 
 Add `--json` to get the result model on stdout. Every run writes `runs/<run_id>/run.json` under `--project` (default: the current folder) with the params, the equivalent command line, versions and SHA-256 hashes of every input.
 
+## Investigate an off-spec lot
+
+`examples/offspec/` is a small plant with one off-spec lot and a known cause (a fouled feed preheater), a decoy and a frozen tag:
+
+```bash
+uv run penguineer investigate --lot L0803-A \
+  --lims examples/offspec/lims.csv --data examples/offspec/historian.csv \
+  --graph examples/offspec/graph.yaml --lots examples/offspec/lots.csv
+```
+
+```
+  #1 TI-101.PV  high   score 0.99  process
+     TI-101.PV (E-101) ran 5.73 degC low from 2026-08-03 05:29, 50 min upstream of the sample point; purity moved when it arrived.
+```
+
+It writes `report.json`, `report.html`, `report.md` and evidence plots under `reports/<run_id>/`. See [Investigating an off-spec lot](https://kausalflow.com/penguineer/concepts/investigate/).
+
 ## Try it on a live simulated plant
 
 [Homeostat Live](https://homeostat.kausalflow.com/live/) publishes a simulated plant's sensor data, lab results and data dictionary. This downloads a released week and derives a plant graph (tags, instrument ranges, control loops, lab qualities) from the dictionary:
@@ -66,7 +83,7 @@ The tests in `tests/test_homeostat_live.py` run on that week. They are skipped w
 | `penguineer graph check --graph graph.yaml` | Schema and plant rules, plus the queue of inferred edges to confirm | works |
 | `penguineer graph lags --data FILE --graph graph.yaml` | Estimate dead times along `flows_to` edges from the data (prewhitened cross-correlation) | works |
 | `penguineer graph draft --tags tags.csv` | Draft the plant graph from a tag list and optional DEXPI P&ID | stub |
-| `penguineer investigate --lot L --lims lims.csv --data FILE` | Align in material time, rank root-cause hypotheses, write the report | stub |
+| `penguineer investigate --lot L --lims lims.csv --data FILE` | Align in material time, rank root-cause hypotheses, write the report | works |
 | `penguineer bench homeostat` | Score the pipeline on homeostat plants with injected faults | stub |
 
 Exit codes: 0 success, 1 validation failed (for example graph errors), 2 usage error, 3 not enough data, 4 internal error or not implemented yet.
@@ -93,10 +110,12 @@ src/penguineer/
   cli/                 Typer app generated from the registry
   commands/            one module per command: Params, Result, run()
   io/                  historian, LIMS, graph and Homeostat Live readers
-  engines/             deterministic engines: data health, dead times
+  engines/             deterministic engines: data health, dead times, investigate
+  report/              report models, evidence plots, HTML and Markdown templates
   graph/               graph check
 tests/                 unit, CLI, to_argv round-trip property tests, schema snapshot
 examples/demo/         a small plant with injected data faults
+examples/offspec/      a small plant with an off-spec lot and a known root cause
 ```
 
 ## Development

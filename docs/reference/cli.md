@@ -87,5 +87,12 @@ Align the data in time, rank root-cause hypotheses along graph paths, write the 
 | `--lims` | existing file | required | LIMS export |
 | `--data` | existing file | required | Historian export |
 | `--graph` | existing file |  | Plant graph (default: graph.yaml in the project) |
+| `--lots` | existing file |  | Lot windows: a CSV with lot, start, end (default: from one lab sample of the property to the next) |
+| `--quality` | str |  | LIMS property to investigate (default: the lot's worst off-spec one) |
 | `--top` | int | `5` | Hypotheses to report |
+| `--hops` | int | `6` | flows_to hops to search upstream |
+| `--reference-lots` | int | `3` | In-spec lots to compare with |
+| `--step-seconds` | float |  | Grid step (default: the slowest candidate tag's period) |
+| `--timezone` | str | `UTC` | Time zone of naive timestamps in the exports |
 | `--llm` | `none` \| `local` \| `api` | `none` | LLM for the prose summary only |
+| `--out` | path |  | Report folder (default: reports/<run_id> in the project) |

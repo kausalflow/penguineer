@@ -41,6 +41,9 @@ jobs:
             --graph "$GITHUB_WORKSPACE/examples/demo/graph.yaml"
           uv run --project "$GITHUB_WORKSPACE" penguineer graph check \
             --graph "$GITHUB_WORKSPACE/examples/demo/graph.yaml"
+          d="$GITHUB_WORKSPACE/examples/offspec"
+          uv run --project "$GITHUB_WORKSPACE" penguineer investigate --lot L0803-A \
+            --lims "$d/lims.csv" --data "$d/historian.csv" --graph "$d/graph.yaml" --lots "$d/lots.csv"
       - name: Data health on a released Homeostat Live week
         run: |
           week="$PENGUINEER_HOMEOSTAT_CACHE/isidis-01_20261002T1700_20261009T1700"

@@ -1078,6 +1078,14 @@
             "title": "Graph",
             "ui": "file"
           },
+          "hops": {
+            "default": 6,
+            "description": "flows_to hops to search upstream",
+            "maximum": 50,
+            "minimum": 1,
+            "title": "Hops",
+            "type": "integer"
+          },
           "lims": {
             "accept": [
               ".csv"
@@ -1096,6 +1104,79 @@
           "lot": {
             "description": "Lot ID as it appears in the LIMS export",
             "title": "Lot",
+            "type": "string"
+          },
+          "lots": {
+            "accept": [
+              ".csv"
+            ],
+            "anyOf": [
+              {
+                "format": "file-path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Lot windows: a CSV with lot, start, end (default: from one lab sample of the property to the next)",
+            "title": "Lots",
+            "ui": "file"
+          },
+          "out": {
+            "anyOf": [
+              {
+                "format": "path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Report folder (default: reports/<run_id> in the project)",
+            "title": "Out"
+          },
+          "quality": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "LIMS property to investigate (default: the lot's worst off-spec one)",
+            "title": "Quality"
+          },
+          "reference_lots": {
+            "default": 3,
+            "description": "In-spec lots to compare with",
+            "maximum": 50,
+            "minimum": 1,
+            "title": "Reference Lots",
+            "type": "integer"
+          },
+          "step_seconds": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Grid step (default: the slowest candidate tag's period)",
+            "title": "Step Seconds"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Time zone of naive timestamps in the exports",
+            "title": "Timezone",
             "type": "string"
           },
           "top": {
@@ -1123,15 +1204,44 @@
                 "title": "Cause Node",
                 "type": "string"
               },
+              "cause_tag": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Historian tag the evidence comes from",
+                "title": "Cause Tag"
+              },
               "confidence": {
+                "enum": [
+                  "high",
+                  "medium",
+                  "low"
+                ],
                 "title": "Confidence",
                 "type": "string"
               },
+              "dead_time_min": {
+                "description": "Cumulative dead time to the sampled node",
+                "title": "Dead Time Min",
+                "type": "number"
+              },
               "direction": {
+                "enum": [
+                  "high",
+                  "low",
+                  "changed"
+                ],
                 "title": "Direction",
                 "type": "string"
               },
               "evidence": {
+                "description": "Evidence item IDs",
                 "items": {
                   "type": "string"
                 },
@@ -1139,30 +1249,342 @@
                 "type": "array"
               },
               "graph_path": {
+                "description": "Node IDs from the cause to the sampled node",
                 "items": {
                   "type": "string"
                 },
                 "title": "Graph Path",
                 "type": "array"
               },
+              "health_warnings": {
+                "description": "IDs of health findings on this tag in the window",
+                "items": {
+                  "type": "string"
+                },
+                "title": "Health Warnings",
+                "type": "array"
+              },
+              "kind": {
+                "$ref": "#/$defs/HypothesisKind"
+              },
+              "magnitude": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Event median minus reference median",
+                "title": "Magnitude"
+              },
               "rank": {
                 "title": "Rank",
                 "type": "integer"
+              },
+              "ruled_out": {
+                "description": "Alternatives this hypothesis explains away",
+                "items": {
+                  "$ref": "#/$defs/RuledOut"
+                },
+                "title": "Ruled Out",
+                "type": "array"
+              },
+              "score": {
+                "title": "Score",
+                "type": "number"
+              },
+              "summary": {
+                "title": "Summary",
+                "type": "string"
+              },
+              "tests": {
+                "items": {
+                  "$ref": "#/$defs/TestResult"
+                },
+                "title": "Tests",
+                "type": "array"
+              },
+              "unit": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Unit"
+              },
+              "window_end": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "title": "Window End"
+              },
+              "window_start": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Deviation start, at the cause",
+                "title": "Window Start"
               }
             },
             "required": [
               "rank",
+              "kind",
               "cause_node",
               "direction",
-              "confidence",
               "graph_path",
-              "evidence"
+              "dead_time_min",
+              "tests",
+              "score",
+              "confidence",
+              "summary"
             ],
             "title": "Hypothesis",
+            "type": "object"
+          },
+          "HypothesisKind": {
+            "enum": [
+              "process",
+              "setpoint_change",
+              "lost_control",
+              "unmeasured_disturbance",
+              "measurement_fault"
+            ],
+            "title": "HypothesisKind",
+            "type": "string"
+          },
+          "QualityEvent": {
+            "properties": {
+              "direction": {
+                "enum": [
+                  "high",
+                  "low"
+                ],
+                "title": "Direction",
+                "type": "string"
+              },
+              "lot": {
+                "title": "Lot",
+                "type": "string"
+              },
+              "onset": {
+                "anyOf": [
+                  {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "When the online quality signal moved",
+                "title": "Onset"
+              },
+              "property": {
+                "title": "Property",
+                "type": "string"
+              },
+              "proxy_tag": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "Online analyzer used for timing",
+                "title": "Proxy Tag"
+              },
+              "quality_node": {
+                "title": "Quality Node",
+                "type": "string"
+              },
+              "sample_point": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Sample Point"
+              },
+              "sampled_at": {
+                "format": "date-time",
+                "title": "Sampled At",
+                "type": "string"
+              },
+              "sampled_node": {
+                "title": "Sampled Node",
+                "type": "string"
+              },
+              "spec_high": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Spec High"
+              },
+              "spec_low": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Spec Low"
+              },
+              "unit": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Unit"
+              },
+              "value": {
+                "title": "Value",
+                "type": "number"
+              },
+              "window_end": {
+                "format": "date-time",
+                "title": "Window End",
+                "type": "string"
+              },
+              "window_start": {
+                "description": "Lot window at the sampled node",
+                "format": "date-time",
+                "title": "Window Start",
+                "type": "string"
+              }
+            },
+            "required": [
+              "lot",
+              "property",
+              "quality_node",
+              "value",
+              "spec_low",
+              "spec_high",
+              "unit",
+              "direction",
+              "sampled_at",
+              "sample_point",
+              "sampled_node",
+              "window_start",
+              "window_end"
+            ],
+            "title": "QualityEvent",
+            "type": "object"
+          },
+          "RuledOut": {
+            "properties": {
+              "cause": {
+                "description": "Node or tag ID",
+                "title": "Cause",
+                "type": "string"
+              },
+              "reason": {
+                "title": "Reason",
+                "type": "string"
+              }
+            },
+            "required": [
+              "cause",
+              "reason"
+            ],
+            "title": "RuledOut",
+            "type": "object"
+          },
+          "TestName": {
+            "enum": [
+              "effect_size",
+              "onset",
+              "lag_correlation"
+            ],
+            "title": "TestName",
+            "type": "string"
+          },
+          "TestResult": {
+            "properties": {
+              "detail": {
+                "title": "Detail",
+                "type": "string"
+              },
+              "name": {
+                "$ref": "#/$defs/TestName"
+              },
+              "strength": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "0 to 1; null when the test could not run",
+                "title": "Strength"
+              },
+              "value": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "The test statistic (z, minutes, r)",
+                "title": "Value"
+              }
+            },
+            "required": [
+              "name",
+              "strength",
+              "detail"
+            ],
+            "title": "TestResult",
             "type": "object"
           }
         },
         "properties": {
+          "event": {
+            "$ref": "#/$defs/QualityEvent"
+          },
           "hypotheses": {
             "items": {
               "$ref": "#/$defs/Hypothesis"
@@ -1174,15 +1596,47 @@
             "title": "Lot",
             "type": "string"
           },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
           "report_dir": {
             "title": "Report Dir",
             "type": "string"
+          },
+          "report_html": {
+            "title": "Report Html",
+            "type": "string"
+          },
+          "report_json": {
+            "title": "Report Json",
+            "type": "string"
+          },
+          "report_md": {
+            "title": "Report Md",
+            "type": "string"
+          },
+          "ruled_out": {
+            "items": {
+              "$ref": "#/$defs/RuledOut"
+            },
+            "title": "Ruled Out",
+            "type": "array"
           }
         },
         "required": [
           "lot",
+          "event",
           "hypotheses",
-          "report_dir"
+          "ruled_out",
+          "notes",
+          "report_dir",
+          "report_json",
+          "report_html",
+          "report_md"
         ],
         "title": "InvestigateResult",
         "type": "object"
