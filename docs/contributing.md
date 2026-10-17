@@ -23,6 +23,19 @@ Use `FilePath` for input files, so the CLI checks that they exist and the run re
 
 `tests/test_schemas.py` fails when any command's Params or Result schema changes, because Alchemist builds on them. Regenerate the snapshot only for an intended change, and say so in the pull request.
 
+## The bench and the calibration
+
+A change to a test, a rule or the ranking changes how `investigate` scores on the [homeostat bench](concepts/bench.md); the Bench workflow posts the smoke bench in every pull request's job summary. To refit the weights and thresholds after such a change:
+
+```bash
+uv sync --extra bench
+uv run penguineer bench homeostat --scenarios train --per-fault 12 --project .
+uv run penguineer bench homeostat --scenarios validation --per-fault 12 --project .
+uv run python scripts/fit_calibration.py .penguineer/bench/train-* .penguineer/bench/validation-*
+```
+
+Commit the new `src/penguineer/engines/calibration.json` with the change, and quote the validation numbers in the pull request. Never fit on the validation split's answers beyond the thresholds, and never on the hidden split.
+
 ## Documentation
 
 The site is built with [Zensical](https://zensical.org):

@@ -5,11 +5,11 @@
 Both folders are made by ``penguineer bench homeostat`` (or ``penguineer.bench.export``).
 
 1. Weights and rule scores: coordinate search over a small grid of each value in turn, keeping
-   the others fixed, maximizing hit@1 plus half of hit@3 on the training split.
+   the others fixed, maximizing hit@3 (the release gate) plus half of hit@1 on the training split.
 2. Thresholds, with those weights fixed, on the validation split: ``high`` and ``margin`` are the
    pair that labels the most correct leading hypotheses high while the wrong-confident rate
    stays at or under 5% (the release gate is 10%); ``medium`` is the lowest score above which the
-   leading hypothesis is right at least 60% of the time.
+   leading hypothesis is right at least 60% of the time, and never below 0.25.
 
 Writes ``src/penguineer/engines/calibration.json``. The bench plant has no online analyzer on the
 sampled stream, so the onset test never runs there: its weight is kept, not fitted.
@@ -62,7 +62,7 @@ def objective(results) -> float:
     n = len(results)
     h1 = sum(s.hit_at_1 for s, _ in results) / n
     h3 = sum(s.hit_at_3 for s, _ in results) / n
-    return h1 + 0.5 * h3
+    return h3 + 0.5 * h1
 
 
 def fit_weights(train, cal: Calibration) -> Calibration:
@@ -103,7 +103,7 @@ def fit_thresholds(validation, cal: Calibration) -> tuple[Calibration, float]:
         best = (0, 1.0, 0.5, 0.0)
     _, high, margin, wrong = best
     medium = high
-    for t in np.arange(0.1, high + 1e-9, 0.025):
+    for t in np.arange(0.25, high + 1e-9, 0.025):
         above = [ok for top, _, ok in rows if top >= t]
         if above and sum(above) / len(above) >= 0.6:
             medium = float(t)
