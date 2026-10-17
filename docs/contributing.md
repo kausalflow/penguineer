@@ -56,4 +56,4 @@ penguineer and plantgraph are published to PyPI together, with one version. `.gi
 
 If publishing fails part way (for example PyPI errors after uploading one of the two packages), run the Release workflow by hand from the Actions tab with the release tag as input. Files already on PyPI are skipped.
 
-PyPI side, done once per project (`penguineer` and `plantgraph`): add a trusted publisher with owner `kausalflow`, repository `penguineer`, workflow `release.yml` and environment `pypi`. Before a project's first release, add it as a pending publisher under *Your account > Publishing*.
+PyPI side, done once per project: add a trusted publisher with owner `kausalflow`, repository `penguineer` and workflow `release.yml`, with environment `pypi` for `penguineer` and `pypi-plantgraph` for `plantgraph`. Before a project's first release, add it as a pending publisher under *Your account > Publishing*. The two environments differ on purpose: PyPI cannot create a new project with a token that already matches an existing project's publisher.

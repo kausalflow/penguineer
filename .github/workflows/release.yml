@@ -3,7 +3,8 @@ name: Release
 # Publishes penguineer and plantgraph to PyPI when a GitHub release is published.
 # The release tag must be v<version>, matching the version of both packages.
 # Uses PyPI trusted publishing: no token is stored in the repository. Each project on PyPI
-# trusts this repository, this workflow (release.yml) and the environment "pypi".
+# trusts this repository and this workflow (release.yml), penguineer with the environment
+# "pypi" and plantgraph with the environment "pypi-plantgraph".
 # To finish a release whose publish step failed part way, run this workflow by hand with the
 # release tag: files already on PyPI are skipped.
 
@@ -52,8 +53,30 @@ jobs:
           name: dist
           path: dist
 
-  publish:
+  # One job per package, each in its own environment, so that each OIDC token matches exactly one
+  # PyPI project (a token for a known publisher cannot create a second, new project).
+  # plantgraph goes first: penguineer depends on it.
+  publish-plantgraph:
     needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi-plantgraph
+      url: https://pypi.org/project/plantgraph/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+      - run: mkdir upload && mv dist/plantgraph-* upload/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: upload
+          skip-existing: true
+
+  publish-penguineer:
+    needs: publish-plantgraph
     runs-on: ubuntu-latest
     environment:
       name: pypi
@@ -65,6 +88,8 @@ jobs:
         with:
           name: dist
           path: dist
+      - run: mkdir upload && mv dist/penguineer-* upload/
       - uses: pypa/gh-action-pypi-publish@release/v1
         with:
+          packages-dir: upload
           skip-existing: true
