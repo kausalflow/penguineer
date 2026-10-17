@@ -36,3 +36,13 @@ def test_every_command_is_registered():
         "init",
         "investigate",
     ]
+
+
+def test_cli_reference_is_up_to_date():
+    from penguineer.cli.reference import render
+    from penguineer.core import default_registry
+
+    page = Path(__file__).parents[1] / "docs" / "reference" / "cli.md"
+    assert page.read_text() == render(default_registry), (
+        "run: uv run python scripts/gen_cli_reference.py"
+    )

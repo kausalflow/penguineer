@@ -6,6 +6,14 @@ penguineer reads files and writes files. Its engines are deterministic Python; a
 
 > Status: early skeleton. `init`, `data health` and `graph check` work; `graph draft`, `investigate` and `bench homeostat` are registered with their parameters but not built yet (they exit with code 4).
 
+## Documentation
+
+The documentation is at <https://kausalflow.com/penguineer/>. Its source is in [`docs/`](docs/index.md) and builds with [Zensical](https://zensical.org):
+
+```bash
+uvx zensical serve   # preview on http://localhost:8000
+```
+
 ## Install
 
 ```bash
