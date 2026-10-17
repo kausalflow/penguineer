@@ -46,3 +46,12 @@ uv run --no-project --with playwright==1.56.0 python scripts/screenshot_docs.py 
 ```
 
 A pull request description includes the preview link and screenshots of the pages it changes, and of any visible output such as a command's summary. The pull request template has sections for both.
+
+## Releasing
+
+penguineer and plantgraph are published to PyPI together, with one version. `.github/workflows/release.yml` builds both, installs the wheels in a clean environment, and publishes them with PyPI trusted publishing when a GitHub release is published. No token is stored in the repository.
+
+1. Set the new version in `pyproject.toml`, in `packages/plantgraph/pyproject.toml`, and in penguineer's `plantgraph==` pin (`tests/test_versions.py` checks that the three agree), then run `uv lock`. Merge that to `main`.
+2. On GitHub, create a release from `main` with the tag `v<version>`, for example `v0.1.0`. The workflow stops if the tag does not match the version.
+
+PyPI side, done once per project (`penguineer` and `plantgraph`): add a trusted publisher with owner `kausalflow`, repository `penguineer`, workflow `release.yml` and environment `pypi`. Before a project's first release, add it as a pending publisher under *Your account > Publishing*.

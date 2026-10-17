@@ -1,6 +1,6 @@
 # plantgraph
 
-The plant context graph schema used by [penguineer](../../README.md) and homeostat. It depends only on Pydantic.
+The plant context graph schema used by [penguineer](https://github.com/kausalflow/penguineer) and homeostat. It depends only on Pydantic.
 
 A graph has typed nodes (`unit`, `equipment`, `stream`, `tag`, `loop`, `actuator`, `sample_point`, `quality`) and typed edges (`flows_to`, `measures`, `controls`, `manipulates`, `samples`, `reported_as`, `affects`). Every node and edge carries a stable `id`, a `provenance` (declared, inferred or confirmed), a `source` (user, llm, data, dexpi or homeostat), a `confidence` and `valid_from` / `valid_to` dates.
 

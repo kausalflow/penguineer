@@ -1,13 +1,23 @@
 [project]
 name = "plantgraph"
-version = "0.1.0.dev0"
+version = "0.1.0"
 description = "Typed plant context graph schema shared by penguineer and homeostat"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
 authors = [{ name = "KausalFlow" }]
+keywords = ["process industry", "plant graph", "pydantic"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering",
+]
 dependencies = ["pydantic>=2.7"]
+
+[project.urls]
+Documentation = "https://kausalflow.com/penguineer/concepts/plant-graph/"
+Source = "https://github.com/kausalflow/penguineer/tree/main/packages/plantgraph"
 
 [build-system]
 requires = ["hatchling"]

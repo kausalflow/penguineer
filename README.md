@@ -17,9 +17,11 @@ uvx zensical serve   # preview on http://localhost:8000
 ## Install
 
 ```bash
-uv sync            # from a checkout; Python 3.11+
-uv run penguineer --help
+uv tool install penguineer   # or: pip install penguineer; Python 3.11+
+penguineer --help
 ```
+
+From a checkout: `uv sync`, then `uv run penguineer --help`.
 
 ## Try it on the demo plant
 

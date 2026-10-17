@@ -1,6 +1,13 @@
 # Getting started
 
-penguineer needs Python 3.11 or newer and [uv](https://docs.astral.sh/uv/).
+penguineer needs Python 3.11 or newer. It is on [PyPI](https://pypi.org/project/penguineer/):
+
+```bash
+uv tool install penguineer   # or: pip install penguineer
+penguineer --help
+```
+
+The examples on this page use the demo plant in the repository, so clone it and run penguineer from the checkout with [uv](https://docs.astral.sh/uv/):
 
 ```bash
 git clone https://github.com/kausalflow/penguineer
