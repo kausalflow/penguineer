@@ -56,7 +56,7 @@ import penguineer
 result = penguineer.run("data health", data="historian.csv", project="my-unit")
 result.findings[0].detail
 
-penguineer.schemas()   # JSON Schemas of every command's Params and Result
+penguineer.schemas()  # JSON Schemas of every command's Params and Result
 ```
 
 `penguineer.execute(...)` also returns the run record and run folder. Calls keep no global state: inputs and outputs live under the `project` folder passed in, so several processes can run side by side.
