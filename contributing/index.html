@@ -844,6 +844,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#releasing" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Releasing
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -936,6 +947,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#releasing" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Releasing
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1001,6 +1023,13 @@
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uv<span class="w"> </span>run<span class="w"> </span>--no-project<span class="w"> </span>--with<span class="w"> </span><span class="nv">playwright</span><span class="o">==</span><span class="m">1</span>.56.0<span class="w"> </span>python<span class="w"> </span>scripts/screenshot_docs.py<span class="w"> </span>site
 </span></code></pre></div>
 <p>A pull request description includes the preview link and screenshots of the pages it changes, and of any visible output such as a command's summary. The pull request template has sections for both.</p>
+<h2 id="releasing">Releasing<a class="headerlink" href="#releasing" title="Permanent link">&para;</a></h2>
+<p>penguineer and plantgraph are published to PyPI together, with one version. <code>.github/workflows/release.yml</code> builds both, installs the wheels in a clean environment, and publishes them with PyPI trusted publishing when a GitHub release is published. No token is stored in the repository.</p>
+<ol>
+<li>Set the new version in <code>pyproject.toml</code>, in <code>packages/plantgraph/pyproject.toml</code>, and in penguineer's <code>plantgraph==</code> pin (<code>tests/test_versions.py</code> checks that the three agree), then run <code>uv lock</code>. Merge that to <code>main</code>.</li>
+<li>On GitHub, create a release from <code>main</code> with the tag <code>v&lt;version&gt;</code>, for example <code>v0.1.0</code>. The workflow stops if the tag does not match the version.</li>
+</ol>
+<p>PyPI side, done once per project (<code>penguineer</code> and <code>plantgraph</code>): add a trusted publisher with owner <code>kausalflow</code>, repository <code>penguineer</code>, workflow <code>release.yml</code> and environment <code>pypi</code>. Before a project's first release, add it as a pending publisher under <em>Your account &gt; Publishing</em>.</p>
 
 
 
