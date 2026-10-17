@@ -33,3 +33,16 @@ uvx zensical build    # static site in ./site
 ```
 
 `docs/reference/cli.md` is generated from the registry, and a test fails when it is out of date.
+
+## Docs previews and screenshots
+
+Every pull request from a branch of this repository gets a preview of the documentation at `https://kausalflow.com/penguineer/pr-preview/pr-<number>/`, posted as a comment on the pull request and removed when it closes. `main` is published at <https://kausalflow.com/penguineer/>. Both come from the `gh-pages` branch, written by `.github/workflows/docs.yml`.
+
+Each deploy also has screenshots of every page under `_screenshots/` (for a preview, `pr-preview/pr-<number>/_screenshots/`), taken with Playwright by `scripts/screenshot_docs.py`. To take them locally:
+
+```bash
+uvx zensical==0.0.70 build --clean
+uv run --no-project --with playwright==1.56.0 python scripts/screenshot_docs.py site
+```
+
+A pull request description includes the preview link and screenshots of the pages it changes, and of any visible output such as a command's summary. The pull request template has sections for both.
