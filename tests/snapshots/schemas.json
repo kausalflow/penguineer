@@ -1,0 +1,2073 @@
+{
+  "commands": {
+    "bench homeostat": {
+      "params": {
+        "$defs": {
+          "Split": {
+            "enum": [
+              "train",
+              "validation",
+              "hidden"
+            ],
+            "title": "Split",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "bundles": {
+            "anyOf": [
+              {
+                "format": "directory-path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Folder of exported homeostat scenario bundles",
+            "title": "Bundles",
+            "ui": "folder"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Run at most this many scenarios",
+            "title": "Limit"
+          },
+          "scenarios": {
+            "$ref": "#/$defs/Split",
+            "default": "validation",
+            "description": "Which scenario split to run"
+          }
+        },
+        "title": "BenchHomeostatParams",
+        "type": "object"
+      },
+      "result": {
+        "$defs": {
+          "Split": {
+            "enum": [
+              "train",
+              "validation",
+              "hidden"
+            ],
+            "title": "Split",
+            "type": "string"
+          }
+        },
+        "properties": {
+          "data_fault_catch_rate": {
+            "title": "Data Fault Catch Rate",
+            "type": "number"
+          },
+          "hit_at_3": {
+            "title": "Hit At 3",
+            "type": "number"
+          },
+          "n_scenarios": {
+            "title": "N Scenarios",
+            "type": "integer"
+          },
+          "report": {
+            "format": "path",
+            "title": "Report",
+            "type": "string"
+          },
+          "split": {
+            "$ref": "#/$defs/Split"
+          },
+          "wrong_confident_rate": {
+            "title": "Wrong Confident Rate",
+            "type": "number"
+          }
+        },
+        "required": [
+          "split",
+          "n_scenarios",
+          "hit_at_3",
+          "wrong_confident_rate",
+          "data_fault_catch_rate",
+          "report"
+        ],
+        "title": "BenchHomeostatResult",
+        "type": "object"
+      }
+    },
+    "data health": {
+      "params": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "accept": [
+              ".csv",
+              ".parquet"
+            ],
+            "description": "Historian export, CSV or Parquet, wide or long",
+            "format": "file-path",
+            "title": "Data",
+            "type": "string",
+            "ui": "file"
+          },
+          "deadband": {
+            "default": 0.0,
+            "description": "Changes up to this count as frozen",
+            "minimum": 0,
+            "title": "Deadband",
+            "type": "number"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window end (exclusive)",
+            "title": "End"
+          },
+          "flatline_minutes": {
+            "default": 60.0,
+            "description": "Shortest frozen run to report",
+            "exclusiveMinimum": 0,
+            "title": "Flatline Minutes",
+            "type": "number"
+          },
+          "gap_factor": {
+            "default": 3.0,
+            "description": "Gap when an interval exceeds this \u00d7 median",
+            "exclusiveMinimum": 1,
+            "title": "Gap Factor",
+            "type": "number"
+          },
+          "graph": {
+            "accept": [
+              ".yaml",
+              ".yml"
+            ],
+            "anyOf": [
+              {
+                "format": "file-path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Plant graph; instrument ranges and loop setpoints come from it",
+            "title": "Graph",
+            "ui": "file"
+          },
+          "out": {
+            "anyOf": [
+              {
+                "format": "path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Where to write health.json (default: run folder)",
+            "title": "Out"
+          },
+          "spike_z": {
+            "default": 8.0,
+            "description": "Robust z-score on first differences",
+            "exclusiveMinimum": 0,
+            "title": "Spike Z",
+            "type": "number"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window start (inclusive)",
+            "title": "Start"
+          },
+          "tags": {
+            "description": "Only check these tags",
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Time zone of naive timestamps in the export",
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data"
+        ],
+        "title": "DataHealthParams",
+        "type": "object"
+      },
+      "result": {
+        "$defs": {
+          "HealthCheck": {
+            "enum": [
+              "gap",
+              "flatline",
+              "out_of_range",
+              "spike",
+              "timestamp"
+            ],
+            "title": "HealthCheck",
+            "type": "string"
+          },
+          "HealthFinding": {
+            "properties": {
+              "check": {
+                "$ref": "#/$defs/HealthCheck"
+              },
+              "detail": {
+                "title": "Detail",
+                "type": "string"
+              },
+              "end": {
+                "format": "date-time",
+                "title": "End",
+                "type": "string"
+              },
+              "id": {
+                "description": "Stable within one report, e.g. H0003",
+                "title": "Id",
+                "type": "string"
+              },
+              "metrics": {
+                "additionalProperties": {
+                  "type": "number"
+                },
+                "title": "Metrics",
+                "type": "object"
+              },
+              "n_samples": {
+                "description": "Samples inside the interval",
+                "title": "N Samples",
+                "type": "integer"
+              },
+              "severity": {
+                "$ref": "#/$defs/Severity"
+              },
+              "start": {
+                "format": "date-time",
+                "title": "Start",
+                "type": "string"
+              },
+              "tag": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "description": "Historian tag, or null for file-level findings",
+                "title": "Tag"
+              }
+            },
+            "required": [
+              "id",
+              "tag",
+              "check",
+              "severity",
+              "start",
+              "end",
+              "n_samples",
+              "detail"
+            ],
+            "title": "HealthFinding",
+            "type": "object"
+          },
+          "Severity": {
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "TagHealth": {
+            "properties": {
+              "coverage": {
+                "description": "Share of expected samples present, 0 to 1",
+                "title": "Coverage",
+                "type": "number"
+              },
+              "first": {
+                "format": "date-time",
+                "title": "First",
+                "type": "string"
+              },
+              "last": {
+                "format": "date-time",
+                "title": "Last",
+                "type": "string"
+              },
+              "median_period_s": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Median Period S"
+              },
+              "n_findings": {
+                "title": "N Findings",
+                "type": "integer"
+              },
+              "n_samples": {
+                "title": "N Samples",
+                "type": "integer"
+              },
+              "tag": {
+                "title": "Tag",
+                "type": "string"
+              },
+              "worst": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Severity"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "tag",
+              "n_samples",
+              "first",
+              "last",
+              "median_period_s",
+              "coverage",
+              "n_findings",
+              "worst"
+            ],
+            "title": "TagHealth",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "checks": {
+            "items": {
+              "$ref": "#/$defs/HealthCheck"
+            },
+            "title": "Checks",
+            "type": "array"
+          },
+          "checks_not_run": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Checks Not Run",
+            "type": "array"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "propertyNames": {
+              "$ref": "#/$defs/Severity"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "data": {
+            "title": "Data",
+            "type": "string"
+          },
+          "findings": {
+            "items": {
+              "$ref": "#/$defs/HealthFinding"
+            },
+            "title": "Findings",
+            "type": "array"
+          },
+          "health_json": {
+            "description": "Path of the written health.json",
+            "title": "Health Json",
+            "type": "string"
+          },
+          "layout": {
+            "title": "Layout",
+            "type": "string"
+          },
+          "n_samples": {
+            "title": "N Samples",
+            "type": "integer"
+          },
+          "n_tags": {
+            "title": "N Tags",
+            "type": "integer"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "tags": {
+            "items": {
+              "$ref": "#/$defs/TagHealth"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "window_end": {
+            "format": "date-time",
+            "title": "Window End",
+            "type": "string"
+          },
+          "window_start": {
+            "format": "date-time",
+            "title": "Window Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "window_start",
+          "window_end",
+          "n_tags",
+          "n_samples",
+          "layout",
+          "checks",
+          "checks_not_run",
+          "counts",
+          "findings",
+          "tags",
+          "notes",
+          "health_json"
+        ],
+        "title": "DataHealthResult",
+        "type": "object"
+      }
+    },
+    "graph check": {
+      "params": {
+        "additionalProperties": false,
+        "properties": {
+          "graph": {
+            "accept": [
+              ".yaml",
+              ".yml"
+            ],
+            "description": "Plant graph in the plantgraph schema",
+            "format": "file-path",
+            "title": "Graph",
+            "type": "string",
+            "ui": "file"
+          }
+        },
+        "required": [
+          "graph"
+        ],
+        "title": "GraphCheckParams",
+        "type": "object"
+      },
+      "result": {
+        "$defs": {
+          "ConfirmItem": {
+            "properties": {
+              "confidence": {
+                "title": "Confidence",
+                "type": "number"
+              },
+              "dependent_qualities": {
+                "title": "Dependent Qualities",
+                "type": "integer"
+              },
+              "edge_id": {
+                "title": "Edge Id",
+                "type": "string"
+              },
+              "from_id": {
+                "title": "From Id",
+                "type": "string"
+              },
+              "to_id": {
+                "title": "To Id",
+                "type": "string"
+              },
+              "type": {
+                "$ref": "#/$defs/EdgeType"
+              }
+            },
+            "required": [
+              "edge_id",
+              "type",
+              "from_id",
+              "to_id",
+              "confidence",
+              "dependent_qualities"
+            ],
+            "title": "ConfirmItem",
+            "type": "object"
+          },
+          "EdgeType": {
+            "enum": [
+              "flows_to",
+              "measures",
+              "controls",
+              "manipulates",
+              "samples",
+              "reported_as",
+              "affects"
+            ],
+            "title": "EdgeType",
+            "type": "string"
+          },
+          "GraphIssue": {
+            "properties": {
+              "code": {
+                "title": "Code",
+                "type": "string"
+              },
+              "ids": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Ids",
+                "type": "array"
+              },
+              "level": {
+                "$ref": "#/$defs/IssueLevel"
+              },
+              "message": {
+                "title": "Message",
+                "type": "string"
+              }
+            },
+            "required": [
+              "level",
+              "code",
+              "message",
+              "ids"
+            ],
+            "title": "GraphIssue",
+            "type": "object"
+          },
+          "IssueLevel": {
+            "enum": [
+              "error",
+              "warning"
+            ],
+            "title": "IssueLevel",
+            "type": "string"
+          }
+        },
+        "properties": {
+          "confirm_queue": {
+            "items": {
+              "$ref": "#/$defs/ConfirmItem"
+            },
+            "title": "Confirm Queue",
+            "type": "array"
+          },
+          "errors": {
+            "title": "Errors",
+            "type": "integer"
+          },
+          "graph": {
+            "title": "Graph",
+            "type": "string"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/$defs/GraphIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "n_edges": {
+            "title": "N Edges",
+            "type": "integer"
+          },
+          "n_nodes": {
+            "title": "N Nodes",
+            "type": "integer"
+          },
+          "warnings": {
+            "title": "Warnings",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "graph",
+          "n_nodes",
+          "n_edges",
+          "errors",
+          "warnings",
+          "issues",
+          "confirm_queue"
+        ],
+        "title": "GraphCheckResult",
+        "type": "object"
+      }
+    },
+    "graph draft": {
+      "params": {
+        "$defs": {
+          "LLMMode": {
+            "enum": [
+              "none",
+              "local",
+              "api"
+            ],
+            "title": "LLMMode",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "llm": {
+            "$ref": "#/$defs/LLMMode",
+            "default": "none",
+            "description": "LLM for relations rules cannot infer"
+          },
+          "out": {
+            "default": "graph.yaml",
+            "description": "Where to write the drafted graph",
+            "format": "path",
+            "title": "Out",
+            "type": "string"
+          },
+          "pid": {
+            "accept": [
+              ".xml"
+            ],
+            "anyOf": [
+              {
+                "format": "file-path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Optional DEXPI P&ID",
+            "title": "Pid",
+            "ui": "file"
+          },
+          "tags": {
+            "accept": [
+              ".csv"
+            ],
+            "description": "Tag list (tag, description, unit) as CSV",
+            "format": "file-path",
+            "title": "Tags",
+            "type": "string",
+            "ui": "file"
+          }
+        },
+        "required": [
+          "tags"
+        ],
+        "title": "GraphDraftParams",
+        "type": "object"
+      },
+      "result": {
+        "properties": {
+          "graph": {
+            "title": "Graph",
+            "type": "string"
+          },
+          "n_edges": {
+            "title": "N Edges",
+            "type": "integer"
+          },
+          "n_inferred": {
+            "title": "N Inferred",
+            "type": "integer"
+          },
+          "n_nodes": {
+            "title": "N Nodes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "graph",
+          "n_nodes",
+          "n_edges",
+          "n_inferred"
+        ],
+        "title": "GraphDraftResult",
+        "type": "object"
+      }
+    },
+    "init": {
+      "params": {
+        "additionalProperties": false,
+        "properties": {
+          "force": {
+            "default": false,
+            "description": "Overwrite an existing penguineer.yaml",
+            "title": "Force",
+            "type": "boolean"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Time zone of naive timestamps in exports",
+            "title": "Timezone",
+            "type": "string"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Unit name (default: the folder name)",
+            "title": "Unit"
+          }
+        },
+        "title": "InitParams",
+        "type": "object"
+      },
+      "result": {
+        "properties": {
+          "created": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Created",
+            "type": "array"
+          },
+          "project": {
+            "title": "Project",
+            "type": "string"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "project",
+          "unit",
+          "created"
+        ],
+        "title": "InitResult",
+        "type": "object"
+      }
+    },
+    "investigate": {
+      "params": {
+        "$defs": {
+          "LLMMode": {
+            "enum": [
+              "none",
+              "local",
+              "api"
+            ],
+            "title": "LLMMode",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "accept": [
+              ".csv",
+              ".parquet"
+            ],
+            "description": "Historian export",
+            "format": "file-path",
+            "title": "Data",
+            "type": "string",
+            "ui": "file"
+          },
+          "graph": {
+            "accept": [
+              ".yaml",
+              ".yml"
+            ],
+            "anyOf": [
+              {
+                "format": "file-path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Plant graph (default: graph.yaml in the project)",
+            "title": "Graph",
+            "ui": "file"
+          },
+          "lims": {
+            "accept": [
+              ".csv"
+            ],
+            "description": "LIMS export",
+            "format": "file-path",
+            "title": "Lims",
+            "type": "string",
+            "ui": "file"
+          },
+          "llm": {
+            "$ref": "#/$defs/LLMMode",
+            "default": "none",
+            "description": "LLM for the prose summary only"
+          },
+          "lot": {
+            "description": "Lot ID as it appears in the LIMS export",
+            "title": "Lot",
+            "type": "string"
+          },
+          "top": {
+            "default": 5,
+            "description": "Hypotheses to report",
+            "maximum": 20,
+            "minimum": 1,
+            "title": "Top",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "lot",
+          "lims",
+          "data"
+        ],
+        "title": "InvestigateParams",
+        "type": "object"
+      },
+      "result": {
+        "$defs": {
+          "Hypothesis": {
+            "properties": {
+              "cause_node": {
+                "title": "Cause Node",
+                "type": "string"
+              },
+              "confidence": {
+                "title": "Confidence",
+                "type": "string"
+              },
+              "direction": {
+                "title": "Direction",
+                "type": "string"
+              },
+              "evidence": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Evidence",
+                "type": "array"
+              },
+              "graph_path": {
+                "items": {
+                  "type": "string"
+                },
+                "title": "Graph Path",
+                "type": "array"
+              },
+              "rank": {
+                "title": "Rank",
+                "type": "integer"
+              }
+            },
+            "required": [
+              "rank",
+              "cause_node",
+              "direction",
+              "confidence",
+              "graph_path",
+              "evidence"
+            ],
+            "title": "Hypothesis",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "hypotheses": {
+            "items": {
+              "$ref": "#/$defs/Hypothesis"
+            },
+            "title": "Hypotheses",
+            "type": "array"
+          },
+          "lot": {
+            "title": "Lot",
+            "type": "string"
+          },
+          "report_dir": {
+            "title": "Report Dir",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lot",
+          "hypotheses",
+          "report_dir"
+        ],
+        "title": "InvestigateResult",
+        "type": "object"
+      }
+    }
+  },
+  "plantgraph": {
+    "$defs": {
+      "Actuator": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "valve, drive, ...",
+            "title": "Kind"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "type": {
+            "const": "actuator",
+            "default": "actuator",
+            "title": "Type",
+            "type": "string"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "Actuator",
+        "type": "object"
+      },
+      "Edge": {
+        "additionalProperties": false,
+        "properties": {
+          "acting": {
+            "anyOf": [
+              {
+                "enum": [
+                  "direct",
+                  "reverse"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "controls",
+            "title": "Acting"
+          },
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "dead_time_high_min": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Dead Time High Min"
+          },
+          "dead_time_low_min": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Dead Time Low Min"
+          },
+          "dead_time_min": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "flows_to: dead time in minutes",
+            "title": "Dead Time Min"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "from": {
+            "minLength": 1,
+            "title": "From",
+            "type": "string"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "measured_variable": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "measures: temperature, flow, ...",
+            "title": "Measured Variable"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "recycle": {
+            "default": false,
+            "description": "flows_to: edge closes a recycle loop",
+            "title": "Recycle",
+            "type": "boolean"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "to": {
+            "minLength": 1,
+            "title": "To",
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/$defs/EdgeType"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "from",
+          "to"
+        ],
+        "title": "Edge",
+        "type": "object"
+      },
+      "EdgeType": {
+        "enum": [
+          "flows_to",
+          "measures",
+          "controls",
+          "manipulates",
+          "samples",
+          "reported_as",
+          "affects"
+        ],
+        "title": "EdgeType",
+        "type": "string"
+      },
+      "Equipment": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "holdup_m3": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Holdup volume in m\u00b3, if known",
+            "title": "Holdup M3"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "vessel, exchanger, column, pump, ...",
+            "title": "Kind"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "type": {
+            "const": "equipment",
+            "default": "equipment",
+            "title": "Type",
+            "type": "string"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "Equipment",
+        "type": "object"
+      },
+      "Loop": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ID of the controller mode Tag node",
+            "title": "Mode"
+          },
+          "op": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ID of the controller output Tag node",
+            "title": "Op"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "pv": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ID of the process value Tag node",
+            "title": "Pv"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "sp": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ID of the setpoint Tag node",
+            "title": "Sp"
+          },
+          "type": {
+            "const": "loop",
+            "default": "loop",
+            "title": "Type",
+            "type": "string"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "Loop",
+        "type": "object"
+      },
+      "Provenance": {
+        "enum": [
+          "declared",
+          "inferred",
+          "confirmed"
+        ],
+        "title": "Provenance",
+        "type": "string"
+      },
+      "Quality": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "property": {
+            "description": "LIMS property name",
+            "title": "Property",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "spec_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Spec High"
+          },
+          "spec_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Spec Low"
+          },
+          "type": {
+            "const": "quality",
+            "default": "quality",
+            "title": "Type",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit Of Measure"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id",
+          "property"
+        ],
+        "title": "Quality",
+        "type": "object"
+      },
+      "SamplePoint": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "type": {
+            "const": "sample_point",
+            "default": "sample_point",
+            "title": "Type",
+            "type": "string"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "SamplePoint",
+        "type": "object"
+      },
+      "Source": {
+        "enum": [
+          "user",
+          "llm",
+          "data",
+          "dexpi",
+          "homeostat"
+        ],
+        "title": "Source",
+        "type": "string"
+      },
+      "Stream": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "enum": [
+                  "liquid",
+                  "gas",
+                  "solid",
+                  "mixed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Phase"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "type": {
+            "const": "stream",
+            "default": "stream",
+            "title": "Type",
+            "type": "string"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "Stream",
+        "type": "object"
+      },
+      "Tag": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "range_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Instrument range, high end",
+            "title": "Range High"
+          },
+          "range_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Instrument range, low end",
+            "title": "Range Low"
+          },
+          "sample_period_s": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Sample Period S"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "tag": {
+            "description": "Historian tag name exactly as it appears in the export",
+            "title": "Tag",
+            "type": "string"
+          },
+          "type": {
+            "const": "tag",
+            "default": "tag",
+            "title": "Type",
+            "type": "string"
+          },
+          "unit_of_measure": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Unit Of Measure"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id",
+          "tag"
+        ],
+        "title": "Tag",
+        "type": "object"
+      },
+      "Unit": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "default": 1.0,
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence",
+            "type": "number"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Description"
+          },
+          "id": {
+            "description": "Stable ID, unique across nodes and edges",
+            "minLength": 1,
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/$defs/Provenance",
+            "default": "declared"
+          },
+          "source": {
+            "$ref": "#/$defs/Source",
+            "default": "user"
+          },
+          "type": {
+            "const": "unit",
+            "default": "unit",
+            "title": "Type",
+            "type": "string"
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid From"
+          },
+          "valid_to": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Valid To"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Unit",
+        "type": "object"
+      }
+    },
+    "additionalProperties": false,
+    "description": "A whole plant graph. Structural rules (dangling IDs, cycles) are checked by tools.",
+    "properties": {
+      "edges": {
+        "items": {
+          "$ref": "#/$defs/Edge"
+        },
+        "title": "Edges",
+        "type": "array"
+      },
+      "nodes": {
+        "items": {
+          "discriminator": {
+            "mapping": {
+              "actuator": "#/$defs/Actuator",
+              "equipment": "#/$defs/Equipment",
+              "loop": "#/$defs/Loop",
+              "quality": "#/$defs/Quality",
+              "sample_point": "#/$defs/SamplePoint",
+              "stream": "#/$defs/Stream",
+              "tag": "#/$defs/Tag",
+              "unit": "#/$defs/Unit"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/Unit"
+            },
+            {
+              "$ref": "#/$defs/Equipment"
+            },
+            {
+              "$ref": "#/$defs/Stream"
+            },
+            {
+              "$ref": "#/$defs/Tag"
+            },
+            {
+              "$ref": "#/$defs/Loop"
+            },
+            {
+              "$ref": "#/$defs/Actuator"
+            },
+            {
+              "$ref": "#/$defs/SamplePoint"
+            },
+            {
+              "$ref": "#/$defs/Quality"
+            }
+          ]
+        },
+        "title": "Nodes",
+        "type": "array"
+      },
+      "schema_version": {
+        "default": 1,
+        "title": "Schema Version",
+        "type": "integer"
+      },
+      "unit": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Name of the unit this graph describes",
+        "title": "Unit"
+      }
+    },
+    "title": "PlantGraph",
+    "type": "object"
+  }
+}

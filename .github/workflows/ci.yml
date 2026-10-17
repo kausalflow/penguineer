@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest -q
+      - name: Smoke run on the demo plant
+        run: |
+          cd "$RUNNER_TEMP"
+          uv run --project "$GITHUB_WORKSPACE" penguineer data health \
+            --data "$GITHUB_WORKSPACE/examples/demo/historian.csv" \
+            --graph "$GITHUB_WORKSPACE/examples/demo/graph.yaml"
+          uv run --project "$GITHUB_WORKSPACE" penguineer graph check \
+            --graph "$GITHUB_WORKSPACE/examples/demo/graph.yaml"
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv build --all-packages
+      - name: Install the wheels into a clean environment
+        run: |
+          uv venv /tmp/clean
+          uv pip install --python /tmp/clean/bin/python dist/*.whl
+          /tmp/clean/bin/penguineer --version
