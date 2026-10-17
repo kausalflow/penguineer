@@ -1,46 +1,84 @@
 name: Docs
 
+# Builds the documentation with Zensical and publishes it to the gh-pages branch:
+#   main        -> https://kausalflow.com/penguineer/
+#   pull request -> https://kausalflow.com/penguineer/pr-preview/pr-<number>/ (removed on close)
+# Each deploy also carries screenshots of every page under _screenshots/.
+# Needs Settings > Pages > Source set to "Deploy from a branch", branch gh-pages, folder /.
+
 on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, reopened, synchronize, closed]
   workflow_dispatch:
-
-permissions:
-  contents: read
 
 concurrency:
   group: docs-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: false
 
 jobs:
   build:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - run: uvx zensical==0.0.70 build --clean --strict
+      - name: Screenshot every page
+        run: |
+          uvx --from playwright==1.56.0 playwright install --with-deps chromium
+          uv run --no-project --with playwright==1.56.0 python scripts/screenshot_docs.py site
+      # Branch-based Pages runs Jekyll unless told not to, and Jekyll drops _screenshots/.
+      - run: touch site/.nojekyll
       - uses: actions/upload-artifact@v4
         with:
           name: docs-site
           path: site
-      - if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
+          include-hidden-files: true
 
-  # Publishes to GitHub Pages (https://kausalflow.com/penguineer/). Needs the repository's
-  # Settings > Pages > Source set to "GitHub Actions".
-  deploy:
+  deploy-main:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      contents: write
     steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: docs-site
+          path: site
+      - uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: site
+          clean-exclude: pr-preview/
+          force: false
+
+  preview:
+    needs: build
+    if: >-
+      always() && github.event_name == 'pull_request'
+      && github.event.pull_request.head.repo.full_name == github.repository
+      && (github.event.action == 'closed' || needs.build.result == 'success')
+    # Runs after build, or on its own when the pull request closes (build is skipped then).
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - if: github.event.action != 'closed'
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-site
+          path: site
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: site
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          pages-base-url: kausalflow.com/penguineer
