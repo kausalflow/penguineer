@@ -96,6 +96,8 @@ def data_health(p: DataHealthParams, ctx: RunContext) -> DataHealthResult:
         graph = load_graph(p.graph)
         by_id = {n.id: n for n in graph.nodes}
         for node in graph.nodes:
+            if isinstance(node, Tag) and node.role in ("setpoint", "mode", "setting"):
+                allow_flat.add(node.tag)
             if isinstance(node, Tag) and (
                 node.range_low is not None or node.range_high is not None
             ):

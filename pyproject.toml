@@ -41,6 +41,7 @@ plantgraph = { workspace = true }
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "packages/plantgraph/tests"]
+markers = ["homeostat: uses real data downloaded from Homeostat Live"]
 
 [tool.ruff]
 line-length = 100

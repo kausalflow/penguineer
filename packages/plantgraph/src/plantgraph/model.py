@@ -74,6 +74,9 @@ class Tag(_Element):
     sample_period_s: float | None = Field(None, gt=0)
     range_low: float | None = Field(None, description="Instrument range, low end")
     range_high: float | None = Field(None, description="Instrument range, high end")
+    role: Literal["measurement", "setpoint", "output", "mode", "setting"] | None = Field(
+        None, description="What the signal is; setpoints, modes and settings may sit still"
+    )
 
 
 class Loop(_Element):

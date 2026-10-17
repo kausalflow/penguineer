@@ -35,6 +35,18 @@ The demo data has exactly those four faults injected (see `scripts/make_demo_dat
 
 Add `--json` to get the result model on stdout. Every run writes `runs/<run_id>/run.json` under `--project` (default: the current folder) with the params, the equivalent command line, versions and SHA-256 hashes of every input.
 
+## Try it on a live simulated plant
+
+[Homeostat Live](https://homeostat.kausalflow.com/live/) publishes a simulated plant's sensor data, lab results and data dictionary. This downloads a released week and derives a plant graph (tags, instrument ranges, control loops, lab qualities) from the dictionary:
+
+```bash
+uv run python scripts/fetch_homeostat_live.py --plant isidis-01 \
+  --since 2026-10-02T17:00:00+00:00 --until 2026-10-09T17:00:00+00:00 --out data/isidis-01
+uv run penguineer data health --data data/isidis-01/live.csv --graph data/isidis-01/graph.yaml
+```
+
+The tests in `tests/test_homeostat_live.py` run on that week. They are skipped without network access, and CI requires them.
+
 ## Commands
 
 | Command | What it does | State |

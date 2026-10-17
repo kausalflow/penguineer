@@ -15,12 +15,21 @@ jobs:
       fail-fast: false
       matrix:
         python: ["3.11", "3.13"]
+    env:
+      # Tests on real Homeostat Live data must run in CI, not be skipped.
+      PENGUINEER_REQUIRE_HOMEOSTAT: "1"
+      PENGUINEER_HOMEOSTAT_CACHE: ${{ github.workspace }}/.homeostat-cache
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python }}
       - run: uv sync --locked
+      - uses: actions/cache@v4
+        with:
+          path: .homeostat-cache
+          # The window is fixed and already released, so its data never changes.
+          key: homeostat-isidis-01-20261002T1700-20261009T1700
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest -q
@@ -32,6 +41,14 @@ jobs:
             --graph "$GITHUB_WORKSPACE/examples/demo/graph.yaml"
           uv run --project "$GITHUB_WORKSPACE" penguineer graph check \
             --graph "$GITHUB_WORKSPACE/examples/demo/graph.yaml"
+      - name: Data health on a released Homeostat Live week
+        run: |
+          week="$PENGUINEER_HOMEOSTAT_CACHE/isidis-01_20261002T1700_20261009T1700"
+          uv run python scripts/fetch_homeostat_live.py --plant isidis-01 \
+            --since 2026-10-02T17:00:00+00:00 --until 2026-10-09T17:00:00+00:00 --out "$week"
+          cd "$RUNNER_TEMP"
+          uv run --project "$GITHUB_WORKSPACE" penguineer data health \
+            --data "$week/live.csv" --graph "$week/graph.yaml"
 
   build:
     runs-on: ubuntu-latest

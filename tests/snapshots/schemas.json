@@ -1838,6 +1838,26 @@
             "description": "Instrument range, low end",
             "title": "Range Low"
           },
+          "role": {
+            "anyOf": [
+              {
+                "enum": [
+                  "measurement",
+                  "setpoint",
+                  "output",
+                  "mode",
+                  "setting"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "What the signal is; setpoints, modes and settings may sit still",
+            "title": "Role"
+          },
           "sample_period_s": {
             "anyOf": [
               {
