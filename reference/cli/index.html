@@ -310,6 +310,8 @@
       
         
       
+        
+      
     
     
     
@@ -450,6 +452,33 @@
     
   
   Dead times
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/investigate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Investigating an off-spec lot
 
     
   </span>
@@ -1392,16 +1421,58 @@
 <td>Plant graph (default: graph.yaml in the project)</td>
 </tr>
 <tr>
+<td><code>--lots</code></td>
+<td>existing file</td>
+<td></td>
+<td>Lot windows: a CSV with lot, start, end (default: from one lab sample of the property to the next)</td>
+</tr>
+<tr>
+<td><code>--quality</code></td>
+<td>str</td>
+<td></td>
+<td>LIMS property to investigate (default: the lot's worst off-spec one)</td>
+</tr>
+<tr>
 <td><code>--top</code></td>
 <td>int</td>
 <td><code>5</code></td>
 <td>Hypotheses to report</td>
 </tr>
 <tr>
+<td><code>--hops</code></td>
+<td>int</td>
+<td><code>6</code></td>
+<td>flows_to hops to search upstream</td>
+</tr>
+<tr>
+<td><code>--reference-lots</code></td>
+<td>int</td>
+<td><code>3</code></td>
+<td>In-spec lots to compare with</td>
+</tr>
+<tr>
+<td><code>--step-seconds</code></td>
+<td>float</td>
+<td></td>
+<td>Grid step (default: the slowest candidate tag's period)</td>
+</tr>
+<tr>
+<td><code>--timezone</code></td>
+<td>str</td>
+<td><code>UTC</code></td>
+<td>Time zone of naive timestamps in the exports</td>
+</tr>
+<tr>
 <td><code>--llm</code></td>
 <td><code>none</code> | <code>local</code> | <code>api</code></td>
 <td><code>none</code></td>
 <td>LLM for the prose summary only</td>
+</tr>
+<tr>
+<td><code>--out</code></td>
+<td>path</td>
+<td></td>
+<td>Report folder (default: reports/<run_id> in the project)</td>
 </tr>
 </tbody>
 </table>

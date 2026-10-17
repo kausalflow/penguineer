@@ -344,6 +344,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#investigate-an-off-spec-lot" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Investigate an off-spec lot
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#start-a-project-for-your-own-unit" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -370,6 +381,8 @@
   
     
     
+      
+        
       
         
       
@@ -519,6 +532,33 @@
     
   
   Dead times
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/investigate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Investigating an off-spec lot
 
     
   </span>
@@ -884,6 +924,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#investigate-an-off-spec-lot" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Investigate an off-spec lot
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#start-a-project-for-your-own-unit" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -954,8 +1005,15 @@
 </span></code></pre></div>
 <p>The setpoint <code>FIC-102.SP</code> is constant all day and is not reported, because the graph says it is a setpoint.</p>
 <p>Each run writes <code>runs/&lt;run_id&gt;/run.json</code> and <code>health.json</code> under the project folder (<code>--project</code>, default the current folder). Add <code>--json</code> to print the result model instead of the summary.</p>
+<h2 id="investigate-an-off-spec-lot">Investigate an off-spec lot<a class="headerlink" href="#investigate-an-off-spec-lot" title="Permanent link">&para;</a></h2>
+<p><code>examples/offspec/</code> holds three days of a small plant in which lot L0803-A came out low on purity. Its cause is known: the feed preheater fouled.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>uv<span class="w"> </span>run<span class="w"> </span>penguineer<span class="w"> </span>investigate<span class="w"> </span>--lot<span class="w"> </span>L0803-A<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--lims<span class="w"> </span>examples/offspec/lims.csv<span class="w"> </span>--data<span class="w"> </span>examples/offspec/historian.csv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--graph<span class="w"> </span>examples/offspec/graph.yaml<span class="w"> </span>--lots<span class="w"> </span>examples/offspec/lots.csv
+</span></code></pre></div>
+<p>The preheater outlet temperature TI-101 comes first, with high confidence. The report lands in <code>reports/&lt;run_id&gt;/report.html</code>; <a href="../examples/lot-report/index.html" target="_blank">here is that report</a>, and <a href="../concepts/investigate/">Investigating an off-spec lot</a> explains each step.</p>
 <h2 id="start-a-project-for-your-own-unit">Start a project for your own unit<a class="headerlink" href="#start-a-project-for-your-own-unit" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>uv<span class="w"> </span>run<span class="w"> </span>penguineer<span class="w"> </span>init<span class="w"> </span>--project<span class="w"> </span>my-unit
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>uv<span class="w"> </span>run<span class="w"> </span>penguineer<span class="w"> </span>init<span class="w"> </span>--project<span class="w"> </span>my-unit
 </span></code></pre></div>
 <p>This creates <code>penguineer.yaml</code>, an empty <code>graph.yaml</code>, and the folders <code>data/</code>, <code>runs/</code>, <code>reports/</code> and <code>.penguineer/cache/</code>. Put your historian exports in <code>data/</code> and describe the plant in <code>graph.yaml</code> (see <a href="../concepts/plant-graph/">The plant graph</a>).</p>
 <p>Next, try a real simulated plant: <a href="../guides/homeostat-live/">Homeostat Live</a>.</p>
