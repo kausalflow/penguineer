@@ -1029,6 +1029,7 @@
 <li>Set the new version in <code>pyproject.toml</code>, in <code>packages/plantgraph/pyproject.toml</code>, and in penguineer's <code>plantgraph==</code> pin (<code>tests/test_versions.py</code> checks that the three agree), then run <code>uv lock</code>. Merge that to <code>main</code>.</li>
 <li>On GitHub, create a release from <code>main</code> with the tag <code>v&lt;version&gt;</code>, for example <code>v0.1.0</code>. The workflow stops if the tag does not match the version.</li>
 </ol>
+<p>If publishing fails part way (for example PyPI errors after uploading one of the two packages), run the Release workflow by hand from the Actions tab with the release tag as input. Files already on PyPI are skipped.</p>
 <p>PyPI side, done once per project (<code>penguineer</code> and <code>plantgraph</code>): add a trusted publisher with owner <code>kausalflow</code>, repository <code>penguineer</code>, workflow <code>release.yml</code> and environment <code>pypi</code>. Before a project's first release, add it as a pending publisher under <em>Your account &gt; Publishing</em>.</p>
 
 
