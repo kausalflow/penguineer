@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 
 import numpy as np
 import polars as pl
-from plantgraph import EdgeType, Loop, PlantGraph, Quality, Tag
+from plantgraph import EdgeType, Equipment, Loop, PlantGraph, Quality, Tag
 
 from penguineer.core.errors import NotEnoughData, UsageError, ValidationFailed
 from penguineer.engines.align import (
@@ -50,6 +50,12 @@ _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 # Provisional: fitted on the homeostat training split in the Bench milestone.
 WEIGHTS = {TestName.effect_size: 0.4, TestName.onset: 0.3, TestName.lag_correlation: 0.3}
 FAULT_SCORE = {Severity.critical: 0.6, Severity.warning: 0.45, Severity.info: 0.15}
+# A loop held its PV while its output moved and nothing measured upstream moved: the PV reading
+# itself may be off (the loop then holds the true value away from its setpoint), or something
+# unmeasured disturbed the loop. Factors on the score of the output's move.
+PV_BIAS, LOOP_DISTURBANCE = 0.8, 0.4
+# Nothing measured moved clearly: something unmeasured changed just upstream of the sample.
+HIDDEN_SCORE, HIDDEN_BELOW = 0.35, 0.5
 # Provisional: chosen on the homeostat validation split in the Bench milestone.
 HIGH, MEDIUM, MARGIN = 0.65, 0.4, 0.15
 CALIBRATION = (
@@ -74,6 +80,7 @@ class Settings:
     max_window_hours: float = 24.0
     default_window_hours: float = 8.0
     top: int = 5
+    lab_history: int = 12  # earlier lab results of the same regime for the sample-level test
 
 
 @dataclass
@@ -316,6 +323,16 @@ def investigate(
         reference.append(ReferenceWindow(lot=r["lot"], start=start, end=end, value=r["value"]))
     if skipped_regime:
         notes.append(f"{skipped_regime} earlier in-spec lots skipped: different regime")
+    lab_hist: list[tuple[int, float]] = []
+    for r in prop_rows.filter(pl.col("sampled_at") < ev_start).reverse().iter_rows(named=True):
+        if len(lab_hist) >= s.lab_history:
+            break
+        if r["lot"] in (None, lot) or r["value"] is None:
+            continue
+        start, end = _window(prop_rows, r["lot"], r["sampled_at"], lots, s)
+        label, mix = _regime(raw, mode_tags, _us(start), _us(end))
+        if not mix and label == event_regime:
+            lab_hist.append((_us(r["sampled_at"]), float(r["value"])))
     if not reference:
         regime_text = ", ".join(f"{k}={_fmt(v)}" for k, v in event_regime.items()) or "one regime"
         raise NotEnoughData(
@@ -331,6 +348,8 @@ def investigate(
     step_us = int(s.step_s * _US) if s.step_s else max(max(periods), _US)
     length = _us(ev_end) - _us(ev_start)
     grid_start = min(_us(reference[-1].start), _us(ev_start) - length)
+    if proxy_tag is None and lab_hist:
+        grid_start = min(grid_start, lab_hist[-1][0] - 3600 * _US)
     grid = Grid.spanning(grid_start, _us(ev_end), step_us)
     event_mask = grid.mask(_us(ev_start), _us(ev_end))
     ref_mask = np.zeros(grid.n, dtype=bool)
@@ -394,9 +413,44 @@ def investigate(
     evidence: list[EvidenceItem] = []
     series: dict[str, np.ndarray] = {}
 
+    lab_t = np.array([t for t, _ in lab_hist], dtype=np.int64)
+    lab_v = np.array([v for _, v in lab_hist])
+
+    def late_effect(x: np.ndarray) -> Effect | None:
+        """Without a quality onset: the tag's own step, when it lands inside the lot."""
+        cp = change_point(x[search_mask])
+        if cp is None or abs(cp.z) < 4:
+            return None
+        t = int(search_times[cp.index])
+        if not _us(ev_start) <= t < _us(ev_end):
+            return None
+        after = grid.mask(t, _us(ev_end))
+        return effect_size(x[after], x[ref_mask]) if after.sum() >= 3 else None
+
+    def lab_correlation(x: np.ndarray) -> tuple[float, int] | None:
+        """Correlation of the tag, as the sampled material met it, with earlier lab results."""
+        if lab_t.size < 6:
+            return None
+        width = max(step_us, 10 * 60 * _US)
+        vals = []
+        for t in lab_t:
+            i0, i1 = np.searchsorted(grid.times, [t - width, t], side="right")
+            seg = x[i0:i1]
+            seg = seg[np.isfinite(seg)]
+            vals.append(seg.mean() if seg.size else np.nan)
+        a = np.array(vals)
+        ok = np.isfinite(a)
+        if ok.sum() < 6 or a[ok].std() == 0 or lab_v[ok].std() == 0:
+            return None
+        return float(np.corrcoef(a[ok], lab_v[ok])[0, 1]), int(ok.sum())
+
     def test_series(x: np.ndarray, path: NodePath) -> tuple[list[TestResult], Effect | None]:
         tests: list[TestResult] = []
         eff = effect_size(x[dev_mask], x[ref_mask])
+        if onset_us is None:
+            late = late_effect(x)
+            if late is not None and (eff is None or abs(late.z) > abs(eff.z)):
+                eff = late
         tests.append(
             TestResult(
                 name=TestName.effect_size,
@@ -427,10 +481,13 @@ def investigate(
                         f"(tolerance {tol:.0f} min)",
                     )
                 )
-        if proxy is None or eff is None:
+        if eff is None or (proxy is None and lab_t.size < 6):
             tests.append(TestResult(name=TestName.lag_correlation, strength=None, detail="not run"))
         else:
-            rc = lag_correlation(x[ref_mask], proxy[ref_mask])
+            if proxy is not None:
+                rc, over = lag_correlation(x[ref_mask], proxy[ref_mask]), "reference points"
+            else:
+                rc, over = lab_correlation(x), "earlier lab results"
             if rc is None:
                 tests.append(
                     TestResult(
@@ -447,7 +504,7 @@ def investigate(
                         name=TestName.lag_correlation,
                         strength=round(abs(r), 3) if consistent else 0.0,
                         value=round(r, 3),
-                        detail=f"r = {r:+.2f} over {n} reference points"
+                        detail=f"r = {r:+.2f} over {n} {over}"
                         + ("" if consistent else ", sign does not fit the deviation"),
                     )
                 )
@@ -610,11 +667,41 @@ def investigate(
                 if sc.hypothesis.kind == "process"
                 and sc.hypothesis.cause_tag != c.tag.tag
                 and c.path.node in sc.hypothesis.graph_path
+                and sc.effect is not None
+                and sc.effect.strength > 0
             ]
             for sc in upstream:
                 sc.hypothesis.evidence.append(item.title)
-            if not upstream:
+            if not upstream and op_x is not None:
                 w0, w1 = window_at(c.path)
+                op_tests, _ = test_series(op_x, c.path)
+                op_score = _score(op_tests)
+                series[op_tag.tag] = op_x
+                scored.append(
+                    Scored(
+                        Hypothesis(
+                            rank=0,
+                            kind=HypothesisKind.measurement_fault,
+                            cause_node=c.tag.id,
+                            cause_tag=c.tag.tag,
+                            direction="changed",
+                            window_start=w0,
+                            window_end=w1,
+                            graph_path=c.path.path,
+                            dead_time_min=c.path.dead_time_min,
+                            tests=op_tests,
+                            score=round(PV_BIAS * op_score, 3),
+                            confidence="low",
+                            evidence=[item.title],
+                            summary=f"{c.tag.tag} may read wrong: {loop.id} held it at its "
+                            f"setpoint by moving its output {_fmt(op_eff.delta)}, nothing "
+                            f"measured upstream moved, and {q.property} moved, so the true "
+                            "value may have left the setpoint",
+                        ),
+                        None,
+                        op_x,
+                    )
+                )
                 scored.append(
                     Scored(
                         Hypothesis(
@@ -627,7 +714,7 @@ def investigate(
                             graph_path=c.path.path,
                             dead_time_min=c.path.dead_time_min,
                             tests=[],
-                            score=round(0.3 * op_eff.strength, 3),
+                            score=round(LOOP_DISTURBANCE * op_score, 3),
                             confidence="low",
                             evidence=[item.title],
                             summary=f"something upstream of {loop.id} disturbed "
@@ -635,6 +722,40 @@ def investigate(
                         )
                     )
                 )
+
+    # Nothing measured moved clearly: the change is in something unmeasured near the sample.
+    moved = [
+        sc.effect.strength
+        for sc in scored
+        if sc.hypothesis.kind != "measurement_fault" and sc.effect is not None
+    ]
+    near = sorted(
+        (p for n, p in paths.items() if n != sampled_node and isinstance(by_id.get(n), Equipment)),
+        key=lambda p: (len(p.path), p.node),
+    )
+    if near and max(moved, default=0.0) < HIDDEN_BELOW:
+        p0 = near[0]
+        w0, w1 = window_at(p0)
+        scored.append(
+            Scored(
+                Hypothesis(
+                    rank=0,
+                    kind=HypothesisKind.unmeasured_disturbance,
+                    cause_node=p0.node,
+                    direction="changed",
+                    window_start=w0,
+                    window_end=w1,
+                    graph_path=p0.path,
+                    dead_time_min=p0.dead_time_min,
+                    tests=[],
+                    score=HIDDEN_SCORE,
+                    confidence="low",
+                    summary=f"no measured tag upstream moved enough to explain {q.property}; "
+                    f"something unmeasured changed in {p0.node} or just before the sample "
+                    "(a catalyst, a fouled surface, a feed component nobody analyzes)",
+                )
+            )
+        )
 
     # Explain away: a downstream deviation predicted by an upstream one on the same path.
     strong = [

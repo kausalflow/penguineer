@@ -9,8 +9,8 @@ from penguineer.core import CommandParams, CommandResult, LLMMode, RunContext, U
 from penguineer.engines.investigate import Settings
 from penguineer.engines.investigate import investigate as run_investigation
 from penguineer.io.graph import load_graph
-from penguineer.io.historian import read_historian, to_utc
-from penguineer.io.lims import read_lims
+from penguineer.io.historian import read_historian
+from penguineer.io.lims import read_lims, read_lots
 from penguineer.report.model import Hypothesis, QualityEvent, RuledOut
 
 
@@ -99,17 +99,6 @@ class InvestigateResult(CommandResult):
         return "\n".join(lines)
 
 
-def _read_lots(path: Path, timezone: str) -> pl.DataFrame:
-    raw = pl.read_csv(path)
-    lower = {c.lower(): c for c in raw.columns}
-    missing = [c for c in ("lot", "start", "end") if c not in lower]
-    if missing:
-        raise UsageError(f"{path}: needs columns lot, start, end (missing {', '.join(missing)})")
-    start, _ = to_utc(raw[lower["start"]].alias("start"), timezone)
-    end, _ = to_utc(raw[lower["end"]].alias("end"), timezone)
-    return pl.DataFrame([raw[lower["lot"]].cast(pl.String).alias("lot"), start, end])
-
-
 @command("investigate", params=InvestigateParams, result=InvestigateResult)
 def investigate(p: InvestigateParams, ctx: RunContext) -> InvestigateResult:
     """Align the data in time, rank root-cause hypotheses along graph paths, write the report."""
@@ -119,7 +108,7 @@ def investigate(p: InvestigateParams, ctx: RunContext) -> InvestigateResult:
     if not graph_path.exists():
         raise UsageError(f"no plant graph: pass --graph or create {graph_path}")
     lims = read_lims(p.lims, timezone=p.timezone).frame
-    lots = _read_lots(p.lots, p.timezone) if p.lots is not None else None
+    lots = read_lots(p.lots, timezone=p.timezone) if p.lots is not None else None
     lot_rows = lims.filter(pl.col("lot") == p.lot)
     graph = load_graph(graph_path)
     if lot_rows.height:

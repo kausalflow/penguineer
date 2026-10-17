@@ -88,3 +88,15 @@ def read_lims(path: Path, *, timezone: str = "UTC") -> LimsData:
     if frame.is_empty():
         raise UsageError(f"{path}: no lab results with a property, value and sample time")
     return LimsData(frame, found, n1 + n2)
+
+
+def read_lots(path: Path, *, timezone: str = "UTC") -> pl.DataFrame:
+    """Lot windows: a CSV with lot, start and end columns (any case), times in UTC."""
+    raw = pl.read_csv(path)
+    lower = {c.lower(): c for c in raw.columns}
+    missing = [c for c in ("lot", "start", "end") if c not in lower]
+    if missing:
+        raise UsageError(f"{path}: needs columns lot, start, end (missing {', '.join(missing)})")
+    start, _ = to_utc(raw[lower["start"]].alias("start"), timezone)
+    end, _ = to_utc(raw[lower["end"]].alias("end"), timezone)
+    return pl.DataFrame([raw[lower["lot"]].cast(pl.String).alias("lot"), start, end])
