@@ -308,6 +308,8 @@
       
         
       
+        
+      
     
     
     
@@ -421,6 +423,33 @@
     
   
   Data health
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/dead-times/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Dead times
 
     
   </span>
@@ -731,6 +760,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#penguineer-graph-lags" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>penguineer graph lags</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#penguineer-init" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -927,6 +967,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         <code>penguineer graph draft</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#penguineer-graph-lags" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>penguineer graph lags</code>
       </span>
     </span>
   </a>
@@ -1213,6 +1264,62 @@
 <td><code>none</code> | <code>local</code> | <code>api</code></td>
 <td><code>none</code></td>
 <td>LLM for relations rules cannot infer</td>
+</tr>
+</tbody>
+</table>
+<h2 id="penguineer-graph-lags"><code>penguineer graph lags</code><a class="headerlink" href="#penguineer-graph-lags" title="Permanent link">&para;</a></h2>
+<p>Estimate dead times along flows_to edges from data; confirmed edges are never changed.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--data</code></td>
+<td>existing file</td>
+<td>required</td>
+<td>Historian export, CSV or Parquet, wide or long</td>
+</tr>
+<tr>
+<td><code>--graph</code></td>
+<td>existing file</td>
+<td>required</td>
+<td>Plant graph whose flows_to edges get dead times</td>
+</tr>
+<tr>
+<td><code>--max-lag-minutes</code></td>
+<td>float</td>
+<td><code>240.0</code></td>
+<td>Longest dead time to search</td>
+</tr>
+<tr>
+<td><code>--step-seconds</code></td>
+<td>float</td>
+<td></td>
+<td>Grid step (default: the slower tag's median period)</td>
+</tr>
+<tr>
+<td><code>--z-threshold</code></td>
+<td>float</td>
+<td><code>5.0</code></td>
+<td>Peak strength needed to keep a lag</td>
+</tr>
+<tr>
+<td><code>--timezone</code></td>
+<td>str</td>
+<td><code>UTC</code></td>
+<td>Time zone of naive timestamps in the export</td>
+</tr>
+<tr>
+<td><code>--in-place</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>Write the estimates back into --graph and log them in its history</td>
 </tr>
 </tbody>
 </table>
