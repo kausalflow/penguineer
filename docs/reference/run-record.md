@@ -11,6 +11,7 @@ Every call writes `runs/<run_id>/run.json` under its project folder, from the CL
 | `penguineer_version`, `plantgraph_version`, `python_version` | Versions |
 | `seed` | The random seed |
 | `llm` | The LLM mode: `none`, `local` or `api` |
+| `llm_provider`, `llm_model`, `llm_prompts` | The provider (`local`, `anthropic` or `openai`), the model and the prompt versions a run used, when it used an LLM |
 | `inputs` | Every input file: `path`, `sha256` and `bytes` |
 | `outputs` | Paths of the files the command wrote |
 | `started_at`, `duration_s` | When it started and how long it took |

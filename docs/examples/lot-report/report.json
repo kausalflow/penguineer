@@ -1,7 +1,7 @@
 {
   "penguineer_version": "0.1.0",
-  "run_id": "20261017T234831Z-37d6c4",
-  "created_at": "2026-10-17T23:48:32Z",
+  "run_id": "20261018T081350Z-b3b69f",
+  "created_at": "2026-10-18T08:13:51Z",
   "event": {
     "lot": "L0803-A",
     "property": "purity",
@@ -255,5 +255,40 @@
   "notes": [
     "1 earlier lots skipped: different regime"
   ],
-  "calibration": "Confidence: high when the score is at least 0.425 and 0.025 ahead of the next hypothesis, medium from 0.25. Test weights: effect size 0.5, onset 0.3, lag correlation 0.3. Weights fitted on the homeostat train split (85 scenarios), thresholds chosen on the homeostat validation split (85 scenarios) (homeostat 0.1.0a3, bench plant 4144102c25e7)."
+  "calibration": "Confidence: high when the score is at least 0.4 and 0.025 ahead of the next hypothesis, medium from 0.25. Test weights: effect size 0.5, onset 0.3, lag correlation 0.3. Weights fitted on the homeostat train split (85 scenarios), thresholds chosen on the homeostat validation split (85 scenarios) (homeostat 0.1.0a3, bench plant 4144102c25e7).",
+  "summary": {
+    "overview": "The leading hypothesis, with high confidence: TI-101.PV moved low.",
+    "claims": [
+      {
+        "cause": "TI-101.PV",
+        "confidence": "high",
+        "evidence": [
+          "E004"
+        ],
+        "sentence": "TI-101.PV (E-101) ran 5.74 degC low from 2026-08-03 05:29, 50 min upstream of the sample point; purity moved when it arrived."
+      },
+      {
+        "cause": "PT-100.PV",
+        "confidence": "medium",
+        "evidence": [
+          "E005",
+          "E002"
+        ],
+        "sentence": "PT-100.PV (S-feed) ran 1.02 bar low from 2026-08-03 05:27, 52 min upstream of the sample point; purity moved 55 min after the expected arrival."
+      },
+      {
+        "cause": "PI-103.PV",
+        "confidence": "medium",
+        "evidence": [
+          "E006"
+        ],
+        "sentence": "PI-103.PV has a flatline finding in the lot window: value frozen at 5.968 for 90 min"
+      }
+    ],
+    "source": "template",
+    "provider": null,
+    "model": null,
+    "prompt": null,
+    "fallback": null
+  }
 }

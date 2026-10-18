@@ -12,7 +12,8 @@ src/penguineer/
   engines/                deterministic engines: data health, dead times, alignment, tests, investigate,
                           and the fitted calibration (calibration.json)
   bench/                  the homeostat bench plant and its faults, bundle export, scoring
-  report/                 report models, evidence plots, HTML and Markdown templates
+  llm/                    optional LLM providers, response cache, versioned prompts
+  report/                 report models, grounded summary, evidence plots, HTML and Markdown templates
   graph/                  graph check
 tests/                    unit, CLI, round-trip property, schema snapshot and Homeostat Live tests
 examples/demo/            a small plant with injected data faults

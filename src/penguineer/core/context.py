@@ -41,6 +41,10 @@ class RunContext:
     seed: int = 0
     llm: LLMMode = LLMMode.none
     cache_dir: Path | None = None
+    # What the run actually asked an LLM, for the run record (set by the command).
+    llm_provider: str | None = None
+    llm_model: str | None = None
+    llm_prompts: list[str] = field(default_factory=list)
     progress: ProgressCallback = _no_progress
     cancelled: Callable[[], bool] = _never_cancelled
     logger: logging.Logger = field(default_factory=lambda: logging.getLogger("penguineer"))
