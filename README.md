@@ -86,6 +86,7 @@ The tests in `tests/test_homeostat_live.py` run on that week. They are skipped w
 | `penguineer lag --data FILE --cause TAG --effect TAG [--flow TAG]` | Fit the actual delay from a tag to another or to a lab result: fixed, following the flow, or with mixing | works |
 | `penguineer investigate --lot L --lims lims.csv --data FILE` | Align in material time, rank root-cause hypotheses, write the report | works |
 | `penguineer bench homeostat` | Score investigate on Homeostat plants with injected faults (needs `penguineer[bench]`) | works |
+| `penguineer mcp [--project DIR]` | Serve every command as a tool to an MCP client over stdio (needs `penguineer[mcp]`) | works |
 
 Exit codes: 0 success, 1 validation failed (for example graph errors), 2 usage error, 3 not enough data, 4 internal error or not implemented yet.
 
@@ -101,6 +102,15 @@ penguineer.schemas()  # JSON Schemas of every command's Params and Result
 ```
 
 `penguineer.execute(...)` also returns the run record and run folder. Calls keep no global state: inputs and outputs live under the `project` folder passed in, so several processes can run side by side.
+
+## MCP server
+
+```bash
+pip install "penguineer[mcp]"
+claude mcp add penguineer -- penguineer mcp --project /path/to/my-unit
+```
+
+`penguineer mcp` serves every command as a tool to an MCP client over stdio, with the command's parameter and result schemas. It is local only: no port, no UI. See the [MCP guide](https://kausalflow.com/penguineer/guides/mcp/).
 
 ## Repository layout
 

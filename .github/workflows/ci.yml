@@ -24,7 +24,8 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: uv sync --locked
+      # The mcp extra, so that the MCP server's tests run too.
+      - run: uv sync --locked --extra mcp
       - uses: actions/cache@v4
         with:
           path: .homeostat-cache
@@ -64,3 +65,6 @@ jobs:
           uv venv /tmp/clean
           uv pip install --python /tmp/clean/bin/python dist/*.whl
           /tmp/clean/bin/penguineer --version
+          # Without the mcp extra, `penguineer mcp` says how to get it and exits with code 2.
+          code=0; /tmp/clean/bin/penguineer mcp < /dev/null 2> mcp.err || code=$?
+          cat mcp.err; test "$code" = 2 && grep -q 'penguineer\[mcp\]' mcp.err

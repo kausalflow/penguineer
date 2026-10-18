@@ -170,6 +170,25 @@ def build_app(registry: Registry) -> typer.Typer:
             target = groups[word]
         target.command(name=cmd.words[-1], help=cmd.help)(_make_callback(registry, cmd))
 
+    @app.command(
+        "mcp",
+        help="Serve every command as a tool to an MCP client, over stdio (needs penguineer[mcp]).",
+    )
+    def _mcp(
+        project: Annotated[
+            Path,
+            typer.Option(
+                "--project", help="Default project folder for outputs and relative paths."
+            ),
+        ] = Path("."),
+    ) -> None:
+        try:
+            from penguineer.mcp_server import serve
+        except PenguineerError as e:
+            typer.echo(str(e), err=True)
+            raise typer.Exit(e.exit_code) from None
+        serve(project)
+
     @app.callback(invoke_without_command=True)
     def _root(
         version: Annotated[
