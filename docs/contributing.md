@@ -66,8 +66,9 @@ A pull request description includes the preview link and screenshots of the page
 
 penguineer and plantgraph are published to PyPI together, with one version. `.github/workflows/release.yml` builds both, installs the wheels in a clean environment, and publishes them with PyPI trusted publishing when a GitHub release is published. No token is stored in the repository.
 
-1. Set the new version in `pyproject.toml`, in `packages/plantgraph/pyproject.toml`, and in penguineer's `plantgraph==` pin (`tests/test_versions.py` checks that the three agree), then run `uv lock`. Merge that to `main`.
-2. On GitHub, create a release from `main` with the tag `v<version>`, for example `v0.1.0`. The workflow stops if the tag does not match the version.
+1. Run the release gate: start the *Release gate* workflow from the Actions tab on `main`. It runs the bench on the hidden split (160 plants by default) with the seed in the repository secret `BENCH_HIDDEN_SEED`, and passes when the scores meet the gate in [The homeostat bench](concepts/bench.md#metrics). It shows only the summary scores and uploads nothing, because this repository is public.
+2. Set the new version in `pyproject.toml`, in `packages/plantgraph/pyproject.toml`, and in penguineer's `plantgraph==` pin (`tests/test_versions.py` checks that the three agree), then run `uv lock`. Merge that to `main`.
+3. On GitHub, create a release from `main` with the tag `v<version>`, for example `v0.1.0`. The workflow stops if the tag does not match the version.
 
 If publishing fails part way (for example PyPI errors after uploading one of the two packages), run the Release workflow by hand from the Actions tab with the release tag as input. Files already on PyPI are skipped.
 

@@ -113,7 +113,13 @@ def generated_bundles(
             raise UsageError("the hidden split needs its secret --split-seed")
         split_seed = SPLIT_SEEDS[split]
     version = _homeostat().__version__
-    key = f"{split}-{split_seed}-{per_fault}-{'+'.join(sorted(faults)) if faults else 'all'}"
+    # The hidden seed is secret: name its folder by a hash, not by the seed.
+    seed_name = (
+        hashlib.sha256(str(split_seed).encode()).hexdigest()[:12]
+        if split == Split.hidden
+        else str(split_seed)
+    )
+    key = f"{split}-{seed_name}-{per_fault}-{'+'.join(sorted(faults)) if faults else 'all'}"
     folder = root / f"{key}-{_plant_hash()}-homeostat{version}"
     if (folder / "index.json").exists():
         return folder

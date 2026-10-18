@@ -74,7 +74,7 @@ Rates carry a 95% Wilson interval in `bench.json`: at 85 scenarios an observed 9
 |---|---|---|
 | train | public (1000) | Fitting the test weights and rule scores |
 | validation | public (2000) | Choosing the confidence thresholds, and the numbers above |
-| hidden | KausalFlow's secret | The release gate, run only on KausalFlow's runner |
+| hidden | KausalFlow's secret | The release gate, run by hand before a release (the *Release gate* workflow) |
 
 `scripts/fit_calibration.py` searches the weights and rule scores on the train split (maximizing hit@3, plus half of hit@1 and half of the data-fault catch rate), then chooses the confidence thresholds on validation so that the wrong-confident rate stays at or under 5%. The result ships as `src/penguineer/engines/calibration.json`, and every `report.json` names the splits and the Homeostat version it was fitted with.
 
@@ -83,7 +83,7 @@ Rates carry a 95% Wilson interval in `bench.json`: at 85 scenarios an observed 9
 - The bench is one plant family. A real plant has more tags, more loops and other faults, so treat these numbers as an upper bound, not a promise.
 - The data-fault catch rate is 95% (19 of 20) on validation and 100% (21 of 21) on train, but 20 scenarios give a wide interval: 76% to 99%. The one miss is a small bias that started seven hours before the first off-spec lot, inside the newest reference lot (the lots in between ran another grade), so the loop output's move is partly in the reference and the leading hypothesis is an unmeasured change in R-301.
 - The plant has no analyzer on the sampled stream, so the onset test never runs on the bench, and its weight is kept rather than fitted.
-- The hidden split, and so the release gate, is not run in this repository.
+- The hidden split, and so the release gate, is not run by the public bench. The *Release gate* workflow runs it by hand before a release, with the seed from a repository secret, and shows only the summary scores (`python -m penguineer.bench.gate bench.json`); the plants and per-scenario results never leave the runner. The gate also needs at least 150 scenarios and no errors.
 
 ## In CI
 
