@@ -114,6 +114,14 @@ claude mcp add penguineer -- penguineer mcp --project /path/to/my-unit
 
 `penguineer mcp` serves every command as a tool to an MCP client over stdio, with the command's parameter and result schemas. It is local only: no port, no UI. See the [MCP guide](https://kausalflow.com/penguineer/guides/mcp/).
 
+## Investigation agent
+
+```bash
+pip install "penguineer[agent]"
+```
+
+`penguineer.agent` runs an investigation with a language model: a tool loop with budgets, pauses and notes from people following the run, a tool-calling adapter for any provider, the method (plan with a "no abnormality" hypothesis, data health first, one hypothesis at a time, an independent review), findings whose values are hashed for replay, and conclusions whose numbers are `{{Fn}}` placeholders filled from the findings. The host supplies the data tools and decides which models may see its data. See the [agent guide](https://kausalflow.com/penguineer/guides/agent/).
+
 ## Repository layout
 
 ```
@@ -126,6 +134,8 @@ src/penguineer/
   engines/             deterministic engines: data health, dead times, lot windows, group comparison,
                        investigate, calibration
   bench/               the homeostat bench plant, bundle export and scoring
+  agent/               the investigation agent: tool loop, provider adapter, method, findings,
+                       document search, commands as tools
   llm/                 optional LLM providers, response cache, versioned prompts
   report/              report models, grounded summary, evidence plots, HTML and Markdown templates
   graph/               graph check and graph draft
