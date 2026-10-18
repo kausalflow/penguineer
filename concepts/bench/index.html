@@ -1394,7 +1394,7 @@
 <tr>
 <td>hidden</td>
 <td>KausalFlow's secret</td>
-<td>The release gate, run only on KausalFlow's runner</td>
+<td>The release gate, run by hand before a release (the <em>Release gate</em> workflow)</td>
 </tr>
 </tbody>
 </table>
@@ -1404,7 +1404,7 @@
 <li>The bench is one plant family. A real plant has more tags, more loops and other faults, so treat these numbers as an upper bound, not a promise.</li>
 <li>The data-fault catch rate is 95% (19 of 20) on validation and 100% (21 of 21) on train, but 20 scenarios give a wide interval: 76% to 99%. The one miss is a small bias that started seven hours before the first off-spec lot, inside the newest reference lot (the lots in between ran another grade), so the loop output's move is partly in the reference and the leading hypothesis is an unmeasured change in R-301.</li>
 <li>The plant has no analyzer on the sampled stream, so the onset test never runs on the bench, and its weight is kept rather than fitted.</li>
-<li>The hidden split, and so the release gate, is not run in this repository.</li>
+<li>The hidden split, and so the release gate, is not run by the public bench. The <em>Release gate</em> workflow runs it by hand before a release, with the seed from a repository secret, and shows only the summary scores (<code>python -m penguineer.bench.gate bench.json</code>); the plants and per-scenario results never leave the runner. The gate also needs at least 150 scenarios and no errors.</li>
 </ul>
 <h2 id="in-ci">In CI<a class="headerlink" href="#in-ci" title="Permanent link">&para;</a></h2>
 <p>The Bench workflow runs a smoke bench (3 validation plants per fault type) on every pull request, and the full train and validation bench every night. Each run uploads <code>bench.json</code> and <code>scenarios.csv</code> and writes the scores into the job summary.</p>
