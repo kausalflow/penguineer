@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from typer.testing import CliRunner
 
@@ -47,10 +48,12 @@ def test_invalid_value_is_exit_2(demo_csv, tmp_path):
     assert res.exit_code == 2
 
 
-def test_stub_commands_exit_4(demo_csv, demo_graph, tmp_path):
-    res = invoke("graph", "draft", "--tags", demo_csv, "--pid", demo_graph, "--project", tmp_path)
-    assert res.exit_code == 4
-    assert "not implemented yet" in res.output
+def test_unreadable_inputs_exit_2(demo_graph, tmp_path):
+    # A YAML graph given as the P&ID.
+    tags = Path(__file__).parent / "fixtures" / "bench" / "reactor_sensor_bias-004" / "tags.csv"
+    res = invoke("graph", "draft", "--tags", tags, "--pid", demo_graph, "--project", tmp_path)
+    assert res.exit_code == 2
+    assert "not readable as XML" in res.output
     # The hidden split needs its secret seed: a usage error, before any simulation.
     assert (
         invoke("bench", "homeostat", "--scenarios", "hidden", "--project", tmp_path).exit_code == 2

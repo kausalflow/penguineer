@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The bench reactor plant as a DEXPI 1.3 P&ID: written for penguineer's tests, drawing left out.
+     Two feeds mix in M-101, are heated in E-201 (steam through TV-201) and react in R-301
+     (cooling water through TV-301). PI-305 is drawn but has no tag in the historian. -->
+<PlantModel>
+  <PlantInformation SchemaVersion="4.1.1" OriginatingSystem="penguineer tests" Units="Metre" Discipline="PID" Is3D="no"/>
+  <Equipment ID="Mixer-1" ComponentClass="Mixer">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="TagNameAssignmentClass" Value="M-101"/>
+    </GenericAttributes>
+    <Nozzle ID="N-M1" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-M2" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-M3" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-M4" ComponentClass="Nozzle"/>
+  </Equipment>
+  <Equipment ID="TubularHeatExchanger-1" ComponentClass="TubularHeatExchanger">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="TagNameAssignmentClass" Value="E-201"/>
+    </GenericAttributes>
+    <Nozzle ID="N-E1" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-E2" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-E3" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-E4" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-E5" ComponentClass="Nozzle"/>
+  </Equipment>
+  <Equipment ID="Vessel-1" ComponentClass="Vessel">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="TagNameAssignmentClass" Value="R-301"/>
+    </GenericAttributes>
+    <Nozzle ID="N-R1" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-R2" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-R3" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-R4" ComponentClass="Nozzle"/>
+    <Nozzle ID="N-R5" ComponentClass="Nozzle"/>
+  </Equipment>
+  <PipingNetworkSystem ID="PNS-1" ComponentClass="PipingNetworkSystem">
+    <PipingNetworkSegment ID="Seg-A" ComponentClass="PipingNetworkSegment">
+      <PipeOffPageConnector ID="OPC-A" ComponentClass="FlowInPipeOffPageConnector">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipeOffPageConnectorNameAssignmentClass" Value="Feed A"/>
+    </GenericAttributes>
+      </PipeOffPageConnector>
+      <Connection FromID="OPC-A" FromNode="1" ToID="N-M1" ToNode="1"/>
+    </PipingNetworkSegment>
+    <PipingNetworkSegment ID="Seg-B" ComponentClass="PipingNetworkSegment">
+      <PipeOffPageConnector ID="OPC-B" ComponentClass="FlowInPipeOffPageConnector">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipeOffPageConnectorNameAssignmentClass" Value="Feed B"/>
+    </GenericAttributes>
+      </PipeOffPageConnector>
+      <Connection FromID="OPC-B" FromNode="1" ToID="N-M2" ToNode="1"/>
+    </PipingNetworkSegment>
+  </PipingNetworkSystem>
+  <PipingNetworkSystem ID="PNS-2" ComponentClass="PipingNetworkSystem">
+    <PipingNetworkSegment ID="Seg-1" ComponentClass="PipingNetworkSegment">
+      <PipingComponent ID="Tee-1" ComponentClass="PipeTee"/>
+      <Connection FromID="N-M3" FromNode="1" ToID="Tee-1" ToNode="1"/>
+    </PipingNetworkSegment>
+    <PipingNetworkSegment ID="Seg-2" ComponentClass="PipingNetworkSegment">
+      
+      <Connection FromID="Tee-1" FromNode="1" ToID="N-E1" ToNode="1"/>
+    </PipingNetworkSegment>
+    <PipingNetworkSegment ID="Seg-3" ComponentClass="PipingNetworkSegment">
+      
+      <Connection FromID="N-E2" FromNode="1" ToID="N-R1" ToNode="1"/>
+    </PipingNetworkSegment>
+    <PipingNetworkSegment ID="Seg-4" ComponentClass="PipingNetworkSegment">
+      <PipeOffPageConnector ID="OPC-P" ComponentClass="FlowOutPipeOffPageConnector">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipeOffPageConnectorNameAssignmentClass" Value="Product"/>
+    </GenericAttributes>
+      </PipeOffPageConnector>
+      <Connection FromID="N-R2" FromNode="1" ToID="OPC-P" ToNode="1"/>
+    </PipingNetworkSegment>
+  </PipingNetworkSystem>
+  <PipingNetworkSystem ID="PNS-3" ComponentClass="PipingNetworkSystem">
+    <PipingNetworkSegment ID="Seg-5" ComponentClass="PipingNetworkSegment">
+      <PipeOffPageConnector ID="OPC-S" ComponentClass="FlowInPipeOffPageConnector">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipeOffPageConnectorNameAssignmentClass" Value="Steam"/>
+    </GenericAttributes>
+      </PipeOffPageConnector>
+      <Connection FromID="OPC-S" FromNode="1" ToID="TV-201-body" ToNode="1"/>
+    </PipingNetworkSegment>
+    <PipingNetworkSegment ID="Seg-6" ComponentClass="PipingNetworkSegment">
+      <PipingComponent ID="TV-201-body" ComponentClass="GlobeValve">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipingComponentNumberAssignmentClass" Value="C1"/>
+    </GenericAttributes>
+        <Association Type="is referenced by" ItemID="ValveRef-TV-201-body"/>
+      </PipingComponent>
+      <Connection FromID="TV-201-body" FromNode="1" ToID="N-E3" ToNode="1"/>
+    </PipingNetworkSegment>
+    <PipingNetworkSegment ID="Seg-7" ComponentClass="PipingNetworkSegment">
+      <PipeOffPageConnector ID="OPC-C" ComponentClass="FlowOutPipeOffPageConnector">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipeOffPageConnectorNameAssignmentClass" Value="Condensate"/>
+    </GenericAttributes>
+      </PipeOffPageConnector>
+      <Connection FromID="N-E4" FromNode="1" ToID="OPC-C" ToNode="1"/>
+    </PipingNetworkSegment>
+  </PipingNetworkSystem>
+  <PipingNetworkSystem ID="PNS-4" ComponentClass="PipingNetworkSystem">
+    <PipingNetworkSegment ID="Seg-8" ComponentClass="PipingNetworkSegment">
+      <PipeOffPageConnector ID="OPC-W" ComponentClass="FlowInPipeOffPageConnector">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipeOffPageConnectorNameAssignmentClass" Value="Cooling water"/>
+    </GenericAttributes>
+      </PipeOffPageConnector>
+      <PipingComponent ID="TV-301-body" ComponentClass="GlobeValve">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipingComponentNumberAssignmentClass" Value="C1"/>
+    </GenericAttributes>
+        <Association Type="is referenced by" ItemID="ValveRef-TV-301-body"/>
+      </PipingComponent>
+      <Connection FromID="OPC-W" FromNode="1" ToID="N-R3" ToNode="1"/>
+    </PipingNetworkSegment>
+    <PipingNetworkSegment ID="Seg-9" ComponentClass="PipingNetworkSegment">
+      <PipeOffPageConnector ID="OPC-WR" ComponentClass="FlowOutPipeOffPageConnector">
+        <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="PipeOffPageConnectorNameAssignmentClass" Value="Cooling water return"/>
+    </GenericAttributes>
+      </PipeOffPageConnector>
+      <Connection FromID="N-R4" FromNode="1" ToID="OPC-WR" ToNode="1"/>
+    </PipingNetworkSegment>
+  </PipingNetworkSystem>
+  <ProcessInstrumentationFunction ID="PIF-1" ComponentClass="ProcessInstrumentationFunction">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessInstrumentationFunctionCategoryAssignmentClass" Value="F"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionsAssignmentClass" Value="I"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionNumberAssignmentClass" Value="101"/>
+    </GenericAttributes>
+    <InformationFlow ID="ML-1" ComponentClass="MeasuringLineFunction">
+      <Association Type="has logical start" ItemID="PSGF-1"/>
+      <Association Type="has logical end" ItemID="PIF-1"/>
+    </InformationFlow>
+    <ProcessSignalGeneratingFunction ID="PSGF-1" ComponentClass="ProcessSignalGeneratingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessSignalGeneratingFunctionNumberAssignmentClass" Value="FT-101"/>
+    </GenericAttributes>
+      <Association Type="is logical start of" ItemID="ML-1"/>
+      <Association Type="is located in" ItemID="Seg-A"/>
+    </ProcessSignalGeneratingFunction>
+  </ProcessInstrumentationFunction>
+  <ProcessInstrumentationFunction ID="PIF-2" ComponentClass="ProcessInstrumentationFunction">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessInstrumentationFunctionCategoryAssignmentClass" Value="F"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionsAssignmentClass" Value="I"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionNumberAssignmentClass" Value="102"/>
+    </GenericAttributes>
+    <InformationFlow ID="ML-2" ComponentClass="MeasuringLineFunction">
+      <Association Type="has logical start" ItemID="PSGF-2"/>
+      <Association Type="has logical end" ItemID="PIF-2"/>
+    </InformationFlow>
+    <ProcessSignalGeneratingFunction ID="PSGF-2" ComponentClass="ProcessSignalGeneratingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessSignalGeneratingFunctionNumberAssignmentClass" Value="FT-102"/>
+    </GenericAttributes>
+      <Association Type="is logical start of" ItemID="ML-2"/>
+      <Association Type="is located in" ItemID="Seg-B"/>
+    </ProcessSignalGeneratingFunction>
+  </ProcessInstrumentationFunction>
+  <ProcessInstrumentationFunction ID="PIF-3" ComponentClass="ProcessInstrumentationFunction">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessInstrumentationFunctionCategoryAssignmentClass" Value="A"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionsAssignmentClass" Value="I"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionNumberAssignmentClass" Value="101"/>
+    </GenericAttributes>
+    <InformationFlow ID="ML-3" ComponentClass="MeasuringLineFunction">
+      <Association Type="has logical start" ItemID="PSGF-3"/>
+      <Association Type="has logical end" ItemID="PIF-3"/>
+    </InformationFlow>
+    <ProcessSignalGeneratingFunction ID="PSGF-3" ComponentClass="ProcessSignalGeneratingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessSignalGeneratingFunctionNumberAssignmentClass" Value="AT-101"/>
+    </GenericAttributes>
+      <Association Type="is logical start of" ItemID="ML-3"/>
+      <Association Type="is located in" ItemID="N-M4"/>
+    </ProcessSignalGeneratingFunction>
+  </ProcessInstrumentationFunction>
+  <ProcessInstrumentationFunction ID="PIF-4" ComponentClass="ProcessInstrumentationFunction">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessInstrumentationFunctionCategoryAssignmentClass" Value="T"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionsAssignmentClass" Value="I"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionNumberAssignmentClass" Value="200"/>
+    </GenericAttributes>
+    <InformationFlow ID="ML-4" ComponentClass="MeasuringLineFunction">
+      <Association Type="has logical start" ItemID="PSGF-4"/>
+      <Association Type="has logical end" ItemID="PIF-4"/>
+    </InformationFlow>
+    <ProcessSignalGeneratingFunction ID="PSGF-4" ComponentClass="ProcessSignalGeneratingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessSignalGeneratingFunctionNumberAssignmentClass" Value="TT-200"/>
+    </GenericAttributes>
+      <Association Type="is logical start of" ItemID="ML-4"/>
+      <Association Type="is located in" ItemID="Tee-1"/>
+    </ProcessSignalGeneratingFunction>
+  </ProcessInstrumentationFunction>
+  <ProcessInstrumentationFunction ID="PIF-5" ComponentClass="ProcessInstrumentationFunction">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessInstrumentationFunctionCategoryAssignmentClass" Value="T"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionsAssignmentClass" Value="IC"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionNumberAssignmentClass" Value="201"/>
+    </GenericAttributes>
+    <InformationFlow ID="ML-5" ComponentClass="MeasuringLineFunction">
+      <Association Type="has logical start" ItemID="PSGF-5"/>
+      <Association Type="has logical end" ItemID="PIF-5"/>
+    </InformationFlow>
+    <ProcessSignalGeneratingFunction ID="PSGF-5" ComponentClass="ProcessSignalGeneratingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessSignalGeneratingFunctionNumberAssignmentClass" Value="TT-201"/>
+    </GenericAttributes>
+      <Association Type="is logical start of" ItemID="ML-5"/>
+      <Association Type="is located in" ItemID="N-E5"/>
+    </ProcessSignalGeneratingFunction>
+    <InformationFlow ID="SL-5" ComponentClass="SignalConveyingFunction">
+      <Association Type="has logical start" ItemID="PIF-5"/>
+      <Association Type="has logical end" ItemID="AF-5"/>
+    </InformationFlow>
+    <ActuatingFunction ID="AF-5" ComponentClass="ActuatingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ActuatingFunctionNumberAssignmentClass" Value="TV-201"/>
+    </GenericAttributes>
+      <Association Type="is fulfilled by" ItemID="AS-5"/>
+    </ActuatingFunction>
+  </ProcessInstrumentationFunction>
+  <ActuatingSystem ID="AS-5" ComponentClass="ActuatingSystem">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ActuatingSystemNumberAssignmentClass" Value="TV-201"/>
+    </GenericAttributes>
+    <Association Type="fulfills" ItemID="AF-5"/>
+    <ActuatingSystemComponent ID="ValveRef-TV-201-body" ComponentClass="OperatedValveReference">
+      <Association Type="refers to" ItemID="TV-201-body"/>
+    </ActuatingSystemComponent>
+  </ActuatingSystem>
+  <ProcessInstrumentationFunction ID="PIF-6" ComponentClass="ProcessInstrumentationFunction">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessInstrumentationFunctionCategoryAssignmentClass" Value="T"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionsAssignmentClass" Value="IC"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionNumberAssignmentClass" Value="301"/>
+    </GenericAttributes>
+    <InformationFlow ID="ML-6" ComponentClass="MeasuringLineFunction">
+      <Association Type="has logical start" ItemID="PSGF-6"/>
+      <Association Type="has logical end" ItemID="PIF-6"/>
+    </InformationFlow>
+    <ProcessSignalGeneratingFunction ID="PSGF-6" ComponentClass="ProcessSignalGeneratingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessSignalGeneratingFunctionNumberAssignmentClass" Value="TT-301"/>
+    </GenericAttributes>
+      <Association Type="is logical start of" ItemID="ML-6"/>
+      <Association Type="is located in" ItemID="N-R5"/>
+    </ProcessSignalGeneratingFunction>
+    <InformationFlow ID="SL-6" ComponentClass="SignalConveyingFunction">
+      <Association Type="has logical start" ItemID="PIF-6"/>
+      <Association Type="has logical end" ItemID="AF-6"/>
+    </InformationFlow>
+    <ActuatingFunction ID="AF-6" ComponentClass="ActuatingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ActuatingFunctionNumberAssignmentClass" Value="TV-301"/>
+    </GenericAttributes>
+      <Association Type="is fulfilled by" ItemID="AS-6"/>
+    </ActuatingFunction>
+  </ProcessInstrumentationFunction>
+  <ActuatingSystem ID="AS-6" ComponentClass="ActuatingSystem">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ActuatingSystemNumberAssignmentClass" Value="TV-301"/>
+    </GenericAttributes>
+    <Association Type="fulfills" ItemID="AF-6"/>
+    <ActuatingSystemComponent ID="ValveRef-TV-301-body" ComponentClass="OperatedValveReference">
+      <Association Type="refers to" ItemID="TV-301-body"/>
+    </ActuatingSystemComponent>
+  </ActuatingSystem>
+  <ProcessInstrumentationFunction ID="PIF-7" ComponentClass="ProcessInstrumentationFunction">
+    <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessInstrumentationFunctionCategoryAssignmentClass" Value="P"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionsAssignmentClass" Value="I"/>
+      <GenericAttribute Name="ProcessInstrumentationFunctionNumberAssignmentClass" Value="305"/>
+    </GenericAttributes>
+    <InformationFlow ID="ML-7" ComponentClass="MeasuringLineFunction">
+      <Association Type="has logical start" ItemID="PSGF-7"/>
+      <Association Type="has logical end" ItemID="PIF-7"/>
+    </InformationFlow>
+    <ProcessSignalGeneratingFunction ID="PSGF-7" ComponentClass="ProcessSignalGeneratingFunction">
+      <GenericAttributes Set="DexpiAttributes">
+      <GenericAttribute Name="ProcessSignalGeneratingFunctionNumberAssignmentClass" Value="PT-305"/>
+    </GenericAttributes>
+      <Association Type="is logical start of" ItemID="ML-7"/>
+      <Association Type="is located in" ItemID="N-R5"/>
+    </ProcessSignalGeneratingFunction>
+  </ProcessInstrumentationFunction>
+</PlantModel>

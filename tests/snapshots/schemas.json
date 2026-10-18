@@ -842,7 +842,7 @@
               }
             ],
             "default": null,
-            "description": "Optional DEXPI P&ID",
+            "description": "DEXPI P&ID (Proteus XML): equipment, piping, where sensors and valves sit",
             "title": "Pid",
             "ui": "file"
           },
@@ -894,6 +894,11 @@
             "title": "N Equipment",
             "type": "integer"
           },
+          "n_flows": {
+            "description": "flows_to edges, from the P&ID's piping",
+            "title": "N Flows",
+            "type": "integer"
+          },
           "n_inferred": {
             "title": "N Inferred",
             "type": "integer"
@@ -942,6 +947,7 @@
           "n_loops",
           "n_actuators",
           "n_equipment",
+          "n_flows",
           "unparsed",
           "warnings",
           "notes"

@@ -6,7 +6,6 @@ import penguineer
 from penguineer.core import (
     CommandParams,
     CommandResult,
-    NotImplementedYet,
     Registry,
     UsageError,
 )
@@ -35,11 +34,11 @@ def test_invalid_params_are_usage_errors(tmp_path):
 
 
 def test_failed_run_still_writes_record(demo_csv, demo_graph, tmp_path):
-    with pytest.raises(NotImplementedYet):
+    with pytest.raises(UsageError):
         penguineer.run("graph draft", tags=demo_csv, pid=demo_graph, project=tmp_path)
     (record_path,) = (tmp_path / "runs").glob("*/run.json")
     record = json.loads(record_path.read_text())
-    assert record["status"] == "error" and record["exit_code"] == 4
+    assert record["status"] == "error" and record["exit_code"] == 2
 
 
 def test_reserved_and_duplicate_names():

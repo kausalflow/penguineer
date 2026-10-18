@@ -7,7 +7,7 @@ It reads files and writes files. The engines are deterministic Python, and an LL
 [Alchemist](https://github.com/kausalflow/alchemist) imports penguineer as a library and adds the UI, runners, project management, the data catalog, staging and sealing on top. penguineer has none of those itself.
 
 !!! note "Status"
-    This is an early release. `init`, `data health`, `graph check`, `graph draft`, `graph lags`, `lag`, `investigate`, `bench homeostat` and `mcp` work. `graph draft` reads tag names; its DEXPI import (`--pid`) is not built yet and exits with code 4 ("not implemented yet").
+    This is an early release. `init`, `data health`, `graph check`, `graph draft`, `graph lags`, `lag`, `investigate`, `bench homeostat` and `mcp` work. `graph draft` reads tag names and DEXPI P&IDs; its LLM-proposed relations (`--llm`) are not built yet.
 
 ## Where to go next
 
