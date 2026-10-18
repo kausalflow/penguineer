@@ -30,7 +30,7 @@
     
     
       
-        <title>LLM summaries - penguineer</title>
+        <title>Using an LLM - penguineer</title>
       
     
     
@@ -119,7 +119,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              LLM summaries
+              Using an LLM
             
           </span>
         </div>
@@ -724,7 +724,7 @@
   <span class="md-ellipsis">
     
   
-  LLM summaries
+  Using an LLM
 
     
   </span>
@@ -741,7 +741,7 @@
   <span class="md-ellipsis">
     
   
-  LLM summaries
+  Using an LLM
 
     
   </span>
@@ -1173,12 +1173,17 @@
   
 
 
-<h1 id="llm-summaries">LLM summaries<a class="headerlink" href="#llm-summaries" title="Permanent link">&para;</a></h1>
-<p><code>investigate</code> can have an LLM write the summary at the top of its report. The LLM only writes
-prose: the hypotheses, their ranking, scores and confidence labels are the same with or without
-it, and its text is checked against them before it is kept. Without <code>--llm</code>, or with
-<code>--llm none</code> (the default), penguineer makes no network call and writes the summary from a
-template.</p>
+<h1 id="using-an-llm">Using an LLM<a class="headerlink" href="#using-an-llm" title="Permanent link">&para;</a></h1>
+<p>Two commands can use an LLM, and both check what it returns before using it:</p>
+<ul>
+<li><code>investigate</code> can have it write the summary at the top of its report. The LLM only writes
+  prose: the hypotheses, their ranking, scores and confidence labels are the same with or
+  without it.</li>
+<li><code>graph draft</code> can have it propose the relations its rules could not infer, as inferred edges
+  for the engineer to confirm (<a href="../../concepts/plant-graph/#asking-an-llm-for-the-rest">Asking an LLM for the rest</a>).</li>
+</ul>
+<p>Without <code>--llm</code>, or with <code>--llm none</code> (the default), penguineer makes no network call: the
+summary comes from a template and the graph draft from the rules.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>penguineer<span class="w"> </span>investigate<span class="w"> </span>--lot<span class="w"> </span>L0803-A<span class="w"> </span>--lims<span class="w"> </span>lims.csv<span class="w"> </span>--data<span class="w"> </span>historian.parquet<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--llm<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--llm-model<span class="w"> </span>&lt;model&gt;
 </span></code></pre></div>
@@ -1221,7 +1226,9 @@ Name it with <code>--llm-model</code>, <code>PENGUINEER_LLM_MODEL</code>, or in 
 <code>PENGUINEER_LLM_BASE_URL</code>, <code>PENGUINEER_LLM_PROVIDER</code>), which overrides the file. A local
 endpoint that needs a key reads it from <code>PENGUINEER_LLM_API_KEY</code>.</p>
 <h2 id="what-leaves-the-machine">What leaves the machine<a class="headerlink" href="#what-leaves-the-machine" title="Permanent link">&para;</a></h2>
-<p>The LLM receives the results of <code>report.json</code>, never the historian or LIMS data: the quality
+<p>For <code>graph draft</code>, the LLM receives the plant's equipment, streams and valves, the relations
+already drafted, and the open tags' names, units and descriptions. For <code>investigate</code>, it receives
+the results of <code>report.json</code>, never the historian or LIMS data: the quality
 event, the reference lots' lab values, the hypotheses with their tests and evidence IDs, the
 evidence titles, the ruled-out candidates and the notes. <code>--llm-dry-run</code> writes the exact request
 to <code>llm-request.json</code> in the report folder and prints it, without sending anything, so it can be
@@ -1246,7 +1253,8 @@ if</p>
 when the endpoint cannot be reached. The report names the provider, the model and the prompt
 version of a summary it kept.</p>
 <h2 id="reproducibility">Reproducibility<a class="headerlink" href="#reproducibility" title="Permanent link">&para;</a></h2>
-<p>Prompts are versioned files in the package (<code>penguineer/llm/prompts/summary-1.md</code>). Answers are
+<p>Prompts are versioned files in the package (<code>penguineer/llm/prompts/summary-1.md</code>,
+<code>relations-1.md</code>). Answers are
 cached in <code>.penguineer/cache/llm/</code> by a hash of the prompt version, the provider, the model and
 the request, so re-running a report on the same results gives the same text without a second
 call. The run record stores the provider, the model and the prompts used (<code>llm_provider</code>,

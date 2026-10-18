@@ -521,6 +521,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#asking-an-llm-for-the-rest" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Asking an LLM for the rest
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -834,7 +845,7 @@
   <span class="md-ellipsis">
     
   
-  LLM summaries
+  Using an LLM
 
     
   </span>
@@ -1136,6 +1147,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#asking-an-llm-for-the-rest" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Asking an LLM for the rest
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1422,8 +1444,7 @@ description or a naming convention than from a column or a tag in the list), so 
 appear in <code>graph check</code>'s confirm queue. A unit that contradicts the name is reported. Tags
 without an ISA-5.1 name, such as <code>GRADE</code>, become tag nodes without a role.</p>
 <p>A tag list does not say how material flows, so on its own the draft has no <code>flows_to</code> edges and
-no streams. Sample points and qualities come from the engineer. LLM-proposed relations (<code>--llm</code>)
-are not built yet.</p>
+no streams. Sample points and qualities come from the engineer.</p>
 <h3 id="adding-the-pid">Adding the P&amp;ID<a class="headerlink" href="#adding-the-pid" title="Permanent link">&para;</a></h3>
 <p>With a DEXPI P&amp;ID (the Proteus XML that P&amp;ID tools export), the draft also reads how the plant
 is piped and where its instruments sit:</p>
@@ -1455,6 +1476,26 @@ goes to (0.6): confirm those. When the tag list says otherwise and is more sure 
 column, or a valve tag in the list), the tag list's answer is kept and the difference is
 reported. Instruments on the P&amp;ID without a tag in the list are reported too. Everything from the
 P&amp;ID has <code>source: dexpi</code> and is <code>inferred</code>, like the rest of the draft.</p>
+<h3 id="asking-an-llm-for-the-rest">Asking an LLM for the rest<a class="headerlink" href="#asking-an-llm-for-the-rest" title="Permanent link">&para;</a></h3>
+<p>What the rules and the P&amp;ID leave open, an LLM can propose: which equipment a tag measures when
+its description names none, what a valve acts on, and, without a P&amp;ID, the piping.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>penguineer<span class="w"> </span>graph<span class="w"> </span>draft<span class="w"> </span>--tags<span class="w"> </span>tags.csv<span class="w"> </span>--llm<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--llm-model<span class="w"> </span>&lt;model&gt;
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>graph draft: 7 tags, 1 loops, 1 valves, 2 equipment; 6 edges (1 flows_to), all inferred
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>wrote graph.yaml
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>1 tags without an ISA-5.1 name: GRADE
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>note: the LLM proposed 4 relations; 3 kept (source llm), 1 rejected
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>note: rejected LLM proposal R-101 -flows_to-&gt; E-201: would close a cycle
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>next: penguineer graph check --graph graph.yaml
+</span></code></pre></div>
+<p>The LLM sees the plant's equipment, streams and valves, the relations already drafted, and the
+open tags with their names, units and descriptions; never any data. It may only link nodes that
+exist. A proposal is kept only if both ends have the right types, it places a tag or valve that
+was open (it never changes a drafted relation), it does not repeat an edge, and its piping closes
+no cycle; the summary lists every rejected one and why. Kept edges have <code>source: llm</code>, are
+<code>inferred</code>, and get a confidence of 0.3 to 0.5, below every rule-based edge. <code>--llm-dry-run</code>
+writes the requests to <code>llm-request.json</code> next to the graph and sends nothing. See
+<a href="../../guides/llm/">Using an LLM</a> for choosing a model.</p>
 
 
 

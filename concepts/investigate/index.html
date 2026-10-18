@@ -806,7 +806,7 @@
   <span class="md-ellipsis">
     
   
-  LLM summaries
+  Using an LLM
 
     
   </span>
@@ -1180,7 +1180,7 @@
 
 
 <h1 id="investigating-an-off-spec-lot">Investigating an off-spec lot<a class="headerlink" href="#investigating-an-off-spec-lot" title="Permanent link">&para;</a></h1>
-<p><code>investigate</code> takes one lot, finds the lab result that was out of spec, and ranks the process variables that could have caused it. Every hypothesis comes with its tests, its path through the plant graph, and plots. The engines are deterministic Python; an LLM can write the summary at the top of the report (see <a href="../../guides/llm/">LLM summaries</a>), and never touches the ranking.</p>
+<p><code>investigate</code> takes one lot, finds the lab result that was out of spec, and ranks the process variables that could have caused it. Every hypothesis comes with its tests, its path through the plant graph, and plots. The engines are deterministic Python; an LLM can write the summary at the top of the report (see <a href="../../guides/llm/">Using an LLM</a>), and never touches the ranking.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>uv<span class="w"> </span>run<span class="w"> </span>penguineer<span class="w"> </span>investigate<span class="w"> </span>--lot<span class="w"> </span>L0803-A<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--lims<span class="w"> </span>examples/offspec/lims.csv<span class="w"> </span>--data<span class="w"> </span>examples/offspec/historian.csv<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--graph<span class="w"> </span>examples/offspec/graph.yaml<span class="w"> </span>--lots<span class="w"> </span>examples/offspec/lots.csv
