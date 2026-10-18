@@ -13,6 +13,8 @@ src/penguineer/
                           group comparison (Welch), tests, investigate,
                           and the fitted calibration (calibration.json)
   bench/                  the homeostat bench plant and its faults, bundle export, scoring
+  agent/                  the investigation agent: tool loop, provider adapter, method, findings,
+                          document search, commands as tools
   llm/                    optional LLM providers, response cache, versioned prompts
   report/                 report models, grounded summary, evidence plots, HTML and Markdown templates
   graph/                  graph check and graph draft (tag list and P&ID)
