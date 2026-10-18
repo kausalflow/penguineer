@@ -303,7 +303,7 @@ def main() -> None:
     parser.add_argument("--since", type=datetime.fromisoformat, default=now - timedelta(days=35))
     parser.add_argument("--until", type=datetime.fromisoformat, default=now)
     parser.add_argument("--lot", help="Investigate this lot only (default: the worst episodes)")
-    parser.add_argument("--episodes", type=int, default=3, help="Off-spec episodes to investigate")
+    parser.add_argument("--episodes", type=int, default=5, help="Off-spec episodes to investigate")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
 
