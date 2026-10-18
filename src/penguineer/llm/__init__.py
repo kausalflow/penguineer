@@ -1,8 +1,9 @@
-"""Optional LLM providers, for prose only.
+"""Optional LLM providers: report prose, and graph relations for an engineer to confirm.
 
-The LLM never ranks, scores or finds anything: it writes text from typed results, and that text
-is checked against those results before it is kept (see :mod:`penguineer.report.summary`).
-``--llm none``, the default, makes no network call.
+The LLM never ranks, scores or finds anything. It writes a report's summary from typed results,
+checked against them before it is kept (:mod:`penguineer.report.summary`), and proposes plant
+graph relations the rules could not infer, checked before they are added as inferred edges
+(:mod:`penguineer.graph.propose`). ``--llm none``, the default, makes no network call.
 """
 
 from penguineer.llm.config import LLMConfig, load_config

@@ -1,6 +1,6 @@
 # Investigating an off-spec lot
 
-`investigate` takes one lot, finds the lab result that was out of spec, and ranks the process variables that could have caused it. Every hypothesis comes with its tests, its path through the plant graph, and plots. The engines are deterministic Python; an LLM can write the summary at the top of the report (see [LLM summaries](../guides/llm.md)), and never touches the ranking.
+`investigate` takes one lot, finds the lab result that was out of spec, and ranks the process variables that could have caused it. Every hypothesis comes with its tests, its path through the plant graph, and plots. The engines are deterministic Python; an LLM can write the summary at the top of the report (see [Using an LLM](../guides/llm.md)), and never touches the ranking.
 
 ```bash
 uv run penguineer investigate --lot L0803-A \

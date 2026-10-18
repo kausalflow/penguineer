@@ -1,10 +1,15 @@
-# LLM summaries
+# Using an LLM
 
-`investigate` can have an LLM write the summary at the top of its report. The LLM only writes
-prose: the hypotheses, their ranking, scores and confidence labels are the same with or without
-it, and its text is checked against them before it is kept. Without `--llm`, or with
-`--llm none` (the default), penguineer makes no network call and writes the summary from a
-template.
+Two commands can use an LLM, and both check what it returns before using it:
+
+- `investigate` can have it write the summary at the top of its report. The LLM only writes
+  prose: the hypotheses, their ranking, scores and confidence labels are the same with or
+  without it.
+- `graph draft` can have it propose the relations its rules could not infer, as inferred edges
+  for the engineer to confirm ([Asking an LLM for the rest](../concepts/plant-graph.md#asking-an-llm-for-the-rest)).
+
+Without `--llm`, or with `--llm none` (the default), penguineer makes no network call: the
+summary comes from a template and the graph draft from the rules.
 
 ```bash
 penguineer investigate --lot L0803-A --lims lims.csv --data historian.parquet \
@@ -36,7 +41,9 @@ endpoint that needs a key reads it from `PENGUINEER_LLM_API_KEY`.
 
 ## What leaves the machine
 
-The LLM receives the results of `report.json`, never the historian or LIMS data: the quality
+For `graph draft`, the LLM receives the plant's equipment, streams and valves, the relations
+already drafted, and the open tags' names, units and descriptions. For `investigate`, it receives
+the results of `report.json`, never the historian or LIMS data: the quality
 event, the reference lots' lab values, the hypotheses with their tests and evidence IDs, the
 evidence titles, the ruled-out candidates and the notes. `--llm-dry-run` writes the exact request
 to `llm-request.json` in the report folder and prints it, without sending anything, so it can be
@@ -68,7 +75,8 @@ version of a summary it kept.
 
 ## Reproducibility
 
-Prompts are versioned files in the package (`penguineer/llm/prompts/summary-1.md`). Answers are
+Prompts are versioned files in the package (`penguineer/llm/prompts/summary-1.md`,
+`relations-1.md`). Answers are
 cached in `.penguineer/cache/llm/` by a hash of the prompt version, the provider, the model and
 the request, so re-running a report on the same results gives the same text without a second
 call. The run record stores the provider, the model and the prompts used (`llm_provider`,

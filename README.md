@@ -82,7 +82,7 @@ The tests in `tests/test_homeostat_live.py` run on that week. They are skipped w
 | `penguineer data health --data FILE [--graph graph.yaml]` | Gaps, frozen tags, spikes, out-of-range values, duplicate and non-existent timestamps → `health.json` | works |
 | `penguineer graph check --graph graph.yaml` | Schema and plant rules, plus the queue of inferred edges to confirm | works |
 | `penguineer graph lags --data FILE --graph graph.yaml` | Estimate dead times along `flows_to` edges from the data (prewhitened cross-correlation) | works |
-| `penguineer graph draft --tags tags.csv` | Draft tags, loops, valves and equipment from a tag list (ISA-5.1 names), and piping and instrument places from a DEXPI P&ID (`--pid`); every edge inferred | works |
+| `penguineer graph draft --tags tags.csv` | Draft tags, loops, valves and equipment from a tag list (ISA-5.1 names), piping and instrument places from a DEXPI P&ID (`--pid`), and an LLM's proposals for the rest (`--llm`); every edge inferred | works |
 | `penguineer lag --data FILE --cause TAG --effect TAG [--flow TAG]` | Fit the actual delay from a tag to another or to a lab result: fixed, following the flow, or with mixing | works |
 | `penguineer investigate --lot L --lims lims.csv --data FILE` | Align in material time, rank root-cause hypotheses, write the report | works |
 | `penguineer bench homeostat` | Score investigate on Homeostat plants with injected faults (needs `penguineer[bench]`) | works |

@@ -97,8 +97,7 @@ appear in `graph check`'s confirm queue. A unit that contradicts the name is rep
 without an ISA-5.1 name, such as `GRADE`, become tag nodes without a role.
 
 A tag list does not say how material flows, so on its own the draft has no `flows_to` edges and
-no streams. Sample points and qualities come from the engineer. LLM-proposed relations (`--llm`)
-are not built yet.
+no streams. Sample points and qualities come from the engineer.
 
 ### Adding the P&ID
 
@@ -137,3 +136,30 @@ goes to (0.6): confirm those. When the tag list says otherwise and is more sure 
 column, or a valve tag in the list), the tag list's answer is kept and the difference is
 reported. Instruments on the P&ID without a tag in the list are reported too. Everything from the
 P&ID has `source: dexpi` and is `inferred`, like the rest of the draft.
+
+### Asking an LLM for the rest
+
+What the rules and the P&ID leave open, an LLM can propose: which equipment a tag measures when
+its description names none, what a valve acts on, and, without a P&ID, the piping.
+
+```bash
+penguineer graph draft --tags tags.csv --llm local --llm-model <model>
+```
+
+```text
+graph draft: 7 tags, 1 loops, 1 valves, 2 equipment; 6 edges (1 flows_to), all inferred
+wrote graph.yaml
+1 tags without an ISA-5.1 name: GRADE
+note: the LLM proposed 4 relations; 3 kept (source llm), 1 rejected
+note: rejected LLM proposal R-101 -flows_to-> E-201: would close a cycle
+next: penguineer graph check --graph graph.yaml
+```
+
+The LLM sees the plant's equipment, streams and valves, the relations already drafted, and the
+open tags with their names, units and descriptions; never any data. It may only link nodes that
+exist. A proposal is kept only if both ends have the right types, it places a tag or valve that
+was open (it never changes a drafted relation), it does not repeat an edge, and its piping closes
+no cycle; the summary lists every rejected one and why. Kept edges have `source: llm`, are
+`inferred`, and get a confidence of 0.3 to 0.5, below every rule-based edge. `--llm-dry-run`
+writes the requests to `llm-request.json` next to the graph and sends nothing. See
+[Using an LLM](../guides/llm.md) for choosing a model.

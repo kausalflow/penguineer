@@ -58,6 +58,8 @@ Draft the plant graph from a tag list and an optional P&ID; every edge is inferr
 | `--unit` | str |  | Unit name (default: the project folder's name) |
 | `--force` | bool | `False` | Overwrite an existing graph |
 | `--llm` | `none` \| `local` \| `api` | `none` | LLM for relations rules cannot infer |
+| `--llm-model` | str |  | Model for --llm (default: llm.model in penguineer.yaml) |
+| `--llm-dry-run` | bool | `False` | Write what would be sent to the LLM, and send nothing |
 
 ## `penguineer graph lags`
 
