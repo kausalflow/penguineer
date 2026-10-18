@@ -20,12 +20,14 @@ nav = [
     "concepts/plant-graph.md",
     "concepts/data-health.md",
     "concepts/dead-times.md",
+    "concepts/lag.md",
     "concepts/investigate.md",
     "concepts/bench.md",
   ] },
   { "Guides" = [
     "guides/homeostat-live.md",
     "guides/python-api.md",
+    "guides/mcp.md",
   ] },
   { "Reference" = [
     "reference/cli.md",

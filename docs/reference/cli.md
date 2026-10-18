@@ -100,3 +100,23 @@ Align the data in time, rank root-cause hypotheses along graph paths, write the 
 | `--timezone` | str | `UTC` | Time zone of naive timestamps in the exports |
 | `--llm` | `none` \| `local` \| `api` | `none` | LLM for the prose summary only |
 | `--out` | path |  | Report folder (default: reports/<run_id> in the project) |
+
+## `penguineer lag`
+
+Fit the actual delay from a cause to an effect: fixed, flow-driven, or with mixing.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `--data` | existing file | required | Historian export, CSV or Parquet, wide or long |
+| `--cause` | str | required | Upstream tag |
+| `--effect` | str | required | Downstream tag, or with --lims a lab property |
+| `--lims` | existing file |  | LIMS export: the effect is then a lab property, compared at its sample times |
+| `--flow` | str, repeatable |  | Flow tags through the line, summed (enables the flow and volume models) |
+| `--flow-unit` | str | `m3/h` | Unit of the flow tags, for the volumes |
+| `--start` | datetime |  | Window start (inclusive) |
+| `--end` | datetime |  | Window end (exclusive) |
+| `--max-lag-minutes` | float | `240.0` | Longest delay to search |
+| `--step-seconds` | float |  | Grid step (default: the slower tag's median period) |
+| `--z-threshold` | float | `5.0` | Peak strength needed for an online effect, \|corr\|·√n |
+| `--timezone` | str | `UTC` | Time zone of naive timestamps in the exports |
+| `--out` | path |  | Folder for the plots (default: the run folder) |

@@ -30,4 +30,4 @@ By default the updated graph is written to the run folder (`runs/<run_id>/graph.
 
 ## Limits
 
-The estimate is a transport delay between two measured points, from the data as it is. Feedback control, recycles and mixing all smear a delay. Mixing in a vessel spreads a step out over its residence time, so the peak marks where the response is strongest, not where it starts. Material-time alignment, which accounts for flow-dependent delays and mixing, comes with `investigate`.
+The estimate is a transport delay between two measured points, from the data as it is. Feedback control, recycles and mixing all smear a delay. Mixing in a vessel spreads a step out over its residence time, so the peak marks where the response is strongest, not where it starts. `investigate` aligns in material time, which accounts for flow-dependent delays. To read how a delay depends on the flow, and how much mixing spreads it, use [`penguineer lag`](lag.md) on the two tags.
