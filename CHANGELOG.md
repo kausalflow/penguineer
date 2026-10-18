@@ -2,6 +2,24 @@
 
 penguineer and plantgraph are released together, with one version.
 
+## 0.4.0
+
+The investigation agent moves into penguineer, so any host can run an investigation with a model
+and get the same method, review and findings.
+
+### Added
+
+- `penguineer.agent`: the tool loop (budgets, transcript, pause and resume, notes from people
+  following the run), a tool-calling adapter for any provider through Pydantic AI, the planning
+  and analysis method as prompt blocks, the protocol's tools (`submit_plan`, `record_finding`,
+  `finish_analysis`, `build_report`), the independent review, findings with `{{Fn}}`
+  placeholders, keyword search over plant documents, and penguineer's commands as tool
+  definitions. See the [agent guide](https://kausalflow.com/penguineer/guides/agent/).
+- The `agent` extra (`pip install "penguineer[agent]"`) installs `pydantic-ai-slim` for the
+  provider adapter. The rest of `penguineer.agent` needs no extra.
+
+The commands and their outputs are unchanged.
+
 ## 0.3.0
 
 Lots in material time and group comparisons, so a caller such as an agent no longer needs its own
