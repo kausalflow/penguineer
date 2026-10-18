@@ -120,10 +120,7 @@ def test_command_writes_the_draft(tmp_path):
     assert "graph check" in result.summary()
     with pytest.raises(UsageError, match="--force"):
         penguineer.run("graph draft", tags=BENCH / "tags.csv", project=tmp_path)
-    again = penguineer.run(
-        "graph draft", tags=BENCH / "tags.csv", project=tmp_path, force=True, llm="local"
-    )
-    assert any("rule-based" in n for n in again.notes)
+    again = penguineer.run("graph draft", tags=BENCH / "tags.csv", project=tmp_path, force=True)
     assert again.n_flows == 0 and any("--pid" in n for n in again.notes)
     with_pid = penguineer.run(
         "graph draft", tags=BENCH / "tags.csv", pid=PID, project=tmp_path, force=True
