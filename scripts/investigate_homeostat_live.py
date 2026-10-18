@@ -162,21 +162,31 @@ def grade_of(rate: float | None) -> Grade | None:
 
 
 def grade_changes(sensors_csv: Path) -> pl.DataFrame:
-    """Times the recipe H2.rate changed: timestamp, value (the new rate). The first row is the
-    start of the data."""
+    """Grade changes read from the recipe H2.rate, which ramps between grades: start (last
+    reading at the old grade), end (first reading at the new one), old, new."""
     rate = (
         read_historian(sensors_csv, tags=["H2.rate"])
         .frame.select("timestamp", "value")
         .drop_nulls()
         .sort("timestamp")
     )
-    return rate.filter(pl.col("value").round(6).ne_missing(pl.col("value").round(6).shift(1)))
+    rows: list[dict] = []
+    stable: tuple[str, datetime] | None = None  # current grade and its last reading
+    for t, v in rate.iter_rows():
+        g = grade_of(v)
+        if g is None:
+            continue
+        if stable is not None and g.name != stable[0]:
+            rows.append({"start": stable[1], "end": t, "old": stable[0], "new": g.name})
+        stable = (g.name, t)
+    schema = {"start": pl.Datetime("us", "UTC"), "end": pl.Datetime("us", "UTC")}
+    return pl.DataFrame(rows, schema={**schema, "old": pl.String, "new": pl.String})
 
 
 def label_lots(lab_csv: Path, sensors_csv: Path) -> pl.DataFrame:
     """One row per lab sample: lot, sampled_at, grade, purity, dew point, off_spec, severity
     (how far outside the range, in range widths), marginal (within lab accuracy of the limit)
-    and hours since the last grade change."""
+    and hours since the last grade change ended."""
     lab = pl.read_csv(lab_csv, try_parse_dates=True)
     lab = lab.with_columns(pl.col("sampled_at").dt.replace_time_zone("UTC", non_existent="null"))
     wide = lab.pivot(on="tag", index="sampled_at", values="value", aggregate_function="first").sort(
@@ -192,7 +202,7 @@ def label_lots(lab_csv: Path, sensors_csv: Path) -> pl.DataFrame:
         .sort("timestamp")
     )
     wide = wide.join_asof(rate, left_on="sampled_at", right_on="timestamp", strategy="backward")
-    changes = grade_changes(sensors_csv).rename({"timestamp": "changed_at", "value": "_new"})
+    changes = grade_changes(sensors_csv).select(pl.col("end").alias("changed_at"))
     wide = wide.join_asof(changes, left_on="sampled_at", right_on="changed_at", strategy="backward")
     rows = []
     for r in wide.iter_rows(named=True):
@@ -258,6 +268,35 @@ def episodes(lots: pl.DataFrame, gap: int = 3) -> list[dict]:
     return out
 
 
+def investigate_lot(t: dict, window, lims: Path, out: Path, lines: list[str]) -> bool:
+    """Run investigate on one lot and add its section to ``lines``; whether it ran."""
+    lines += ["", f"## Lot {t['lot']} ({t['grade']})", ""]
+    h = t["hours_since_grade_change"]
+    if h is not None and h < TRANSITION.total_seconds() / 3600:
+        lines += [f"Sampled {h} h after a grade change: the plant may still be in transition.", ""]
+    grade = next((g for g in GRADES if g.name == t["grade"]), None)
+    if grade is None:
+        lines.append("No grade at the sample time (H2.rate not on a recipe value); skipped.")
+        return False
+    graph = save_graph(build_graph(window.tags, grade), out / f"graph-{t['lot']}.yaml")
+    try:
+        result = penguineer.run(
+            "investigate",
+            lot=t["lot"],
+            lims=lims,
+            data=window.sensors,
+            graph=graph,
+            hops=10,  # the electrolysers are 7 flows_to hops upstream of the product
+            project=out,
+            out=out / "reports" / t["lot"],
+        )
+    except PenguineerError as e:
+        lines.append(f"investigate stopped: {e}")
+        return False
+    lines += ["```text", result.summary(), "```"]
+    return True
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     now = datetime.now(UTC).replace(minute=0, second=0, microsecond=0)
@@ -291,10 +330,13 @@ def main() -> None:
     changes = grade_changes(window.sensors)
     lines += [
         "",
-        "Grade changes (H2.rate): "
-        + ", ".join(
-            f"{r['timestamp']:%m-%d %H:%M} {getattr(grade_of(r['value']), 'name', r['value'])}"
-            for r in changes.iter_rows(named=True)
+        "Grade changes (H2.rate ramps): "
+        + (
+            "; ".join(
+                f"{r['old']} to {r['new']} {r['start']:%m-%d %H:%M}-{r['end']:%H:%M}"
+                for r in changes.iter_rows(named=True)
+            )
+            or "none"
         ),
     ]
     roles = graph_from_tags(window.tags).nodes_of("tag")
@@ -329,42 +371,22 @@ def main() -> None:
         )
 
     if args.lot:
-        targets = lots.filter(pl.col("lot") == args.lot).to_dicts()
+        groups = [lots.filter(pl.col("lot") == args.lot).to_dicts()]
     else:
-        # The worst episodes that are more than lab error, each at its first lot.
-        real = [e for e in eps if not e["marginal"]]
-        targets = [e["first"] for e in sorted(real, key=lambda e: -e["worst"]["severity"])]
-    done = 0
-    for t in targets:
-        if done >= args.episodes:
-            break
-        grade = next(g for g in GRADES if g.name == t["grade"]) if t["grade"] else None
-        lines += ["", f"## Lot {t['lot']} ({t['grade']})", ""]
-        h = t["hours_since_grade_change"]
-        if h is not None and h < TRANSITION.total_seconds() / 3600:
-            lines.append(
-                f"Sampled {h} h after a grade change: the plant may still be in transition."
-            )
-            lines.append("")
-        if grade is None:
-            lines.append("No grade at the sample time (H2.rate not on a recipe value); skipped.")
-            continue
-        graph = save_graph(build_graph(window.tags, grade), out / f"graph-{t['lot']}.yaml")
-        try:
-            result = penguineer.run(
-                "investigate",
-                lot=t["lot"],
-                lims=lims,
-                data=window.sensors,
-                graph=graph,
-                project=out,
-                out=out / "reports" / t["lot"],
-            )
-        except PenguineerError as e:
-            lines += [f"investigate stopped: {e}"]
-            continue
-        lines += ["```text", result.summary(), "```"]
-        done += 1
+        # The worst episodes that are more than lab error. Each is investigated at its first lot,
+        # or at the next off-spec lot of the episode when investigate cannot run on that one.
+        real = sorted((e for e in eps if not e["marginal"]), key=lambda e: -e["worst"]["severity"])
+        groups = [
+            lots.filter(
+                pl.col("sampled_at").is_between(e["first"]["sampled_at"], e["last"]["sampled_at"])
+                & (pl.col("off_spec") != "")
+            ).to_dicts()
+            for e in real[: args.episodes]
+        ]
+    for group in groups:
+        for t in group:
+            if investigate_lot(t, window, lims, out, lines):
+                break
 
     text = "\n".join(lines) + "\n"
     (out / "summary.md").write_text(text)

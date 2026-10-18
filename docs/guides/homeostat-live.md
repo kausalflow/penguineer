@@ -43,7 +43,7 @@ uv run penguineer data health --data data/isidis-01/live.csv --graph data/isidis
 uv run python scripts/investigate_homeostat_live.py --out out/isidis-01
 ```
 
-It downloads the last 28 days, then:
+It downloads the last 35 days, then:
 
 - builds the plant graph from the data dictionary plus the flow order in the [plant card](https://homeostat.kausalflow.com/live/isidis-01.md): electrolysers and CO₂ acquisition, feed gas, Sabatier reactor, receiver, condenser, dryer, product. The card publishes no volumes, so the edges carry no dead times.
 - labels each lab sample as a lot (`S20261005T0300` is the sample taken at 03:00 UTC on 5 October) and gives it the grade the plant was making, read from the recipe tag `H2.rate`.

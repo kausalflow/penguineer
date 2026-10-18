@@ -9,7 +9,7 @@ on:
     inputs:
       days:
         description: "Days of data to download, ending now"
-        default: "28"
+        default: "35"
       lot:
         description: "Lot to investigate, e.g. S20261005T0300 (default: the newest off-spec episodes)"
         default: ""
@@ -35,7 +35,7 @@ jobs:
       - run: uv sync --locked
       - name: Investigate
         env:
-          DAYS: ${{ inputs.days || '28' }}
+          DAYS: ${{ inputs.days || '35' }}
           LOT: ${{ inputs.lot }}
         run: |
           since=$(date -u -d "$DAYS days ago" +%Y-%m-%dT%H:00:00+00:00)
