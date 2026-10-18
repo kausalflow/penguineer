@@ -507,6 +507,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Drafting a graph from a tag list">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-the-pid" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Adding the P&amp;ID
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1105,6 +1122,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Drafting a graph from a tag list">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-the-pid" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Adding the P&amp;ID
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1324,11 +1358,11 @@ engineer starts by confirming a draft rather than typing every node.</p>
 <p>The tag list is a CSV with a <code>tag</code> column and, if the export has them, <code>description</code>, <code>unit</code>,
 <code>equipment</code>, <code>range_low</code> and <code>range_high</code> (common alternatives such as <code>TagName</code>, <code>UOM</code> or <code>Max</code>
 are recognized).</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>graph draft: 14 tags, 2 loops, 2 valves, 2 equipment; 5 edges, all inferred
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>graph draft: 14 tags, 2 loops, 2 valves, 2 equipment; 5 edges (0 flows_to), all inferred
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>wrote graph.yaml
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>1 tags without an ISA-5.1 name: GRADE
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>warning: TT-305: the name says temperature but the unit 'bar' is a pressure
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>note: no piping (flows_to) in a tag list: add it, or confirm what a P&amp;ID or the LLM proposes
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>note: no piping (flows_to) in a tag list: add it, give the P&amp;ID with --pid, or confirm what the LLM proposes
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>next: penguineer graph check --graph graph.yaml
 </span></code></pre></div>
 <p>The draft reads each name with ISA-5.1 conventions:</p>
@@ -1387,9 +1421,40 @@ are recognized).</p>
 description or a naming convention than from a column or a tag in the list), so all of them
 appear in <code>graph check</code>'s confirm queue. A unit that contradicts the name is reported. Tags
 without an ISA-5.1 name, such as <code>GRADE</code>, become tag nodes without a role.</p>
-<p>A tag list does not say how material flows, so the draft has no <code>flows_to</code> edges, no streams,
-sample points or qualities: those come from the engineer. Reading the piping from a DEXPI P&amp;ID
-(<code>--pid</code>) and LLM-proposed relations (<code>--llm</code>) are not built yet.</p>
+<p>A tag list does not say how material flows, so on its own the draft has no <code>flows_to</code> edges and
+no streams. Sample points and qualities come from the engineer. LLM-proposed relations (<code>--llm</code>)
+are not built yet.</p>
+<h3 id="adding-the-pid">Adding the P&amp;ID<a class="headerlink" href="#adding-the-pid" title="Permanent link">&para;</a></h3>
+<p>With a DEXPI P&amp;ID (the Proteus XML that P&amp;ID tools export), the draft also reads how the plant
+is piped and where its instruments sit:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>penguineer<span class="w"> </span>graph<span class="w"> </span>draft<span class="w"> </span>--tags<span class="w"> </span>tags.csv<span class="w"> </span>--pid<span class="w"> </span>pid.xml
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>graph draft: 13 tags, 2 loops, 2 valves, 3 equipment; 19 edges (9 flows_to), all inferred
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>wrote graph.yaml
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>1 tags without an ISA-5.1 name: GRADE
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>warning: P&amp;ID instrument PI-305 has no tag in the tag list
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>next: penguineer graph check --graph graph.yaml
+</span></code></pre></div>
+<p>From the P&amp;ID it drafts:</p>
+<ul>
+<li><code>equipment</code> for every piece of equipment, by its tag name, with its kind from the DEXPI class
+  (<code>TubularHeatExchanger</code> is an exchanger);</li>
+<li>a <code>stream</code> for every off-page connector: a feed where material comes in, a product where it
+  leaves;</li>
+<li>a <code>flows_to</code> edge wherever a pipe runs from one piece of equipment (or a feed) to the next,
+  through tees, reducers and valves, in the direction the P&amp;ID draws its connections;</li>
+<li>for each instrument function that matches the tag list by letter and number (TIC-201 on the
+  P&amp;ID is TIC-201.SP, TT-201 and the rest in the list; a plant prefix is ignored): a <code>measures</code>
+  edge from its sensor's tag to where the sensor sits, and, for a controller, the valve its signal
+  goes to as the loop's actuator, with a <code>manipulates</code> edge to the equipment that valve's pipe
+  feeds.</li>
+</ul>
+<p>A sensor on a nozzle measures that equipment (confidence 0.85). A sensor on a pipe is read as
+measuring the equipment the pipe comes from, and a valve on a pipe as acting on the equipment it
+goes to (0.6): confirm those. When the tag list says otherwise and is more sure (its <code>equipment</code>
+column, or a valve tag in the list), the tag list's answer is kept and the difference is
+reported. Instruments on the P&amp;ID without a tag in the list are reported too. Everything from the
+P&amp;ID has <code>source: dexpi</code> and is <code>inferred</code>, like the rest of the draft.</p>
 
 
 
