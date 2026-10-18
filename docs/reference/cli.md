@@ -6,6 +6,21 @@ Every command also takes `--json` (print the result model as JSON on stdout), `-
 
 Exit codes: 0 success, 1 validation failed, 2 usage error, 3 not enough data, 4 internal error or not implemented yet.
 
+## `penguineer align`
+
+Average each tag over the window that made each lot, shifted back by its dead time.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `--data` | existing file | required | Historian export, CSV or Parquet, wide or long |
+| `--lots` | existing file | required | Lot windows: lot, start and end columns, CSV or Parquet; other columns are kept in the output |
+| `--tags` | str, repeatable |  | Tags to average (default: all) |
+| `--dead-time-min` | float |  | One dead time for every tag, in minutes (with --graph: for tags the graph cannot place) |
+| `--graph` | existing file |  | Plant graph: each tag's dead time to --sample-point along flows_to edges |
+| `--sample-point` | str |  | Graph node where the lots are measured (with --graph) |
+| `--timezone` | str | `UTC` | Time zone of naive timestamps in the exports |
+| `--out` | path |  | Where to write aligned.parquet and aligned.csv (default: run folder) |
+
 ## `penguineer bench homeostat`
 
 Run investigate on homeostat plants with injected faults and score it.
@@ -19,6 +34,19 @@ Run investigate on homeostat plants with injected faults and score it.
 | `--split-seed` | int |  | Seed of the split (train and validation have fixed public seeds; the hidden split needs its secret one) |
 | `--limit` | int |  | Run at most this many scenarios |
 | `--out` | path |  | Folder for bench.json and scenarios.csv (default: the run folder) |
+
+## `penguineer compare`
+
+Compare a column between two groups: difference in means, Welch's t-test, Cohen's d.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `--data` | existing file | required | A table, CSV or Parquet: for example align's aligned.parquet |
+| `--value` | str | required | Column to compare |
+| `--group` | str | required | Column that splits the rows into groups |
+| `--a` | str | required | Group A: rows whose --group equals this |
+| `--b` | str |  | Group B (default: every row not in group A) |
+| `--where` | str, repeatable |  | Keep only rows where column=value; repeat to require several |
 
 ## `penguineer data health`
 

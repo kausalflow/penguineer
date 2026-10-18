@@ -9,7 +9,8 @@ src/penguineer/
   cli/                    the Typer app generated from the registry, the CLI reference renderer
   commands/               one module per command: Params, Result, run()
   io/                     historian, LIMS, plant graph, DEXPI P&ID, Homeostat Live and scenario-bundle readers
-  engines/                deterministic engines: data health, dead times, alignment, tests, investigate,
+  engines/                deterministic engines: data health, dead times, alignment, lot windows,
+                          group comparison (Welch), tests, investigate,
                           and the fitted calibration (calibration.json)
   bench/                  the homeostat bench plant and its faults, bundle export, scoring
   llm/                    optional LLM providers, response cache, versioned prompts

@@ -4,14 +4,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import matplotlib
+import numpy as np
+from matplotlib.figure import Figure
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
-
-from penguineer.engines.lagfit import LagFit  # noqa: E402
-from penguineer.report.plots import CAUSE, QUALITY, _style, _times  # noqa: E402
+from penguineer.engines.lagfit import LagFit
+from penguineer.report.plots import CAUSE, QUALITY, _style, _times
 
 DAY_US = 86_400_000_000
 COLORS = {"fixed": "#6b7280", "flow": CAUSE, "mixing": "#047857"}
@@ -23,7 +20,8 @@ def _unit(coordinate: str, flow_unit: str) -> str:
 
 def profile_plot(fit: LagFit, path: Path, *, flow_unit: str = "volume") -> Path:
     """Each model's correlation over its dead time or volume, with the chance level."""
-    fig, axes = plt.subplots(1, len(fit.profiles), figsize=(3.4 * len(fit.profiles), 3), dpi=110)
+    fig = Figure(figsize=(3.4 * len(fit.profiles), 3), dpi=110)
+    axes = fig.subplots(1, len(fit.profiles))
     axes = np.atleast_1d(axes)
     found = {f.model: f for f in fit.fits}
     for ax, prof in zip(axes, fit.profiles, strict=True):
@@ -62,7 +60,6 @@ def profile_plot(fit: LagFit, path: Path, *, flow_unit: str = "volume") -> Path:
     axes[0].set_ylabel("correlation", fontsize=9)
     fig.tight_layout()
     fig.savefig(path)
-    plt.close(fig)
     return path
 
 
@@ -73,7 +70,8 @@ def fit_plot(fit: LagFit, path: Path, *, cause: str, effect: str) -> Path:
     lines can still be told apart, and only for the fixed model and the chosen one; the scaling
     uses all of the data.
     """
-    fig, ax = plt.subplots(figsize=(9, 3.2), dpi=110)
+    fig = Figure(figsize=(9, 3.2), dpi=110)
+    ax = fig.subplots()
     lab = fit.effect_kind == "lab"
     shown_us = (5 if lab else 2) * DAY_US
     since = fit.times[-1] - shown_us if fit.times.size else 0
@@ -108,5 +106,4 @@ def fit_plot(fit: LagFit, path: Path, *, cause: str, effect: str) -> Path:
     _style(ax)
     fig.tight_layout()
     fig.savefig(path)
-    plt.close(fig)
     return path
