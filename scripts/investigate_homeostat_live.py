@@ -269,14 +269,13 @@ def episodes(lots: pl.DataFrame, gap: int = 3) -> list[dict]:
 
 
 def investigate_lot(t: dict, window, lims: Path, out: Path, lines: list[str]) -> bool:
-    """Run investigate on one lot and add its section to ``lines``; whether it ran."""
-    lines += ["", f"## Lot {t['lot']} ({t['grade']})", ""]
+    """Run investigate on one lot and add what it found to ``lines``; whether it ran."""
     h = t["hours_since_grade_change"]
-    if h is not None and h < TRANSITION.total_seconds() / 3600:
-        lines += [f"Sampled {h} h after a grade change: the plant may still be in transition.", ""]
+    transition = h is not None and h < TRANSITION.total_seconds() / 3600
+    head = f"Lot {t['lot']}" + (f", sampled {h} h after a grade change" if transition else "")
     grade = next((g for g in GRADES if g.name == t["grade"]), None)
     if grade is None:
-        lines.append("No grade at the sample time (H2.rate not on a recipe value); skipped.")
+        lines.append(f"{head}: no grade at the sample time (H2.rate between recipes); skipped.")
         return False
     graph = save_graph(build_graph(window.tags, grade), out / f"graph-{t['lot']}.yaml")
     try:
@@ -291,9 +290,9 @@ def investigate_lot(t: dict, window, lims: Path, out: Path, lines: list[str]) ->
             out=out / "reports" / t["lot"],
         )
     except PenguineerError as e:
-        lines.append(f"investigate stopped: {e}")
+        lines.append(f"{head}: investigate stopped: {e}")
         return False
-    lines += ["```text", result.summary(), "```"]
+    lines += [f"{head}:", "", "```text", result.summary(), "```"]
     return True
 
 
@@ -384,9 +383,13 @@ def main() -> None:
             for e in real[: args.episodes]
         ]
     for group in groups:
+        if not group:
+            continue
+        lines += ["", f"## Episode {group[0]['lot']} ({group[0]['grade']})", ""]
         for t in group:
             if investigate_lot(t, window, lims, out, lines):
                 break
+            lines.append("")
 
     text = "\n".join(lines) + "\n"
     (out / "summary.md").write_text(text)
