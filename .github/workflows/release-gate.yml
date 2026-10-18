@@ -10,7 +10,7 @@ on:
     inputs:
       per_fault:
         description: "Plants per fault type (8 fault types; the gate needs 150 scenarios)"
-        default: "20"
+        default: "25"
 
 permissions:
   contents: read
@@ -38,12 +38,16 @@ jobs:
             echo "::error::the repository secret BENCH_HIDDEN_SEED is not set (an environment secret does not reach this job)"
             exit 1
           fi
+          # --split-seed takes a whole number; any secret text is turned into one by a hash, and
+          # the number is masked like the secret.
+          seed=$(python3 -c 'import hashlib, os; print(int(hashlib.sha256(os.environ["SEED"].encode()).hexdigest()[:15], 16))')
+          echo "::add-mask::$seed"
           work="$RUNNER_TEMP/hidden"
           mkdir -p "$work"
           # Only the scores are printed: progress and per-scenario output stay in a log on the
           # runner, whose end is shown only if the bench stops with an error (GitHub masks the
           # seed in it).
-          uv run penguineer bench homeostat --scenarios hidden --split-seed "$SEED" \
+          uv run penguineer bench homeostat --scenarios hidden --split-seed "$seed" \
             --per-fault "$PER_FAULT" --project "$work" --out "$work/out" > "$work.log" 2>&1 \
             || { echo "::error::the hidden bench stopped with an error"; tail -20 "$work.log"; exit 1; }
           status=0
