@@ -1436,7 +1436,7 @@
 <td><code>--tags</code></td>
 <td>existing file</td>
 <td>required</td>
-<td>Tag list (tag, description, unit) as CSV</td>
+<td>Tag list as CSV: tag, and optionally description, unit, equipment, range_low, range_high</td>
 </tr>
 <tr>
 <td><code>--pid</code></td>
@@ -1448,7 +1448,19 @@
 <td><code>--out</code></td>
 <td>path</td>
 <td><code>graph.yaml</code></td>
-<td>Where to write the drafted graph</td>
+<td>Where to write the drafted graph (relative: the project)</td>
+</tr>
+<tr>
+<td><code>--unit</code></td>
+<td>str</td>
+<td></td>
+<td>Unit name (default: the project folder's name)</td>
+</tr>
+<tr>
+<td><code>--force</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>Overwrite an existing graph</td>
 </tr>
 <tr>
 <td><code>--llm</code></td>
