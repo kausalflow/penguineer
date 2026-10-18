@@ -8,4 +8,5 @@ from penguineer.commands import (  # noqa: F401
     graph_lags,
     init,
     investigate,
+    lag,
 )

@@ -36,6 +36,8 @@ uv run python scripts/fit_calibration.py .penguineer/bench/train-* .penguineer/b
 
 Commit the new `src/penguineer/engines/calibration.json` with the change, and quote the validation numbers in the pull request. Never fit on the validation split's answers beyond the thresholds, and never on the hidden split.
 
+A change to `penguineer lag`'s engine (`engines/lagfit.py`) is checked the same way against Homeostat plants with known volumes: run `scripts/validate_lag.py` (see [Finding the actual lag](concepts/lag.md#checked-on-homeostat-plants)) and quote its errors in the pull request.
+
 ## Documentation
 
 The site is built with [Zensical](https://zensical.org):
