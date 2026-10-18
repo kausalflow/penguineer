@@ -1327,7 +1327,7 @@
 <p><code>scripts/investigate_homeostat_live.py</code> runs <code>investigate</code> on isidis-01's own off-spec lots:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/investigate_homeostat_live.py<span class="w"> </span>--out<span class="w"> </span>out/isidis-01
 </span></code></pre></div>
-<p>It downloads the last 28 days, then:</p>
+<p>It downloads the last 35 days, then:</p>
 <ul>
 <li>builds the plant graph from the data dictionary plus the flow order in the <a href="https://homeostat.kausalflow.com/live/isidis-01.md">plant card</a>: electrolysers and CO₂ acquisition, feed gas, Sabatier reactor, receiver, condenser, dryer, product. The card publishes no volumes, so the edges carry no dead times.</li>
 <li>labels each lab sample as a lot (<code>S20261005T0300</code> is the sample taken at 03:00 UTC on 5 October) and gives it the grade the plant was making, read from the recipe tag <code>H2.rate</code>.</li>
