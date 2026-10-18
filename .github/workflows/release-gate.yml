@@ -10,7 +10,7 @@ on:
     inputs:
       per_fault:
         description: "Plants per fault type (8 fault types; the gate needs 150 scenarios)"
-        default: "20"
+        default: "25"
 
 permissions:
   contents: read
