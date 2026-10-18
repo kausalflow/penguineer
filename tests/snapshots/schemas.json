@@ -810,6 +810,12 @@
         },
         "additionalProperties": false,
         "properties": {
+          "force": {
+            "default": false,
+            "description": "Overwrite an existing graph",
+            "title": "Force",
+            "type": "boolean"
+          },
           "llm": {
             "$ref": "#/$defs/LLMMode",
             "default": "none",
@@ -817,7 +823,7 @@
           },
           "out": {
             "default": "graph.yaml",
-            "description": "Where to write the drafted graph",
+            "description": "Where to write the drafted graph (relative: the project)",
             "format": "path",
             "title": "Out",
             "type": "string"
@@ -844,11 +850,24 @@
             "accept": [
               ".csv"
             ],
-            "description": "Tag list (tag, description, unit) as CSV",
+            "description": "Tag list as CSV: tag, and optionally description, unit, equipment, range_low, range_high",
             "format": "file-path",
             "title": "Tags",
             "type": "string",
             "ui": "file"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Unit name (default: the project folder's name)",
+            "title": "Unit"
           }
         },
         "required": [
@@ -863,24 +882,69 @@
             "title": "Graph",
             "type": "string"
           },
+          "n_actuators": {
+            "title": "N Actuators",
+            "type": "integer"
+          },
           "n_edges": {
             "title": "N Edges",
+            "type": "integer"
+          },
+          "n_equipment": {
+            "title": "N Equipment",
             "type": "integer"
           },
           "n_inferred": {
             "title": "N Inferred",
             "type": "integer"
           },
+          "n_loops": {
+            "title": "N Loops",
+            "type": "integer"
+          },
           "n_nodes": {
             "title": "N Nodes",
             "type": "integer"
+          },
+          "n_tags": {
+            "title": "N Tags",
+            "type": "integer"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "unparsed": {
+            "description": "Tags whose names do not follow ISA-5.1",
+            "items": {
+              "type": "string"
+            },
+            "title": "Unparsed",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
           }
         },
         "required": [
           "graph",
           "n_nodes",
           "n_edges",
-          "n_inferred"
+          "n_inferred",
+          "n_tags",
+          "n_loops",
+          "n_actuators",
+          "n_equipment",
+          "unparsed",
+          "warnings",
+          "notes"
         ],
         "title": "GraphDraftResult",
         "type": "object"

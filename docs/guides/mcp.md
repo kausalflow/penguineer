@@ -46,7 +46,7 @@ One tool per command, named after it with underscores:
 | `init` | `penguineer init` |
 | `data_health` | `penguineer data health` |
 | `graph_check` | `penguineer graph check` |
-| `graph_draft` | `penguineer graph draft` (not built yet) |
+| `graph_draft` | `penguineer graph draft` |
 | `graph_lags` | `penguineer graph lags` |
 | `lag` | `penguineer lag` |
 | `investigate` | `penguineer investigate` |
