@@ -1,0 +1,55 @@
+name: Release gate
+
+# Runs the bench on the hidden split, the release gate in docs/concepts/bench.md.
+# Run by hand before a release. The split's seed is the repository secret BENCH_HIDDEN_SEED.
+# This repository is public, so the run shows only the summary scores: nothing is uploaded,
+# nothing is cached, and the bundles, scenarios.csv and bench.json stay on the runner.
+
+on:
+  workflow_dispatch:
+    inputs:
+      per_fault:
+        description: "Plants per fault type (8 fault types; the gate needs 150 scenarios)"
+        default: "20"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-gate
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked --extra bench
+      - name: Hidden bench
+        env:
+          SEED: ${{ secrets.BENCH_HIDDEN_SEED }}
+          PER_FAULT: ${{ inputs.per_fault }}
+        run: |
+          if [ -z "$SEED" ]; then
+            echo "::error::the repository secret BENCH_HIDDEN_SEED is not set"
+            exit 1
+          fi
+          work="$RUNNER_TEMP/hidden"
+          mkdir -p "$work"
+          # Only the scores are printed: progress and per-scenario output stay in a log on the
+          # runner, whose end is shown only if the bench stops with an error (GitHub masks the
+          # seed in it).
+          uv run penguineer bench homeostat --scenarios hidden --split-seed "$SEED" \
+            --per-fault "$PER_FAULT" --project "$work" --out "$work/out" > "$work.log" 2>&1 \
+            || { echo "::error::the hidden bench stopped with an error"; tail -20 "$work.log"; exit 1; }
+          uv run python -m penguineer.bench.gate "$work/out/bench.json" | tee gate.txt
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f gate.txt ]; then
+            { echo '```text'; cat gate.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
