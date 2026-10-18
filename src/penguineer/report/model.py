@@ -13,6 +13,8 @@ from pydantic import BaseModel, Field
 
 from penguineer.engines.health import HealthFinding
 
+Confidence = Literal["high", "medium", "low"]
+
 
 class HypothesisKind(StrEnum):
     process = "process"  # a measured process variable moved and the quality followed
@@ -62,7 +64,7 @@ class Hypothesis(BaseModel):
     dead_time_min: float = Field(description="Cumulative dead time to the sampled node")
     tests: list[TestResult]
     score: float
-    confidence: Literal["high", "medium", "low"]
+    confidence: Confidence
     ruled_out: list[RuledOut] = Field(
         default_factory=list, description="Alternatives this hypothesis explains away"
     )
@@ -71,6 +73,27 @@ class Hypothesis(BaseModel):
     )
     evidence: list[str] = Field(default_factory=list, description="Evidence item IDs")
     summary: str
+
+
+class Claim(BaseModel):
+    cause: str = Field(description="A hypothesis's cause_tag, or its cause_node without a tag")
+    confidence: Confidence = Field(description="At most that hypothesis's label")
+    evidence: list[str] = Field(description="Evidence item IDs supporting the sentence")
+    sentence: str
+
+
+class Summary(BaseModel):
+    """The prose at the top of the report: the template's, or an LLM's that passed the checks."""
+
+    overview: str
+    claims: list[Claim]
+    source: Literal["template", "llm"]
+    provider: str | None = Field(None, description="local, anthropic or openai, for an LLM")
+    model: str | None = None
+    prompt: str | None = Field(None, description="Prompt name and version, e.g. summary@1")
+    fallback: str | None = Field(
+        None, description="Why an LLM summary was not used, when one was asked for"
+    )
 
 
 class QualityEvent(BaseModel):
@@ -113,3 +136,4 @@ class Report(BaseModel):
     health: list[HealthFinding] = Field(description="Health findings on candidate tags")
     notes: list[str]
     calibration: str = Field(description="How the confidence labels were set")
+    summary: Summary | None = Field(None, description="The prose summary, checked against these")

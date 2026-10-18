@@ -27,19 +27,30 @@
   img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; margin-top: 8px; }
   code { font-size: 13px; background: var(--soft); padding: 1px 4px; border-radius: 4px; }
   ul { padding-left: 20px; }
+  .summary { border-left: 3px solid #1d4ed8; padding: 4px 0 4px 14px; margin: 16px 0; }
+  .summary li { margin: 4px 0; }
+  .cite { color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
 <main>
 <h1>Lot L0803-A: purity low</h1>
-<div class="meta">penguineer 0.1.0 · run 20261017T234831Z-37d6c4 · 2026-10-17 23:48 UTC</div>
+<div class="meta">penguineer 0.1.0 · run 20261018T081350Z-b3b69f · 2026-10-18 08:13 UTC</div>
 
 <p class="lead">
   purity was <span class="bad">98.2 wt%</span>
 (spec ≥ 99)
 ,
   sampled at SP-1 on 2026-08-03 07:59.
-The leading hypothesis: TI-101.PV (E-101) ran 5.74 degC low from 2026-08-03 05:29, 50 min upstream of the sample point; purity moved when it arrived.</p>
+</p>
+
+<section class="summary">
+  <p>The leading hypothesis, with high confidence: TI-101.PV moved low.</p>
+<ul>    <li><code>TI-101.PV</code> <span class="badge high">high</span> TI-101.PV (E-101) ran 5.74 degC low from 2026-08-03 05:29, 50 min upstream of the sample point; purity moved when it arrived. <span class="cite">[E004]</span></li>
+    <li><code>PT-100.PV</code> <span class="badge medium">medium</span> PT-100.PV (S-feed) ran 1.02 bar low from 2026-08-03 05:27, 52 min upstream of the sample point; purity moved 55 min after the expected arrival. <span class="cite">[E005, E002]</span></li>
+    <li><code>PI-103.PV</code> <span class="badge medium">medium</span> PI-103.PV has a flatline finding in the lot window: value frozen at 5.968 for 90 min <span class="cite">[E006]</span></li>
+</ul>  <div class="meta">Summary from the template.</div>
+</section>
 
 <img src="evidence/quality.png" alt="purity: lot L0803-A against the reference lots">
 <h2>Hypotheses</h2>
@@ -95,7 +106,7 @@ The leading hypothesis: TI-101.PV (E-101) ran 5.74 degC low from 2026-08-03 05:2
   <tr><th>Regime</th><td>GRADE = 1</td></tr>
   <tr><th>Reference lots</th><td>L0802-A (99.6), L0801-C (99.7), L0801-B (99.7)</td></tr>
   <tr><th>Candidates tested</th><td>5 tags, on a 60 s grid in material time</td></tr>
-  <tr><th>Confidence</th><td>Confidence: high when the score is at least 0.425 and 0.025 ahead of the next hypothesis, medium from 0.25. Test weights: effect size 0.5, onset 0.3, lag correlation 0.3. Weights fitted on the homeostat train split (85 scenarios), thresholds chosen on the homeostat validation split (85 scenarios) (homeostat 0.1.0a3, bench plant 4144102c25e7).</td></tr>
+  <tr><th>Confidence</th><td>Confidence: high when the score is at least 0.4 and 0.025 ahead of the next hypothesis, medium from 0.25. Test weights: effect size 0.5, onset 0.3, lag correlation 0.3. Weights fitted on the homeostat train split (85 scenarios), thresholds chosen on the homeostat validation split (85 scenarios) (homeostat 0.1.0a3, bench plant 4144102c25e7).</td></tr>
 </table>
 <ul><li>1 earlier lots skipped: different regime</li></ul>
 <h2>Data health on the candidate tags</h2>

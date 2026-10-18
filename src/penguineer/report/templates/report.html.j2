@@ -27,6 +27,9 @@
   img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; margin-top: 8px; }
   code { font-size: 13px; background: var(--soft); padding: 1px 4px; border-radius: 4px; }
   ul { padding-left: 20px; }
+  .summary { border-left: 3px solid #1d4ed8; padding: 4px 0 4px 14px; margin: 16px 0; }
+  .summary li { margin: 4px 0; }
+  .cite { color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
@@ -41,8 +44,18 @@
   {% elif ev.spec_low is not none %}(spec ≥ {{ ev.spec_low | num }})
   {% elif ev.spec_high is not none %}(spec ≤ {{ ev.spec_high | num }}){% endif %},
   sampled at {{ ev.sample_point or ev.sampled_node }} on {{ ev.sampled_at | when }}.
-  {% if r.hypotheses %}The leading hypothesis: {{ r.hypotheses[0].summary }}{% else %}No hypothesis stood out.{% endif %}
 </p>
+
+{% set s = r.summary %}
+{% if s %}
+<section class="summary">
+  <p>{{ s.overview }}</p>
+  {% if s.claims %}<ul>{% for c in s.claims %}
+    <li><code>{{ c.cause }}</code> <span class="badge {{ c.confidence }}">{{ c.confidence }}</span> {{ c.sentence }}{% if c.evidence %} <span class="cite">[{{ c.evidence | join(", ") }}]</span>{% endif %}</li>
+  {% endfor %}</ul>{% endif %}
+  <div class="meta">{% if s.source == "llm" %}Written by {{ s.provider }} model {{ s.model }} ({{ s.prompt }}) from the results below, and checked against them: every cause is a hypothesis, every cited ID exists, no confidence above its label.{% else %}Summary from the template.{% if s.fallback %} An LLM summary ({{ s.provider }}, {{ s.model }}) was not used: {{ s.fallback }}{% endif %}{% endif %}</div>
+</section>
+{% endif %}
 
 {% set overview = r.evidence[0] if r.evidence and r.evidence[0].kind == "plot" else none %}
 {% if overview %}<img src="{{ overview.path }}" alt="{{ overview.title }}">{% endif %}

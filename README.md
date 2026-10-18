@@ -123,7 +123,8 @@ src/penguineer/
   io/                  historian, LIMS, graph, Homeostat Live and scenario-bundle readers
   engines/             deterministic engines: data health, dead times, investigate, calibration
   bench/               the homeostat bench plant, bundle export and scoring
-  report/              report models, evidence plots, HTML and Markdown templates
+  llm/                 optional LLM providers, response cache, versioned prompts
+  report/              report models, grounded summary, evidence plots, HTML and Markdown templates
   graph/               graph check and graph draft
 tests/                 unit, CLI, to_argv round-trip property tests, schema snapshot
 examples/demo/         a small plant with injected data faults
