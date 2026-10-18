@@ -1257,6 +1257,25 @@
             "default": "none",
             "description": "LLM for the prose summary only"
           },
+          "llm_dry_run": {
+            "default": false,
+            "description": "Write what would be sent to the LLM, and send nothing",
+            "title": "Llm Dry Run",
+            "type": "boolean"
+          },
+          "llm_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Model for --llm (default: llm.model in penguineer.yaml)",
+            "title": "Llm Model"
+          },
           "lot": {
             "description": "Lot ID as it appears in the LIMS export",
             "title": "Lot",
@@ -1748,6 +1767,19 @@
             "title": "Hypotheses",
             "type": "array"
           },
+          "llm_payloads": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "With --llm-dry-run: the file holding what would have been sent",
+            "title": "Llm Payloads"
+          },
           "lot": {
             "title": "Lot",
             "type": "string"
@@ -1781,6 +1813,11 @@
             },
             "title": "Ruled Out",
             "type": "array"
+          },
+          "summary_source": {
+            "description": "template, or llm when an LLM summary was kept",
+            "title": "Summary Source",
+            "type": "string"
           }
         },
         "required": [
@@ -1792,7 +1829,8 @@
           "report_dir",
           "report_json",
           "report_html",
-          "report_md"
+          "report_md",
+          "summary_source"
         ],
         "title": "InvestigateResult",
         "type": "object"

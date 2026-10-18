@@ -99,6 +99,8 @@ Align the data in time, rank root-cause hypotheses along graph paths, write the 
 | `--step-seconds` | float |  | Grid step (default: the slowest candidate tag's period) |
 | `--timezone` | str | `UTC` | Time zone of naive timestamps in the exports |
 | `--llm` | `none` \| `local` \| `api` | `none` | LLM for the prose summary only |
+| `--llm-model` | str |  | Model for --llm (default: llm.model in penguineer.yaml) |
+| `--llm-dry-run` | bool | `False` | Write what would be sent to the LLM, and send nothing |
 | `--out` | path |  | Report folder (default: reports/<run_id> in the project) |
 
 ## `penguineer lag`

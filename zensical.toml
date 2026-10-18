@@ -28,6 +28,7 @@ nav = [
     "guides/homeostat-live.md",
     "guides/python-api.md",
     "guides/mcp.md",
+    "guides/llm.md",
   ] },
   { "Reference" = [
     "reference/cli.md",

@@ -145,6 +145,7 @@ class Registry:
         try:
             result = cmd.func(params, ctx)
         except BaseException as e:
+            record.note_llm(ctx)
             record.finish(
                 started,
                 status="error",
@@ -154,6 +155,7 @@ class Registry:
             if write_record:
                 record.write(ctx.run_dir)
             raise
+        record.note_llm(ctx)
         record.finish(started, status="ok", exit_code=result.exit_code())
         record.outputs = [str(p) for p in result.output_paths()]
         if write_record:
@@ -210,6 +212,9 @@ class RunRecord(BaseModel):
     python_version: str
     seed: int
     llm: str
+    llm_provider: str | None = None
+    llm_model: str | None = None
+    llm_prompts: list[str] = []
     inputs: list[InputFile]
     outputs: list[str] = []
     started_at: str
@@ -239,6 +244,11 @@ class RunRecord(BaseModel):
             inputs=[_hash_file(p) for p in _input_files(params)],
             started_at=datetime.now(UTC).isoformat(timespec="seconds"),
         )
+
+    def note_llm(self, ctx: RunContext) -> None:
+        self.llm_provider = ctx.llm_provider
+        self.llm_model = ctx.llm_model
+        self.llm_prompts = list(ctx.llm_prompts)
 
     def finish(self, started: float, *, status: str, exit_code: int, error: str | None = None):
         self.duration_s = round(time.perf_counter() - started, 3)
