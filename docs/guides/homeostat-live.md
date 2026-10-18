@@ -34,3 +34,21 @@ uv run penguineer data health --data data/isidis-01/live.csv --graph data/isidis
 ## In the tests
 
 `tests/test_homeostat_live.py` runs on the plant's first public benchmark week, 2 to 9 October 2026. That week is released and frozen, so its data never changes. The tests are skipped without network access. CI sets `PENGUINEER_REQUIRE_HOMEOSTAT=1`, so there they fail instead of skipping. Downloads are cached in `PENGUINEER_HOMEOSTAT_CACHE`, by default `tests/.cache/homeostat/`.
+
+## Investigate a real off-spec lot
+
+`scripts/investigate_homeostat_live.py` runs `investigate` on isidis-01's own off-spec lots:
+
+```bash
+uv run python scripts/investigate_homeostat_live.py --out out/isidis-01
+```
+
+It downloads the last 28 days, then:
+
+- builds the plant graph from the data dictionary plus the flow order in the [plant card](https://homeostat.kausalflow.com/live/isidis-01.md): electrolysers and CO₂ acquisition, feed gas, Sabatier reactor, receiver, condenser, dryer, product. The card publishes no volumes, so the edges carry no dead times.
+- labels each lab sample as a lot (`S20261005T0300` is the sample taken at 03:00 UTC on 5 October) and gives it the grade the plant was making, read from the recipe tag `H2.rate`.
+- marks a lot off spec when purity (`AT-201`) is below the grade's range or the dew point (`AT-202`) is above it. A dew point below the range is drier gas, not off spec.
+- treats the recipe tags (`H2.rate`, `DRY.bypass`, `FFC-102.ratio`, `TIC-201.sp`) as regime tags, so a lot is compared only with earlier lots of the same grade.
+- runs `investigate` on the first lot of the newest off-spec episodes and writes `summary.md`, `lots.csv` and a report per lot.
+
+The *Homeostat Live* workflow runs the script in GitHub Actions (start it from the Actions tab, optionally with a lot) and uploads the data and the reports as an artifact.
