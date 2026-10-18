@@ -14,4 +14,5 @@ It reads files and writes files. The engines are deterministic Python, and an LL
 - [Getting started](getting-started.md): install it and run `data health` on the demo plant.
 - [Commands and run records](concepts/commands.md): how one definition becomes the CLI and the Python API.
 - [Homeostat Live](guides/homeostat-live.md): run on a public simulated plant.
+- [MCP server](guides/mcp.md): let an assistant such as Claude Code run the commands.
 - [CLI reference](reference/cli.md): every command and option.

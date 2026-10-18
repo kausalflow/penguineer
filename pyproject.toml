@@ -31,6 +31,8 @@ dependencies = [
 # Generates the homeostat bench scenarios. Pinned: a scenario is only reproducible with the
 # Homeostat and NumPy versions that made it (uv.lock pins NumPy).
 bench = ["homeostat[fast]==0.1.0a3"]
+# `penguineer mcp`: every command as a tool for MCP clients (stdio, local only).
+mcp = ["mcp>=2.1,<3"]
 
 [project.urls]
 Documentation = "https://kausalflow.com/penguineer/"
