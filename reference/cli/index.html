@@ -312,6 +312,8 @@
       
         
       
+        
+      
     
     
     
@@ -479,6 +481,33 @@
     
   
   Investigating an off-spec lot
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/bench/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The homeostat bench
 
     
   </span>
@@ -1148,13 +1177,37 @@
 <td><code>--bundles</code></td>
 <td>existing folder</td>
 <td></td>
-<td>Folder of exported homeostat scenario bundles</td>
+<td>Folder of exported scenario bundles (default: generate them with Homeostat into .penguineer/bench/ in the project)</td>
+</tr>
+<tr>
+<td><code>--per-fault</code></td>
+<td>int</td>
+<td><code>12</code></td>
+<td>Plants per fault type to generate</td>
+</tr>
+<tr>
+<td><code>--faults</code></td>
+<td>str, repeatable</td>
+<td></td>
+<td>Fault types to generate (default: all)</td>
+</tr>
+<tr>
+<td><code>--split-seed</code></td>
+<td>int</td>
+<td></td>
+<td>Seed of the split (train and validation have fixed public seeds; the hidden split needs its secret one)</td>
 </tr>
 <tr>
 <td><code>--limit</code></td>
 <td>int</td>
 <td></td>
 <td>Run at most this many scenarios</td>
+</tr>
+<tr>
+<td><code>--out</code></td>
+<td>path</td>
+<td></td>
+<td>Folder for bench.json and scenarios.csv (default: the run folder)</td>
 </tr>
 </tbody>
 </table>

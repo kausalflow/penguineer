@@ -310,6 +310,8 @@
       
         
       
+        
+      
     
     
     
@@ -477,6 +479,33 @@
     
   
   Investigating an off-spec lot
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/bench/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The homeostat bench
 
     
   </span>
@@ -852,6 +881,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-bench-and-the-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The bench and the calibration
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -955,6 +995,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-bench-and-the-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The bench and the calibration
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#documentation" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
@@ -1039,17 +1090,25 @@
 <p>Use <code>FilePath</code> for input files, so the CLI checks that they exist and the run record hashes them. Put engines in <code>engines/</code>, typed in and out and free of global state.</p>
 <h2 id="schemas-are-public-api">Schemas are public API<a class="headerlink" href="#schemas-are-public-api" title="Permanent link">&para;</a></h2>
 <p><code>tests/test_schemas.py</code> fails when any command's Params or Result schema changes, because Alchemist builds on them. Regenerate the snapshot only for an intended change, and say so in the pull request.</p>
+<h2 id="the-bench-and-the-calibration">The bench and the calibration<a class="headerlink" href="#the-bench-and-the-calibration" title="Permanent link">&para;</a></h2>
+<p>A change to a test, a rule or the ranking changes how <code>investigate</code> scores on the <a href="../concepts/bench/">homeostat bench</a>; the Bench workflow posts the smoke bench in every pull request's job summary. To refit the weights and thresholds after such a change:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>sync<span class="w"> </span>--extra<span class="w"> </span>bench
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>uv<span class="w"> </span>run<span class="w"> </span>penguineer<span class="w"> </span>bench<span class="w"> </span>homeostat<span class="w"> </span>--scenarios<span class="w"> </span>train<span class="w"> </span>--per-fault<span class="w"> </span><span class="m">12</span><span class="w"> </span>--project<span class="w"> </span>.
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>uv<span class="w"> </span>run<span class="w"> </span>penguineer<span class="w"> </span>bench<span class="w"> </span>homeostat<span class="w"> </span>--scenarios<span class="w"> </span>validation<span class="w"> </span>--per-fault<span class="w"> </span><span class="m">12</span><span class="w"> </span>--project<span class="w"> </span>.
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/fit_calibration.py<span class="w"> </span>.penguineer/bench/train-*<span class="w"> </span>.penguineer/bench/validation-*
+</span></code></pre></div>
+<p>Commit the new <code>src/penguineer/engines/calibration.json</code> with the change, and quote the validation numbers in the pull request. Never fit on the validation split's answers beyond the thresholds, and never on the hidden split.</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
 <p>The site is built with <a href="https://zensical.org">Zensical</a>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uvx<span class="w"> </span>zensical<span class="w"> </span>serve<span class="w">    </span><span class="c1"># preview on http://localhost:8000</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>uvx<span class="w"> </span>zensical<span class="w"> </span>build<span class="w">    </span><span class="c1"># static site in ./site</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uvx<span class="w"> </span>zensical<span class="w"> </span>serve<span class="w">    </span><span class="c1"># preview on http://localhost:8000</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uvx<span class="w"> </span>zensical<span class="w"> </span>build<span class="w">    </span><span class="c1"># static site in ./site</span>
 </span></code></pre></div>
 <p><code>docs/reference/cli.md</code> is generated from the registry, and a test fails when it is out of date.</p>
 <h2 id="docs-previews-and-screenshots">Docs previews and screenshots<a class="headerlink" href="#docs-previews-and-screenshots" title="Permanent link">&para;</a></h2>
 <p>Every pull request from a branch of this repository gets a preview of the documentation at <code>https://kausalflow.com/penguineer/pr-preview/pr-&lt;number&gt;/</code>, posted as a comment on the pull request and removed when it closes. <code>main</code> is published at <a href="https://kausalflow.com/penguineer/">https://kausalflow.com/penguineer/</a>. Both come from the <code>gh-pages</code> branch, written by <code>.github/workflows/docs.yml</code>.</p>
 <p>Each deploy also has screenshots of every page under <code>_screenshots/</code> (for a preview, <code>pr-preview/pr-&lt;number&gt;/_screenshots/</code>), taken with Playwright by <code>scripts/screenshot_docs.py</code>. To take them locally:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uvx<span class="w"> </span><span class="nv">zensical</span><span class="o">==</span><span class="m">0</span>.0.70<span class="w"> </span>build<span class="w"> </span>--clean
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uv<span class="w"> </span>run<span class="w"> </span>--no-project<span class="w"> </span>--with<span class="w"> </span><span class="nv">playwright</span><span class="o">==</span><span class="m">1</span>.56.0<span class="w"> </span>python<span class="w"> </span>scripts/screenshot_docs.py<span class="w"> </span>site
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>uvx<span class="w"> </span><span class="nv">zensical</span><span class="o">==</span><span class="m">0</span>.0.70<span class="w"> </span>build<span class="w"> </span>--clean
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>uv<span class="w"> </span>run<span class="w"> </span>--no-project<span class="w"> </span>--with<span class="w"> </span><span class="nv">playwright</span><span class="o">==</span><span class="m">1</span>.56.0<span class="w"> </span>python<span class="w"> </span>scripts/screenshot_docs.py<span class="w"> </span>site
 </span></code></pre></div>
 <p>A pull request description includes the preview link and screenshots of the pages it changes, and of any visible output such as a command's summary. The pull request template has sections for both.</p>
 <h2 id="releasing">Releasing<a class="headerlink" href="#releasing" title="Permanent link">&para;</a></h2>

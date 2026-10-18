@@ -19,7 +19,7 @@
         <link rel="prev" href="../dead-times/">
       
       
-        <link rel="next" href="../../guides/homeostat-live/">
+        <link rel="next" href="../bench/">
       
       
         
@@ -314,6 +314,8 @@
       
         
       
+        
+      
     
     
     
@@ -579,6 +581,33 @@
   
 </nav>
       
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bench/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The homeostat bench
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1023,6 +1052,8 @@
       
         
       
+        
+      
     
     
     
@@ -1067,16 +1098,16 @@
 </span></code></pre></div>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>investigate: lot L0803-A, purity 98.2 wt% (spec &gt;= 99), sampled 2026-08-03 07:59 at SP-1
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  #1 TI-101.PV  high   score 0.99  process
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>     TI-101.PV (E-101) ran 5.73 degC low from 2026-08-03 05:29, 50 min upstream of the sample point; purity moved when it arrived.
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  #2 PI-103.PV  medium score 0.45  measurement_fault
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>     PI-103.PV has a flatline finding in the lot window: value frozen at 5.968 for 90 min
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  #3 PT-100.PV  medium score 0.40  process
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>     PT-100.PV (S-feed) ran 1.03 bar low from 2026-08-03 05:27, 52 min upstream of the sample point; purity moved 55 min after the expected arrival.
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  #1 TI-101.PV  high   score 0.97  process
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>     TI-101.PV (E-101) ran 5.74 degC low from 2026-08-03 05:29, 50 min upstream of the sample point; purity moved when it arrived.
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  #2 PT-100.PV  medium score 0.46  process
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>     PT-100.PV (S-feed) ran 1.02 bar low from 2026-08-03 05:27, 52 min upstream of the sample point; purity moved 55 min after the expected arrival.
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>  #3 PI-103.PV  medium score 0.45  measurement_fault
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>     PI-103.PV has a flatline finding in the lot window: value frozen at 5.968 for 90 min
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>ruled out:
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  FI-102.PV: held at setpoint by FIC-102 while its output moved 9.1 (+23.6 reference scales)
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  TI-104.PV: its shift of -2.86 is 100% predicted from TI-101.PV (regression on the reference lots)
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  FI-102.PV: held at setpoint by FIC-102 while its output moved 9.1 (+34.0 reference scales)
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  TI-104.PV: its shift of -2.88 is 100% predicted from TI-101.PV (regression on the reference lots)
 </span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  PI-103.PV: did not move in the lot
 </span></code></pre></div>
 <p>The demo plant in <code>examples/offspec/</code> has a known answer: the feed preheater E-101 fouls, its outlet temperature TI-101 falls 6 °C, and the product purity follows 50 minutes later. A feed pressure dip at nearly the same time is a decoy, because the flow loop absorbs it. <code>scripts/make_offspec_demo.py</code> writes the data and documents every injected event.</p>
@@ -1085,13 +1116,14 @@
 <ol>
 <li><strong>Resolve.</strong> Find the lot's results in the LIMS export, keep the properties that have a Quality node in the graph, and pick the one furthest out of spec (<code>--quality</code> picks one). Follow <code>reported_as</code> and <code>samples</code> edges to the node where the sample is taken. The lot window comes from <code>--lots</code> (a CSV of lot, start, end), or else runs from the previous lab sample of the same property to this one.</li>
 <li><strong>Candidates.</strong> Walk <code>flows_to</code> edges upstream from the sampled node (<code>--hops</code>, 6). Every measurement tag on those nodes is a candidate. Tags on the sampled node itself, such as an online analyzer, are symptoms, not causes: the first one is used to time the quality change.</li>
-<li><strong>Regime and reference.</strong> Mode tags (<code>role: mode</code> in the graph, such as a grade) label the operating regime. The reference is the most recent in-spec lots of the same property, in the same regime, before this one (<code>--reference-lots</code>, 3). Without one, the command exits with code 3, because there is nothing to compare with.</li>
+<li><strong>Regime, onset and reference.</strong> Mode tags (<code>role: mode</code> in the graph, such as a grade) label the operating regime. The quality is assumed to have started moving in the lot before this one, or earlier when the lab results of the same regime step before the first off-spec lot (lots already affected but still in spec). The reference is the most recent in-spec lots of the same regime that end before that (<code>--reference-lots</code>, 3), so it is not made of material the fault had already reached. Without one, the command exits with code 3, because there is nothing to compare with.</li>
 <li><strong>Align.</strong> All series go on one grid (the slowest candidate's period, or <code>--step-seconds</code>) in material time at the sampled node: a tag with a cumulative dead time D along its path is read at t − D. Gaps longer than five sample periods stay empty rather than being interpolated across.</li>
-<li><strong>Test.</strong> Each candidate gets three tests (below), each with a strength from 0 to 1, and a score from them.</li>
-<li><strong>Loop check.</strong> For a tag that is a loop's process value: if the setpoint moved, the setpoint change becomes its own hypothesis (an operator or recipe action). If the output saturated while the process value deviated, the hypothesis becomes lost control. If the process value held while the output moved, the loop absorbed a disturbance: the process value is ruled out and the output move is attached as evidence to the candidates upstream of the loop.</li>
+<li><strong>Test.</strong> Each candidate gets three tests (below), each with a strength from 0 to 1, and a score from them. Without an online analyzer on the sampled stream there is no quality onset to time against, so the effect is measured from the candidate's own step when it lands where the quality moved, and the correlation test uses earlier lab results instead of the analyzer.</li>
+<li><strong>Loop check.</strong> For a tag that is a loop's process value: if the setpoint moved, the setpoint change becomes its own hypothesis (an operator or recipe action). If the output saturated while the process value deviated, the hypothesis becomes lost control. If the process value held while the output moved, the loop absorbed a disturbance: the process value is ruled out and the output move is attached as evidence to the candidates upstream of the loop that moved. When none did, two hypotheses take their place: the process value reads wrong (a biased transmitter makes the loop hold the true value away from its setpoint), and something unmeasured disturbed the loop.</li>
 <li><strong>Explain away.</strong> When an upstream and a downstream candidate both moved, a regression on the reference lots predicts the downstream shift from the upstream one. If it explains at least 60% of it, the downstream tag is demoted and recorded as explained away.</li>
+<li><strong>Hidden change.</strong> When no measured tag moved clearly, the quality still moved: "something unmeasured changed just upstream of the sample" (a catalyst, a fouled surface, a feed component nobody analyzes) becomes a hypothesis at the nearest equipment.</li>
 <li><strong>Data faults.</strong> A candidate tag with a health finding (gap, flatline, spike, out of range) in its window also becomes a measurement-fault hypothesis, so a wrong measurement competes with the process causes.</li>
-<li><strong>Rank and label.</strong> Hypotheses are sorted by score. The leading one is labeled high confidence at a score of 0.65 or more and 0.15 ahead of the next; others are medium from 0.4. These thresholds and the test weights are provisional: the Bench milestone fits them on the public homeostat splits.</li>
+<li><strong>Rank and label.</strong> Hypotheses are sorted by score. The leading one is labeled high confidence when its score and its lead over the next pass the calibrated thresholds; others are medium above a lower one. The weights and rule scores are fitted on the public homeostat training split and the thresholds on its validation split (see <a href="../bench/">The homeostat bench</a>); <code>report.json</code> records the values used.</li>
 </ol>
 <h2 id="the-tests">The tests<a class="headerlink" href="#the-tests" title="Permanent link">&para;</a></h2>
 <table>
@@ -1105,8 +1137,8 @@
 <tbody>
 <tr>
 <td>Effect size</td>
-<td>Did the tag sit away from its reference level while the quality was off?</td>
-<td>0 below 2 robust standard deviations, 1 from 6</td>
+<td>Did the tag sit away from its reference level while the quality was off? Measured on a 30-minute moving mean, in units of the reference's spread or of the tag's lot-to-lot spread over earlier lots, whichever is larger, so a tag that wanders slowly does not count as moved</td>
+<td>0 below 2 scales, 1 from 6</td>
 </tr>
 <tr>
 <td>Onset</td>
@@ -1120,7 +1152,7 @@
 </tr>
 </tbody>
 </table>
-<p>The score is their weighted mean (0.4, 0.3, 0.3), halved when the tag did not move at all, and halved again when the tag has a data health finding in the window.</p>
+<p>The score is their weighted mean (fitted weights; 0.5, 0.3 and 0.3 at present), halved when the tag did not move at all, and halved again when the tag has a data health finding in the window.</p>
 <h2 id="the-report">The report<a class="headerlink" href="#the-report" title="Permanent link">&para;</a></h2>
 <p>Each run writes <code>reports/&lt;run_id&gt;/</code> in the project (or <code>--out</code>):</p>
 <table>
@@ -1151,7 +1183,7 @@
 </table>
 <p>The command's <code>--json</code> output carries the event, the hypotheses and the ruled-out list, so a caller does not need to read the files.</p>
 <h2 id="not-yet">Not yet<a class="headerlink" href="#not-yet" title="Permanent link">&para;</a></h2>
-<p>Change points on key flows as regime boundaries, the valve stiction test, PLS contribution analysis, and LLM-written summaries come later. <code>--llm</code> is accepted but the summaries are template text for now.</p>
+<p>Change points on key flows as regime boundaries, flow-dependent dead times (<code>penguineer lag</code>), the valve stiction test, PLS contribution analysis, and LLM-written summaries come later. <code>--llm</code> is accepted but the summaries are template text for now.</p>
 
 
 
@@ -1208,13 +1240,13 @@
         
         
           
-          <a href="../../guides/homeostat-live/" class="md-footer__link md-footer__link--next" aria-label="Next: Homeostat Live">
+          <a href="../bench/" class="md-footer__link md-footer__link--next" aria-label="Next: The homeostat bench">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Homeostat Live
+                The homeostat bench
               </div>
             </div>
             <div class="md-footer__button md-icon">
