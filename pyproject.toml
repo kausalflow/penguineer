@@ -27,6 +27,11 @@ dependencies = [
     "typer>=0.12",
 ]
 
+[project.optional-dependencies]
+# Generates the homeostat bench scenarios. Pinned: a scenario is only reproducible with the
+# Homeostat and NumPy versions that made it (uv.lock pins NumPy).
+bench = ["homeostat[fast]==0.1.0a3"]
+
 [project.urls]
 Documentation = "https://kausalflow.com/penguineer/"
 Source = "https://github.com/kausalflow/penguineer"

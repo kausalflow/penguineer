@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 
 import numpy as np
 import polars as pl
-from plantgraph import EdgeType, Loop, PlantGraph, Quality, Tag
+from plantgraph import EdgeType, Equipment, Loop, PlantGraph, Quality, Tag
 
 from penguineer.core.errors import NotEnoughData, UsageError, ValidationFailed
 from penguineer.engines.align import (
@@ -24,13 +24,16 @@ from penguineer.engines.align import (
     median_period_us,
     upstream_paths,
 )
+from penguineer.engines.calibration import Calibration, default_calibration
 from penguineer.engines.evidence import (
     Effect,
     change_point,
     effect_size,
     explained_fraction,
     lag_correlation,
+    level_spread,
     onset_strength,
+    smooth,
 )
 from penguineer.engines.health import HealthConfig, HealthFinding, Severity, assess
 from penguineer.report.model import (
@@ -47,15 +50,7 @@ from penguineer.report.model import (
 _US = 1_000_000
 _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 
-# Provisional: fitted on the homeostat training split in the Bench milestone.
-WEIGHTS = {TestName.effect_size: 0.4, TestName.onset: 0.3, TestName.lag_correlation: 0.3}
-FAULT_SCORE = {Severity.critical: 0.6, Severity.warning: 0.45, Severity.info: 0.15}
-# Provisional: chosen on the homeostat validation split in the Bench milestone.
-HIGH, MEDIUM, MARGIN = 0.65, 0.4, 0.15
-CALIBRATION = (
-    "Provisional thresholds (high: score >= 0.65 and 0.15 ahead of the next; medium: >= 0.4). "
-    "They will be set on the public homeostat validation split."
-)
+SMOOTH_MIN = 30  # minutes of moving mean before the effect test
 
 
 def _us(t: datetime) -> int:
@@ -74,6 +69,8 @@ class Settings:
     max_window_hours: float = 24.0
     default_window_hours: float = 8.0
     top: int = 5
+    lab_history: int = 12  # earlier lab results of the same regime for the sample-level test
+    calibration: Calibration = field(default_factory=default_calibration)
 
 
 @dataclass
@@ -107,6 +104,7 @@ class Investigation:
     series: dict[str, np.ndarray] = field(default_factory=dict)
     proxy: np.ndarray | None = None
     lab: list[tuple[datetime, float]] = field(default_factory=list)
+    calibration: Calibration = field(default_factory=default_calibration)
 
 
 # ---------------------------------------------------------------- resolve
@@ -184,20 +182,28 @@ def _regime(
 # ---------------------------------------------------------------- scoring
 
 
-def _score(tests: list[TestResult]) -> float:
-    ran = [(WEIGHTS[t.name], t.strength) for t in tests if t.strength is not None]
+def _score(tests: list[TestResult], cal: Calibration) -> float:
+    weights = {
+        TestName.effect_size: cal.effect,
+        TestName.onset: cal.onset,
+        TestName.lag_correlation: cal.lag,
+    }
+    ran = [(weights[t.name], t.strength) for t in tests if t.strength is not None]
     if not ran:
         return 0.0
-    value = sum(w * s for w, s in ran) / sum(w for w, _ in ran)
+    total = sum(w for w, _ in ran)
+    if total <= 0:
+        return 0.0
+    value = sum(w * s for w, s in ran) / total
     effect = next((t.strength for t in tests if t.name == TestName.effect_size), None)
     return float(value if effect else 0.5 * value)
 
 
-def _confidence(scores: list[float]) -> list[str]:
+def _confidence(scores: list[float], cal: Calibration) -> list[str]:
     out = []
     for i, s in enumerate(scores):
-        label = "high" if s >= HIGH else "medium" if s >= MEDIUM else "low"
-        if i == 0 and label == "high" and len(scores) > 1 and s - scores[1] < MARGIN:
+        label = "high" if s >= cal.high else "medium" if s >= cal.medium else "low"
+        if i == 0 and label == "high" and len(scores) > 1 and s - scores[1] < cal.margin:
             label = "medium"
         if i > 0 and label == "high":
             label = "medium"  # only the leading hypothesis can be confident
@@ -224,6 +230,7 @@ def investigate(
     progress: Callable[[int, int, str], None] | None = None,
 ) -> Investigation:
     s = settings or Settings()
+    cal = s.calibration
     notes: list[str] = []
     step = progress or (lambda done, total, message: None)
 
@@ -301,21 +308,49 @@ def investigate(
         notes.append("no mode tags in the graph: every lot counts as the same regime")
     if mixed:
         notes.append("the lot spans more than one regime; its most common one is used")
-    reference: list[ReferenceWindow] = []
+    # Earlier lab results of the same regime, newest first.
+    history: list[tuple[str, datetime, datetime, datetime, float]] = []
     skipped_regime = 0
-    for r in prop_rows.filter(pl.col("sampled_at") < ev_start).reverse().iter_rows(named=True):
-        if len(reference) >= s.reference_lots:
+    earlier = prop_rows.filter(pl.col("sampled_at") < ev_start).reverse()
+    for r in earlier.iter_rows(named=True):
+        if len(history) >= s.lab_history + s.reference_lots + 6:
             break
-        if r["lot"] in (None, lot) or _deviation(q, r["value"]) > 0:
+        if r["lot"] in (None, lot) or r["value"] is None:
             continue
         start, end = _window(prop_rows, r["lot"], r["sampled_at"], lots, s)
         label, mix = _regime(raw, mode_tags, _us(start), _us(end))
         if mix or label != event_regime:
             skipped_regime += 1
             continue
-        reference.append(ReferenceWindow(lot=r["lot"], start=start, end=end, value=r["value"]))
+        history.append((r["lot"], start, end, r["sampled_at"], float(r["value"])))
     if skipped_regime:
-        notes.append(f"{skipped_regime} earlier in-spec lots skipped: different regime")
+        notes.append(f"{skipped_regime} earlier lots skipped: different regime")
+
+    # Where the quality started to move: the lot before this one by default, or earlier when
+    # the lab results step before the first off-spec lot (lots already affected but in spec).
+    length = _us(ev_end) - _us(ev_start)
+    search_start = _us(ev_start) - length
+    off = _deviation(q, value) > 0
+    sign = -1.0 if q.spec_low is not None and value < q.spec_low else 1.0
+    seq = np.array([h[4] for h in reversed(history)] + [value])
+    if off and seq.size >= 6:
+        cp = change_point(seq, min_segment=2)
+        if cp is not None and abs(cp.z) >= 2 and np.sign(cp.shift) == sign:
+            first = history[len(history) - 1 - cp.index] if cp.index < len(history) else None
+            if first is not None and _us(first[1]) < search_start:
+                search_start = _us(first[1])
+                notes.append(
+                    f"{q.property} started to move with lot {first[0]}, before it left spec"
+                )
+    search_start = max(search_start, _us(ev_end) - int(s.max_window_hours * 3600 * _US))
+
+    # Reference: the most recent in-spec lots that end before the quality started to move.
+    reference = [
+        ReferenceWindow(lot=h[0], start=h[1], end=h[2], value=h[4])
+        for h in history
+        if _us(h[2]) <= search_start and _deviation(q, h[4]) == 0
+    ][: s.reference_lots]
+    lab_hist = [(_us(h[3]), h[4]) for h in history if _us(h[2]) <= search_start][: s.lab_history]
     if not reference:
         regime_text = ", ".join(f"{k}={_fmt(v)}" for k, v in event_regime.items()) or "one regime"
         raise NotEnoughData(
@@ -329,14 +364,19 @@ def investigate(
     if proxy_tag is not None:
         periods.append(median_period_us(raw[proxy_tag.tag][0]))
     step_us = int(s.step_s * _US) if s.step_s else max(max(periods), _US)
-    length = _us(ev_end) - _us(ev_start)
-    grid_start = min(_us(reference[-1].start), _us(ev_start) - length)
+    grid_start = min(_us(reference[-1].start), search_start)
+    earlier_lots = [(h[1], h[2]) for h in history if _us(h[2]) <= search_start][: s.lab_history]
+    if earlier_lots:
+        grid_start = min(grid_start, _us(earlier_lots[-1][0]))
+    if proxy_tag is None and lab_hist:
+        grid_start = min(grid_start, lab_hist[-1][0] - 3600 * _US)
     grid = Grid.spanning(grid_start, _us(ev_end), step_us)
     event_mask = grid.mask(_us(ev_start), _us(ev_end))
     ref_mask = np.zeros(grid.n, dtype=bool)
     for w in reference:
         ref_mask |= grid.mask(_us(w.start), _us(w.end))
-    search_mask = grid.mask(_us(ev_start) - length, _us(ev_end))
+    search_mask = grid.mask(search_start, _us(ev_end))
+    lot_masks = [grid.mask(_us(a), _us(b)) for a, b in earlier_lots]
     search_times = grid.times[search_mask]
 
     proxy = aligned(*raw[proxy_tag.tag], grid, 0.0) if proxy_tag is not None else None
@@ -394,9 +434,52 @@ def investigate(
     evidence: list[EvidenceItem] = []
     series: dict[str, np.ndarray] = {}
 
+    lab_t = np.array([t for t, _ in lab_hist], dtype=np.int64)
+    lab_v = np.array([v for _, v in lab_hist])
+
+    def late_effect(x: np.ndarray) -> Effect | None:
+        """Without a quality onset: the tag's own step, when it lands where the quality moved."""
+        cp = change_point(x[search_mask])
+        if cp is None or abs(cp.z) < 4:
+            return None
+        t = int(search_times[cp.index])
+        after = grid.mask(t, _us(ev_end))
+        if after.sum() < 3:
+            return None
+        return effect_size(x[after], x[ref_mask], level_spread(x, lot_masks))
+
+    def lab_correlation(x: np.ndarray) -> tuple[float, int] | None:
+        """Correlation of the tag, as the sampled material met it, with earlier lab results."""
+        if lab_t.size < 6:
+            return None
+        width = max(step_us, 10 * 60 * _US)
+        vals = []
+        for t in lab_t:
+            i0, i1 = np.searchsorted(grid.times, [t - width, t], side="right")
+            seg = x[i0:i1]
+            seg = seg[np.isfinite(seg)]
+            vals.append(seg.mean() if seg.size else np.nan)
+        a = np.array(vals)
+        ok = np.isfinite(a)
+        if ok.sum() < 6 or a[ok].std() == 0 or lab_v[ok].std() == 0:
+            return None
+        return float(np.corrcoef(a[ok], lab_v[ok])[0, 1]), int(ok.sum())
+
+    # The effect test compares levels, so white measurement noise is averaged out first.
+    smooth_n = max(int(SMOOTH_MIN * 60 * _US / step_us), 1)
+
+    def effect_of(x: np.ndarray) -> Effect | None:
+        x = smooth(x, smooth_n)
+        eff = effect_size(x[dev_mask], x[ref_mask], level_spread(x, lot_masks))
+        if onset_us is None:
+            late = late_effect(x)
+            if late is not None and (eff is None or abs(late.z) > abs(eff.z)):
+                eff = late
+        return eff
+
     def test_series(x: np.ndarray, path: NodePath) -> tuple[list[TestResult], Effect | None]:
         tests: list[TestResult] = []
-        eff = effect_size(x[dev_mask], x[ref_mask])
+        eff = effect_of(x)
         tests.append(
             TestResult(
                 name=TestName.effect_size,
@@ -427,10 +510,13 @@ def investigate(
                         f"(tolerance {tol:.0f} min)",
                     )
                 )
-        if proxy is None or eff is None:
+        if eff is None or (proxy is None and lab_t.size < 6):
             tests.append(TestResult(name=TestName.lag_correlation, strength=None, detail="not run"))
         else:
-            rc = lag_correlation(x[ref_mask], proxy[ref_mask])
+            if proxy is not None:
+                rc, over = lag_correlation(x[ref_mask], proxy[ref_mask]), "reference points"
+            else:
+                rc, over = lab_correlation(x), "earlier lab results"
             if rc is None:
                 tests.append(
                     TestResult(
@@ -447,7 +533,7 @@ def investigate(
                         name=TestName.lag_correlation,
                         strength=round(abs(r), 3) if consistent else 0.0,
                         value=round(r, 3),
-                        detail=f"r = {r:+.2f} over {n} reference points"
+                        detail=f"r = {r:+.2f} over {n} {over}"
                         + ("" if consistent else ", sign does not fit the deviation"),
                     )
                 )
@@ -463,7 +549,7 @@ def investigate(
         tests, eff = test_series(x, c.path)
         w0, w1 = window_at(c.path)
         faults = findings_in(c.tag.tag, _us(w0), _us(w1))
-        score = _score(tests) * (0.5 if faults else 1.0)
+        score = _score(tests, cal) * (0.5 if faults else 1.0)
         direction = "changed" if eff is None else ("high" if eff.delta > 0 else "low")
         h = Hypothesis(
             rank=0,
@@ -498,7 +584,9 @@ def investigate(
                         graph_path=c.path.path,
                         dead_time_min=c.path.dead_time_min,
                         tests=[],
-                        score=FAULT_SCORE[f.severity],
+                        score=cal.fault_critical
+                        if f.severity == Severity.critical
+                        else cal.fault_warning,
                         confidence="low",
                         health_warnings=[f.id],
                         summary=f"{c.tag.tag} has a {f.check} finding in the lot window: "
@@ -531,8 +619,8 @@ def investigate(
             if (isinstance(op_tag, Tag) and op_tag.tag in raw)
             else None
         )
-        sp_eff = effect_size(sp_x[dev_mask], sp_x[ref_mask]) if sp_x is not None else None
-        op_eff = effect_size(op_x[dev_mask], op_x[ref_mask]) if op_x is not None else None
+        sp_eff = effect_of(sp_x) if sp_x is not None else None
+        op_eff = effect_of(op_x) if op_x is not None else None
         pv_held = pv.effect is None or abs(pv.effect.z) < 2
         sp_moved = sp_eff is not None and abs(sp_eff.z) >= 3 and abs(sp_eff.delta) > 1e-6
         op_moved = op_eff is not None and abs(op_eff.z) >= 3
@@ -540,10 +628,16 @@ def investigate(
         if op_x is not None and isinstance(op_tag, Tag):
             lo = op_tag.range_low if op_tag.range_low is not None else np.nanmin(op_x)
             hi = op_tag.range_high if op_tag.range_high is not None else np.nanmax(op_x)
-            v = op_x[dev_mask]
-            v = v[np.isfinite(v)]
+            v = op_x[search_mask]
             margin = 0.01 * (hi - lo)
-            saturated = bool(v.size) and np.mean((v <= lo + margin) | (v >= hi - margin)) >= 0.5
+            at_limit = np.isfinite(v) & ((v <= lo + margin) | (v >= hi - margin))
+            # Saturated: at a limit for half an hour on end while the quality moved.
+            need = max(int(30 * 60 * _US / step_us), 3)
+            run = longest = 0
+            for flag in at_limit:
+                run = run + 1 if flag else 0
+                longest = max(longest, run)
+            saturated = longest >= need
 
         if sp_moved and sp_x is not None and isinstance(sp_tag, Tag):
             tests, eff = test_series(sp_x, c.path)
@@ -563,7 +657,7 @@ def investigate(
                         graph_path=c.path.path,
                         dead_time_min=c.path.dead_time_min,
                         tests=tests,
-                        score=round(_score(tests), 3),
+                        score=round(_score(tests, cal), 3),
                         confidence="low",
                         summary="",
                     ),
@@ -610,11 +704,41 @@ def investigate(
                 if sc.hypothesis.kind == "process"
                 and sc.hypothesis.cause_tag != c.tag.tag
                 and c.path.node in sc.hypothesis.graph_path
+                and sc.effect is not None
+                and sc.effect.strength >= 0.5
             ]
             for sc in upstream:
                 sc.hypothesis.evidence.append(item.title)
-            if not upstream:
+            if not upstream and op_x is not None:
                 w0, w1 = window_at(c.path)
+                op_tests, op_test_eff = test_series(op_x, c.path)
+                op_score = _score(op_tests, cal)
+                series[op_tag.tag] = op_x
+                scored.append(
+                    Scored(
+                        Hypothesis(
+                            rank=0,
+                            kind=HypothesisKind.measurement_fault,
+                            cause_node=c.tag.id,
+                            cause_tag=c.tag.tag,
+                            direction="changed",
+                            window_start=w0,
+                            window_end=w1,
+                            graph_path=c.path.path,
+                            dead_time_min=c.path.dead_time_min,
+                            tests=op_tests,
+                            score=round(cal.pv_bias * op_score, 3),
+                            confidence="low",
+                            evidence=[item.title],
+                            summary=f"{c.tag.tag} may read wrong: {loop.id} held it at its "
+                            f"setpoint by moving its output {_fmt(op_eff.delta)}, nothing "
+                            f"measured upstream moved, and {q.property} moved, so the true "
+                            "value may have left the setpoint",
+                        ),
+                        op_test_eff,
+                        op_x,
+                    )
+                )
                 scored.append(
                     Scored(
                         Hypothesis(
@@ -627,7 +751,7 @@ def investigate(
                             graph_path=c.path.path,
                             dead_time_min=c.path.dead_time_min,
                             tests=[],
-                            score=round(0.3 * op_eff.strength, 3),
+                            score=round(cal.loop_disturbance * op_score, 3),
                             confidence="low",
                             evidence=[item.title],
                             summary=f"something upstream of {loop.id} disturbed "
@@ -635,6 +759,36 @@ def investigate(
                         )
                     )
                 )
+
+    # Nothing measured moved clearly: the change is in something unmeasured near the sample.
+    moved = [sc.effect.strength for sc in scored if sc.effect is not None]
+    near = sorted(
+        (p for n, p in paths.items() if n != sampled_node and isinstance(by_id.get(n), Equipment)),
+        key=lambda p: (len(p.path), p.node),
+    )
+    if near and max(moved, default=0.0) < cal.hidden_below:
+        p0 = near[0]
+        w0, w1 = window_at(p0)
+        scored.append(
+            Scored(
+                Hypothesis(
+                    rank=0,
+                    kind=HypothesisKind.unmeasured_disturbance,
+                    cause_node=p0.node,
+                    direction="changed",
+                    window_start=w0,
+                    window_end=w1,
+                    graph_path=p0.path,
+                    dead_time_min=p0.dead_time_min,
+                    tests=[],
+                    score=cal.hidden,
+                    confidence="low",
+                    summary=f"no measured tag upstream moved enough to explain {q.property}; "
+                    f"something unmeasured changed in {p0.node} or just before the sample "
+                    "(a catalyst, a fouled surface, a feed component nobody analyzes)",
+                )
+            )
+        )
 
     # Explain away: a downstream deviation predicted by an upstream one on the same path.
     strong = [
@@ -688,7 +842,7 @@ def investigate(
             and any(r.cause == sc.hypothesis.cause_tag for r in ruled_out)
         )
     ][: s.top]
-    labels = _confidence([sc.hypothesis.score for sc in kept])
+    labels = _confidence([sc.hypothesis.score for sc in kept], cal)
     hypotheses = []
     for rank, (sc, label) in enumerate(zip(kept, labels, strict=True), start=1):
         h = sc.hypothesis
@@ -731,6 +885,7 @@ def investigate(
         series=series,
         proxy=proxy,
         lab=lab,
+        calibration=cal,
     )
 
 

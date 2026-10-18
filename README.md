@@ -4,7 +4,7 @@ Find the root cause of off-spec lots from historian and LIMS exports, on a lapto
 
 penguineer reads files and writes files. Its engines are deterministic Python; an LLM is optional and never decides a ranking. Every command is defined once as a Pydantic parameter model, a result model and a function, and the CLI, the `--json` output and the Python API are generated from that one definition. [Alchemist](https://github.com/kausalflow/alchemist) imports penguineer as a library and adds the UI, runners and project management on top.
 
-> Status: early skeleton. `init`, `data health`, `graph check`, `graph lags` and `investigate` work; `graph draft` and `bench homeostat` are registered with their parameters but not built yet (they exit with code 4).
+> Status: early. `init`, `data health`, `graph check`, `graph lags`, `investigate` and `bench homeostat` work; `graph draft` is registered with its parameters but not built yet (it exits with code 4).
 
 ## Documentation
 
@@ -84,7 +84,7 @@ The tests in `tests/test_homeostat_live.py` run on that week. They are skipped w
 | `penguineer graph lags --data FILE --graph graph.yaml` | Estimate dead times along `flows_to` edges from the data (prewhitened cross-correlation) | works |
 | `penguineer graph draft --tags tags.csv` | Draft the plant graph from a tag list and optional DEXPI P&ID | stub |
 | `penguineer investigate --lot L --lims lims.csv --data FILE` | Align in material time, rank root-cause hypotheses, write the report | works |
-| `penguineer bench homeostat` | Score the pipeline on homeostat plants with injected faults | stub |
+| `penguineer bench homeostat` | Score investigate on Homeostat plants with injected faults (needs `penguineer[bench]`) | works |
 
 Exit codes: 0 success, 1 validation failed (for example graph errors), 2 usage error, 3 not enough data, 4 internal error or not implemented yet.
 
@@ -109,8 +109,9 @@ src/penguineer/
   core/                command registry, RunContext, run records, errors
   cli/                 Typer app generated from the registry
   commands/            one module per command: Params, Result, run()
-  io/                  historian, LIMS, graph and Homeostat Live readers
-  engines/             deterministic engines: data health, dead times, investigate
+  io/                  historian, LIMS, graph, Homeostat Live and scenario-bundle readers
+  engines/             deterministic engines: data health, dead times, investigate, calibration
+  bench/               the homeostat bench plant, bundle export and scoring
   report/              report models, evidence plots, HTML and Markdown templates
   graph/               graph check
 tests/                 unit, CLI, to_argv round-trip property tests, schema snapshot

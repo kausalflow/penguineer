@@ -1,0 +1,67 @@
+name: Bench
+
+# Runs investigate on homeostat plants with injected faults and scores it (docs/concepts/bench.md).
+#   pull requests and main: a smoke bench, 3 validation plants per fault type
+#   nightly and by hand:    the full public bench, train and validation, 12 per fault type
+# Each run's bench.json and scenarios.csv are uploaded; the scores also go in the job summary.
+# The hidden split is never run here: its seed is KausalFlow's secret.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bench-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      # Homeostat's compiled plants; generating them again costs minutes per fault type.
+      HOMEOSTAT_CACHE: ${{ github.workspace }}/.homeostat-cache
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked --extra bench
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .homeostat-cache
+            .penguineer/bench
+          # The bundles depend only on the bench plant and the locked Homeostat and NumPy.
+          key: bench-${{ hashFiles('src/penguineer/bench/plant.py', 'src/penguineer/bench/export.py', 'uv.lock') }}
+          restore-keys: bench-
+      - name: Smoke bench
+        if: github.event_name == 'pull_request' || github.event_name == 'push'
+        run: |
+          uv run penguineer bench homeostat --scenarios validation --per-fault 3 \
+            --project . --out bench-out/validation | tee bench-out.txt
+      - name: Full public bench
+        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        run: |
+          for split in train validation; do
+            uv run penguineer bench homeostat --scenarios "$split" --per-fault 12 \
+              --project . --out "bench-out/$split" | tee -a bench-out.txt
+          done
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f bench-out.txt ]; then
+            { echo '```text'; cat bench-out.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bench
+          path: bench-out

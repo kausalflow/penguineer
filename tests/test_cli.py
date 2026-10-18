@@ -51,7 +51,10 @@ def test_stub_commands_exit_4(demo_csv, tmp_path):
     res = invoke("graph", "draft", "--tags", demo_csv, "--project", tmp_path)
     assert res.exit_code == 4
     assert "not implemented yet" in res.output
-    assert invoke("bench", "homeostat", "--project", tmp_path).exit_code == 4
+    # The hidden split needs its secret seed: a usage error, before any simulation.
+    assert (
+        invoke("bench", "homeostat", "--scenarios", "hidden", "--project", tmp_path).exit_code == 2
+    )
 
 
 def test_graph_check_exit_codes(demo_graph, tmp_path):
