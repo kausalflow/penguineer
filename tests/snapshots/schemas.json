@@ -1797,6 +1797,336 @@
         "title": "InvestigateResult",
         "type": "object"
       }
+    },
+    "lag": {
+      "params": {
+        "additionalProperties": false,
+        "properties": {
+          "cause": {
+            "description": "Upstream tag",
+            "title": "Cause",
+            "type": "string"
+          },
+          "data": {
+            "accept": [
+              ".csv",
+              ".parquet"
+            ],
+            "description": "Historian export, CSV or Parquet, wide or long",
+            "format": "file-path",
+            "title": "Data",
+            "type": "string",
+            "ui": "file"
+          },
+          "effect": {
+            "description": "Downstream tag, or with --lims a lab property",
+            "title": "Effect",
+            "type": "string"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window end (exclusive)",
+            "title": "End"
+          },
+          "flow": {
+            "description": "Flow tags through the line, summed (enables the flow and volume models)",
+            "items": {
+              "type": "string"
+            },
+            "title": "Flow",
+            "type": "array"
+          },
+          "flow_unit": {
+            "default": "m3/h",
+            "description": "Unit of the flow tags, for the volumes",
+            "title": "Flow Unit",
+            "type": "string"
+          },
+          "lims": {
+            "accept": [
+              ".csv",
+              ".parquet"
+            ],
+            "anyOf": [
+              {
+                "format": "file-path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "LIMS export: the effect is then a lab property, compared at its sample times",
+            "title": "Lims",
+            "ui": "file"
+          },
+          "max_lag_minutes": {
+            "default": 240.0,
+            "description": "Longest delay to search",
+            "exclusiveMinimum": 0,
+            "title": "Max Lag Minutes",
+            "type": "number"
+          },
+          "out": {
+            "anyOf": [
+              {
+                "format": "path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Folder for the plots (default: the run folder)",
+            "title": "Out"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window start (inclusive)",
+            "title": "Start"
+          },
+          "step_seconds": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Grid step (default: the slower tag's median period)",
+            "title": "Step Seconds"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Time zone of naive timestamps in the exports",
+            "title": "Timezone",
+            "type": "string"
+          },
+          "z_threshold": {
+            "default": 5.0,
+            "description": "Peak strength needed for an online effect, |corr|\u00b7\u221an",
+            "exclusiveMinimum": 0,
+            "title": "Z Threshold",
+            "type": "number"
+          }
+        },
+        "required": [
+          "data",
+          "cause",
+          "effect"
+        ],
+        "title": "LagParams",
+        "type": "object"
+      },
+      "result": {
+        "$defs": {
+          "ModelFit": {
+            "properties": {
+              "coordinate": {
+                "description": "time (minutes) or volume (flow unit \u00d7 hours)",
+                "title": "Coordinate",
+                "type": "string"
+              },
+              "corr": {
+                "description": "Correlation of the model's prediction with the effect",
+                "title": "Corr",
+                "type": "number"
+              },
+              "dead": {
+                "description": "Dead time (minutes) or dead volume",
+                "title": "Dead",
+                "type": "number"
+              },
+              "dead_high": {
+                "title": "Dead High",
+                "type": "number"
+              },
+              "dead_low": {
+                "title": "Dead Low",
+                "type": "number"
+              },
+              "mixing": {
+                "default": 0.0,
+                "description": "Mixing time constant (minutes) or mixed volume",
+                "title": "Mixing",
+                "type": "number"
+              },
+              "mixing_high": {
+                "default": 0.0,
+                "title": "Mixing High",
+                "type": "number"
+              },
+              "mixing_low": {
+                "default": 0.0,
+                "title": "Mixing Low",
+                "type": "number"
+              },
+              "model": {
+                "description": "fixed, flow or mixing",
+                "title": "Model",
+                "type": "string"
+              },
+              "residence_min": {
+                "description": "Mean delay in minutes at the mean flow: dead plus mixing",
+                "title": "Residence Min",
+                "type": "number"
+              },
+              "significant": {
+                "title": "Significant",
+                "type": "boolean"
+              },
+              "strength": {
+                "description": "|corr|\u00b7\u221an for an online effect; |corr| over the chance level for a lab one",
+                "title": "Strength",
+                "type": "number"
+              }
+            },
+            "required": [
+              "model",
+              "coordinate",
+              "dead",
+              "dead_low",
+              "dead_high",
+              "residence_min",
+              "corr",
+              "strength",
+              "significant"
+            ],
+            "title": "ModelFit",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "best": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The simplest model that explains the most, if any",
+            "title": "Best"
+          },
+          "cause": {
+            "title": "Cause",
+            "type": "string"
+          },
+          "effect": {
+            "title": "Effect",
+            "type": "string"
+          },
+          "effect_kind": {
+            "description": "online (a historian tag) or lab (a LIMS property)",
+            "title": "Effect Kind",
+            "type": "string"
+          },
+          "fits": {
+            "items": {
+              "$ref": "#/$defs/ModelFit"
+            },
+            "title": "Fits",
+            "type": "array"
+          },
+          "flow_tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flow Tags",
+            "type": "array"
+          },
+          "lag_min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The best model's mean delay at the mean flow",
+            "title": "Lag Min"
+          },
+          "mean_flow": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean Flow"
+          },
+          "n": {
+            "description": "Points compared: grid points, or lab samples",
+            "title": "N",
+            "type": "integer"
+          },
+          "plots": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Plots",
+            "type": "array"
+          },
+          "step_s": {
+            "title": "Step S",
+            "type": "number"
+          },
+          "volume_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Volume Unit"
+          }
+        },
+        "required": [
+          "cause",
+          "effect",
+          "effect_kind",
+          "flow_tags",
+          "volume_unit",
+          "mean_flow",
+          "n",
+          "step_s",
+          "fits",
+          "best",
+          "lag_min",
+          "plots"
+        ],
+        "title": "LagResult",
+        "type": "object"
+      }
     }
   },
   "plantgraph": {
