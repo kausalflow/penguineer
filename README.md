@@ -120,7 +120,7 @@ src/penguineer/
   core/                command registry, RunContext, run records, errors
   cli/                 Typer app generated from the registry
   commands/            one module per command: Params, Result, run()
-  io/                  historian, LIMS, graph, Homeostat Live and scenario-bundle readers
+  io/                  historian, LIMS, graph, DEXPI P&ID, Homeostat Live and scenario-bundle readers
   engines/             deterministic engines: data health, dead times, investigate, calibration
   bench/               the homeostat bench plant, bundle export and scoring
   llm/                 optional LLM providers, response cache, versioned prompts
