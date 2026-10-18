@@ -46,6 +46,10 @@ from penguineer.io.homeostat_live import fetch_window, graph_from_tags
 
 PLANT = "isidis-01"
 PURITY, DEW = "AT-201", "AT-202"
+# Lab accuracy from the plant card: a result this close to a limit is within lab error.
+ACCURACY = {PURITY: 0.05, DEW: 1.0}
+# A lot sampled this soon after a grade change is still flushing the previous grade out.
+TRANSITION = timedelta(hours=12)
 
 
 @dataclass(frozen=True)
@@ -157,8 +161,22 @@ def grade_of(rate: float | None) -> Grade | None:
     return best if abs(best.h2_rate - rate) < 0.5 else None
 
 
+def grade_changes(sensors_csv: Path) -> pl.DataFrame:
+    """Times the recipe H2.rate changed: timestamp, value (the new rate). The first row is the
+    start of the data."""
+    rate = (
+        read_historian(sensors_csv, tags=["H2.rate"])
+        .frame.select("timestamp", "value")
+        .drop_nulls()
+        .sort("timestamp")
+    )
+    return rate.filter(pl.col("value").round(6).ne_missing(pl.col("value").round(6).shift(1)))
+
+
 def label_lots(lab_csv: Path, sensors_csv: Path) -> pl.DataFrame:
-    """One row per lab sample: lot, sampled_at, grade, purity, dew point, off_spec."""
+    """One row per lab sample: lot, sampled_at, grade, purity, dew point, off_spec, severity
+    (how far outside the range, in range widths), marginal (within lab accuracy of the limit)
+    and hours since the last grade change."""
     lab = pl.read_csv(lab_csv, try_parse_dates=True)
     lab = lab.with_columns(pl.col("sampled_at").dt.replace_time_zone("UTC", non_existent="null"))
     wide = lab.pivot(on="tag", index="sampled_at", values="value", aggregate_function="first").sort(
@@ -174,15 +192,22 @@ def label_lots(lab_csv: Path, sensors_csv: Path) -> pl.DataFrame:
         .sort("timestamp")
     )
     wide = wide.join_asof(rate, left_on="sampled_at", right_on="timestamp", strategy="backward")
+    changes = grade_changes(sensors_csv).rename({"timestamp": "changed_at", "value": "_new"})
+    wide = wide.join_asof(changes, left_on="sampled_at", right_on="changed_at", strategy="backward")
     rows = []
     for r in wide.iter_rows(named=True):
         g = grade_of(r["value"])
         pur, dew = r[PURITY], r[DEW]
-        off = []
+        off, severity, marginal = [], 0.0, True
         if g is not None and pur is not None and pur < g.purity[0]:
             off.append(PURITY)
+            severity = max(severity, (g.purity[0] - pur) / (g.purity[1] - g.purity[0]))
+            marginal &= g.purity[0] - pur <= ACCURACY[PURITY]
         if g is not None and dew is not None and dew > g.dew[1]:
             off.append(DEW)
+            severity = max(severity, (dew - g.dew[1]) / (g.dew[1] - g.dew[0]))
+            marginal &= dew - g.dew[1] <= ACCURACY[DEW]
+        since = r["changed_at"]
         rows.append(
             {
                 "lot": f"S{r['sampled_at']:%Y%m%dT%H%M}",
@@ -191,6 +216,13 @@ def label_lots(lab_csv: Path, sensors_csv: Path) -> pl.DataFrame:
                 PURITY: pur,
                 DEW: dew,
                 "off_spec": ",".join(off),
+                "severity": round(severity, 3),
+                "marginal": bool(off) and marginal,
+                "hours_since_grade_change": (
+                    round((r["sampled_at"] - since).total_seconds() / 3600, 1)
+                    if since is not None
+                    else None
+                ),
             }
         )
     return pl.DataFrame(rows)
@@ -213,9 +245,11 @@ def episodes(lots: pl.DataFrame, gap: int = 3) -> list[dict]:
     for r in lots.iter_rows(named=True):
         if r["off_spec"]:
             if current is None or in_spec > gap or r["grade"] != current["first"]["grade"]:
-                current = {"first": r, "n": 0, "props": set()}
+                current = {"first": r, "n": 0, "props": set(), "worst": r}
                 out.append(current)
             current["n"] += 1
+            if r["severity"] > current["worst"]["severity"]:
+                current["worst"] = r
             current["props"] |= set(r["off_spec"].split(","))
             current["last"] = r
             in_spec = 0
@@ -227,9 +261,9 @@ def episodes(lots: pl.DataFrame, gap: int = 3) -> list[dict]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     now = datetime.now(UTC).replace(minute=0, second=0, microsecond=0)
-    parser.add_argument("--since", type=datetime.fromisoformat, default=now - timedelta(days=28))
+    parser.add_argument("--since", type=datetime.fromisoformat, default=now - timedelta(days=35))
     parser.add_argument("--until", type=datetime.fromisoformat, default=now)
-    parser.add_argument("--lot", help="Investigate this lot only (default: newest episodes)")
+    parser.add_argument("--lot", help="Investigate this lot only (default: the worst episodes)")
     parser.add_argument("--episodes", type=int, default=3, help="Off-spec episodes to investigate")
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()
@@ -254,31 +288,64 @@ def main() -> None:
     ]
     for (g,), part in sorted(lots.group_by("grade"), key=lambda x: str(x[0][0])):
         lines.append(f"| {g} | {part.height} | {(part['off_spec'] != '').sum()} |")
+    changes = grade_changes(window.sensors)
+    lines += [
+        "",
+        "Grade changes (H2.rate): "
+        + ", ".join(
+            f"{r['timestamp']:%m-%d %H:%M} {getattr(grade_of(r['value']), 'name', r['value'])}"
+            for r in changes.iter_rows(named=True)
+        ),
+    ]
+    roles = graph_from_tags(window.tags).nodes_of("tag")
+    lines += ["", "Tags (role): " + ", ".join(f"{t.tag} ({t.role})" for t in roles)]
     eps = episodes(lots)
     lines += [
         "",
-        f"{len(eps)} off-spec episodes (off-spec lots, broken by more than 3 in-spec lots):",
+        f"{len(eps)} off-spec episodes (off-spec lots, broken by more than 3 in-spec lots). "
+        "Severity is the worst lot's distance outside the range, in range widths; marginal means "
+        "every lot was within lab accuracy of the limit; h after change is hours from the last "
+        "grade change to the first lot.",
         "",
-        "| First lot | Last lot | Off-spec lots | Grade | Off spec on | First purity | First dew |",
+        "| First lot | Last lot | Lots | Grade | Off spec on | Worst lot | Purity | Dew | "
+        "Severity | Marginal | h after change |",
+        "|---|---|---:|---|---|---|---:|---:|---:|---|---:|",
     ]
-    lines += ["|---|---|---:|---|---|---:|---:|"]
     for e in eps:
-        f = e["first"]
+        f, w = e["first"], e["worst"]
+        e["marginal"] = all(
+            r["marginal"]
+            for r in lots.filter(
+                (pl.col("sampled_at") >= f["sampled_at"])
+                & (pl.col("sampled_at") <= e["last"]["sampled_at"])
+                & (pl.col("off_spec") != "")
+            ).iter_rows(named=True)
+        )
         lines.append(
             f"| {f['lot']} | {e['last']['lot']} | {e['n']} | {f['grade']} | "
-            f"{', '.join(sorted(e['props']))} | {f[PURITY]} | {f[DEW]} |"
+            f"{', '.join(sorted(e['props']))} | {w['lot']} | {w[PURITY]} | {w[DEW]} | "
+            f"{w['severity']:.2f} | {'yes' if e['marginal'] else ''} | "
+            f"{f['hours_since_grade_change']} |"
         )
 
     if args.lot:
         targets = lots.filter(pl.col("lot") == args.lot).to_dicts()
     else:
-        targets = [e["first"] for e in reversed(eps)]
+        # The worst episodes that are more than lab error, each at its first lot.
+        real = [e for e in eps if not e["marginal"]]
+        targets = [e["first"] for e in sorted(real, key=lambda e: -e["worst"]["severity"])]
     done = 0
     for t in targets:
         if done >= args.episodes:
             break
         grade = next(g for g in GRADES if g.name == t["grade"]) if t["grade"] else None
         lines += ["", f"## Lot {t['lot']} ({t['grade']})", ""]
+        h = t["hours_since_grade_change"]
+        if h is not None and h < TRANSITION.total_seconds() / 3600:
+            lines.append(
+                f"Sampled {h} h after a grade change: the plant may still be in transition."
+            )
+            lines.append("")
         if grade is None:
             lines.append("No grade at the sample time (H2.rate not on a recipe value); skipped.")
             continue
