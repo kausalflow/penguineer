@@ -2,6 +2,30 @@
 
 penguineer and plantgraph are released together, with one version.
 
+## 0.3.0
+
+Lots in material time and group comparisons, so a caller such as an agent no longer needs its own
+statistics for them.
+
+### Added
+
+- `align`: averages each tag over the window that made each lot, shifted back by the tag's dead
+  time, taken from the plant graph (`--graph` with `--sample-point`) or given (`--dead-time-min`).
+  Writes `aligned.parquet` and `aligned.csv`, one row per lot, with the lot file's other columns
+  kept.
+- `compare`: the difference between two groups of rows, with Welch's t-test and Cohen's d;
+  `--where column=value` filters first.
+
+### Changed
+
+- Lot files can be Parquet, and the lot, start and end columns may also be spelled `lot_id`,
+  `batch`, `start_ts`, `end_ts` and similar.
+- Importing penguineer no longer switches matplotlib to the Agg backend, so notebooks keep their
+  own. Plots are drawn on `Figure` objects instead of through `pyplot`.
+
+`investigate` is unchanged; the [Results](https://kausalflow.com/penguineer/results/) of 0.2.0
+still hold.
+
 ## 0.2.0
 
 The first release that investigates: from an off-spec lot to ranked, evidenced root causes.
