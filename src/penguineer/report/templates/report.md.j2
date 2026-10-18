@@ -4,6 +4,20 @@
 {{ ev.property }} was **{{ ev.value | num }}{% if ev.unit %} {{ ev.unit }}{% endif %}**{% if ev.spec_low is not none %} (spec low {{ ev.spec_low | num }}){% endif %}{% if ev.spec_high is not none %} (spec high {{ ev.spec_high | num }}){% endif %}, sampled at {{ ev.sample_point or ev.sampled_node }} on {{ ev.sampled_at | when }} UTC.
 
 penguineer {{ r.penguineer_version }}, run {{ r.run_id }}.
+{% set s = r.summary %}
+{% if s %}
+
+## Summary
+
+{{ s.overview }}
+
+{% for c in s.claims %}
+- `{{ c.cause }}` ({{ c.confidence }}): {{ c.sentence }}{% if c.evidence %} [{{ c.evidence | join(", ") }}]{% endif %}
+
+{% endfor %}
+{% if s.source == "llm" %}_Written by {{ s.provider }} model {{ s.model }} ({{ s.prompt }}) from the results below, and checked against them._{% else %}_Summary from the template.{% if s.fallback %} An LLM summary ({{ s.provider }}, {{ s.model }}) was not used: {{ s.fallback }}{% endif %}_{% endif %}
+
+{% endif %}
 
 ## Hypotheses
 

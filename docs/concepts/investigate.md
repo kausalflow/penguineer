@@ -1,6 +1,6 @@
 # Investigating an off-spec lot
 
-`investigate` takes one lot, finds the lab result that was out of spec, and ranks the process variables that could have caused it. Every hypothesis comes with its tests, its path through the plant graph, and plots. The engines are deterministic Python; no LLM is involved.
+`investigate` takes one lot, finds the lab result that was out of spec, and ranks the process variables that could have caused it. Every hypothesis comes with its tests, its path through the plant graph, and plots. The engines are deterministic Python; an LLM can write the summary at the top of the report (see [LLM summaries](../guides/llm.md)), and never touches the ranking.
 
 ```bash
 uv run penguineer investigate --lot L0803-A \
@@ -57,13 +57,14 @@ Each run writes `reports/<run_id>/` in the project (or `--out`):
 
 | File | Contents |
 |---|---|
-| `report.json` | The `Report` model: the quality event, regime, reference lots, ranked hypotheses with their tests, ruled-out candidates, evidence items, health findings and notes |
+| `report.json` | The `Report` model: the quality event, regime, reference lots, ranked hypotheses with their tests, ruled-out candidates, evidence items, health findings, notes and the summary |
 | `report.html` | One self-contained page rendered from `report.json`, with images from `evidence/` |
 | `report.md` | The same in Markdown |
+| `llm-request.json` | With `--llm-dry-run` only: what would have been sent to the LLM |
 | `evidence/` | `quality.png` (the quality over the period with the lot and reference windows) and one trend per hypothesis, shifted into material time |
 
 The command's `--json` output carries the event, the hypotheses and the ruled-out list, so a caller does not need to read the files.
 
 ## Not yet
 
-Change points on key flows as regime boundaries, flow-dependent dead times (`penguineer lag`), the valve stiction test, PLS contribution analysis, and LLM-written summaries come later. `--llm` is accepted but the summaries are template text for now.
+Change points on key flows as regime boundaries, flow-dependent dead times (`penguineer lag`) inside the ranking, the valve stiction test and PLS contribution analysis come later.

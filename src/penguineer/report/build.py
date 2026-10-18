@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 from importlib import resources
 from pathlib import Path
@@ -12,10 +13,19 @@ from jinja2 import Environment, select_autoescape
 
 from penguineer.engines.investigate import Investigation
 from penguineer.report import plots
-from penguineer.report.model import EvidenceItem, Report
+from penguineer.report.model import EvidenceItem, Report, Summary
+from penguineer.report.summary import template_summary
 
 
-def build_report(inv: Investigation, out_dir: Path, *, run_id: str, version: str) -> Report:
+def build_report(
+    inv: Investigation,
+    out_dir: Path,
+    *,
+    run_id: str,
+    version: str,
+    summarize: Callable[[Report], Summary] | None = None,
+) -> Report:
+    """Write the report; ``summarize`` writes its summary (default: the template)."""
     evidence_dir = out_dir / "evidence"
     evidence_dir.mkdir(parents=True, exist_ok=True)
     items: list[EvidenceItem] = []
@@ -68,6 +78,7 @@ def build_report(inv: Investigation, out_dir: Path, *, run_id: str, version: str
         notes=inv.notes,
         calibration=inv.calibration.describe(),
     )
+    report.summary = (summarize or template_summary)(report)
     (out_dir / "report.json").write_text(report.model_dump_json(indent=2))
     render(report, out_dir)
     return report
