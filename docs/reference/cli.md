@@ -52,9 +52,11 @@ Draft the plant graph from a tag list and an optional P&ID; every edge is inferr
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `--tags` | existing file | required | Tag list (tag, description, unit) as CSV |
+| `--tags` | existing file | required | Tag list as CSV: tag, and optionally description, unit, equipment, range_low, range_high |
 | `--pid` | existing file |  | Optional DEXPI P&ID |
-| `--out` | path | `graph.yaml` | Where to write the drafted graph |
+| `--out` | path | `graph.yaml` | Where to write the drafted graph (relative: the project) |
+| `--unit` | str |  | Unit name (default: the project folder's name) |
+| `--force` | bool | `False` | Overwrite an existing graph |
 | `--llm` | `none` \| `local` \| `api` | `none` | LLM for relations rules cannot infer |
 
 ## `penguineer graph lags`

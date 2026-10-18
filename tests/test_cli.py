@@ -47,8 +47,8 @@ def test_invalid_value_is_exit_2(demo_csv, tmp_path):
     assert res.exit_code == 2
 
 
-def test_stub_commands_exit_4(demo_csv, tmp_path):
-    res = invoke("graph", "draft", "--tags", demo_csv, "--project", tmp_path)
+def test_stub_commands_exit_4(demo_csv, demo_graph, tmp_path):
+    res = invoke("graph", "draft", "--tags", demo_csv, "--pid", demo_graph, "--project", tmp_path)
     assert res.exit_code == 4
     assert "not implemented yet" in res.output
     # The hidden split needs its secret seed: a usage error, before any simulation.

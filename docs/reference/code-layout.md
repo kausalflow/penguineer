@@ -13,7 +13,7 @@ src/penguineer/
                           and the fitted calibration (calibration.json)
   bench/                  the homeostat bench plant and its faults, bundle export, scoring
   report/                 report models, evidence plots, HTML and Markdown templates
-  graph/                  graph check
+  graph/                  graph check and the rule-based graph draft
 tests/                    unit, CLI, round-trip property, schema snapshot and Homeostat Live tests
 examples/demo/            a small plant with injected data faults
 examples/offspec/         a small plant with an off-spec lot and a known root cause
