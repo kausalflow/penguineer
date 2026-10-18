@@ -1,5 +1,216 @@
 {
   "commands": {
+    "align": {
+      "params": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "accept": [
+              ".csv",
+              ".parquet"
+            ],
+            "description": "Historian export, CSV or Parquet, wide or long",
+            "format": "file-path",
+            "title": "Data",
+            "type": "string",
+            "ui": "file"
+          },
+          "dead_time_min": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "One dead time for every tag, in minutes (with --graph: for tags the graph cannot place)",
+            "title": "Dead Time Min"
+          },
+          "graph": {
+            "accept": [
+              ".yaml",
+              ".yml"
+            ],
+            "anyOf": [
+              {
+                "format": "file-path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Plant graph: each tag's dead time to --sample-point along flows_to edges",
+            "title": "Graph",
+            "ui": "file"
+          },
+          "lots": {
+            "accept": [
+              ".csv",
+              ".parquet"
+            ],
+            "description": "Lot windows: lot, start and end columns, CSV or Parquet; other columns are kept in the output",
+            "format": "file-path",
+            "title": "Lots",
+            "type": "string",
+            "ui": "file"
+          },
+          "out": {
+            "anyOf": [
+              {
+                "format": "path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Where to write aligned.parquet and aligned.csv (default: run folder)",
+            "title": "Out"
+          },
+          "sample_point": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Graph node where the lots are measured (with --graph)",
+            "title": "Sample Point"
+          },
+          "tags": {
+            "description": "Tags to average (default: all)",
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Time zone of naive timestamps in the exports",
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "data",
+          "lots"
+        ],
+        "title": "AlignParams",
+        "type": "object"
+      },
+      "result": {
+        "$defs": {
+          "DeadTimeUsed": {
+            "properties": {
+              "dead_time_min": {
+                "title": "Dead Time Min",
+                "type": "number"
+              },
+              "path": {
+                "description": "Graph nodes from the tag to the sample point",
+                "items": {
+                  "type": "string"
+                },
+                "title": "Path",
+                "type": "array"
+              },
+              "source": {
+                "description": "graph or fixed",
+                "title": "Source",
+                "type": "string"
+              },
+              "tag": {
+                "title": "Tag",
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "dead_time_min",
+              "source",
+              "path"
+            ],
+            "title": "DeadTimeUsed",
+            "type": "object"
+          }
+        },
+        "properties": {
+          "dead_times": {
+            "items": {
+              "$ref": "#/$defs/DeadTimeUsed"
+            },
+            "title": "Dead Times",
+            "type": "array"
+          },
+          "empty_windows": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Lots without samples, per tag",
+            "title": "Empty Windows",
+            "type": "object"
+          },
+          "n_lots": {
+            "title": "N Lots",
+            "type": "integer"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "rows": {
+            "description": "The table: the lot's columns, then <tag> (mean) and <tag>_n (samples)",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "table": {
+            "description": "aligned.parquet: one row per lot",
+            "title": "Table",
+            "type": "string"
+          },
+          "table_csv": {
+            "title": "Table Csv",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          }
+        },
+        "required": [
+          "n_lots",
+          "tags",
+          "dead_times",
+          "empty_windows",
+          "notes",
+          "table",
+          "table_csv",
+          "rows"
+        ],
+        "title": "AlignResult",
+        "type": "object"
+      }
+    },
     "bench homeostat": {
       "params": {
         "$defs": {
@@ -256,6 +467,218 @@
           "scenarios_csv"
         ],
         "title": "BenchHomeostatResult",
+        "type": "object"
+      }
+    },
+    "compare": {
+      "params": {
+        "additionalProperties": false,
+        "properties": {
+          "a": {
+            "description": "Group A: rows whose --group equals this",
+            "title": "A",
+            "type": "string"
+          },
+          "b": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Group B (default: every row not in group A)",
+            "title": "B"
+          },
+          "data": {
+            "accept": [
+              ".csv",
+              ".parquet"
+            ],
+            "description": "A table, CSV or Parquet: for example align's aligned.parquet",
+            "format": "file-path",
+            "title": "Data",
+            "type": "string",
+            "ui": "file"
+          },
+          "group": {
+            "description": "Column that splits the rows into groups",
+            "title": "Group",
+            "type": "string"
+          },
+          "value": {
+            "description": "Column to compare",
+            "title": "Value",
+            "type": "string"
+          },
+          "where": {
+            "description": "Keep only rows where column=value; repeat to require several",
+            "items": {
+              "type": "string"
+            },
+            "title": "Where",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data",
+          "value",
+          "group",
+          "a"
+        ],
+        "title": "CompareParams",
+        "type": "object"
+      },
+      "result": {
+        "properties": {
+          "a": {
+            "title": "A",
+            "type": "string"
+          },
+          "b": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "B"
+          },
+          "cohens_d": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "diff over the root mean of the two variances",
+            "title": "Cohens D"
+          },
+          "data": {
+            "title": "Data",
+            "type": "string"
+          },
+          "df": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Welch-Satterthwaite degrees of freedom",
+            "title": "Df"
+          },
+          "diff": {
+            "description": "mean_a - mean_b",
+            "title": "Diff",
+            "type": "number"
+          },
+          "group": {
+            "title": "Group",
+            "type": "string"
+          },
+          "mean_a": {
+            "title": "Mean A",
+            "type": "number"
+          },
+          "mean_b": {
+            "title": "Mean B",
+            "type": "number"
+          },
+          "n_a": {
+            "title": "N A",
+            "type": "integer"
+          },
+          "n_b": {
+            "title": "N B",
+            "type": "integer"
+          },
+          "p_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Two-sided p-value of Welch's t-test",
+            "title": "P Value"
+          },
+          "sd_a": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sd A"
+          },
+          "sd_b": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sd B"
+          },
+          "t": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Welch's t",
+            "title": "T"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          },
+          "where": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Where",
+            "type": "array"
+          }
+        },
+        "required": [
+          "data",
+          "value",
+          "group",
+          "a",
+          "b",
+          "where",
+          "n_a",
+          "n_b",
+          "mean_a",
+          "mean_b",
+          "sd_a",
+          "sd_b",
+          "diff",
+          "t",
+          "df",
+          "p_value",
+          "cohens_d"
+        ],
+        "title": "CompareResult",
         "type": "object"
       }
     },

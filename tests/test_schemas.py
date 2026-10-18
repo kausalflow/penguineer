@@ -29,7 +29,9 @@ def test_schemas_match_snapshot():
 
 def test_every_command_is_registered():
     assert sorted(penguineer.schemas()) == [
+        "align",
         "bench homeostat",
+        "compare",
         "data health",
         "graph check",
         "graph draft",

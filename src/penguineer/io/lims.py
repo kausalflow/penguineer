@@ -90,13 +90,42 @@ def read_lims(path: Path, *, timezone: str = "UTC") -> LimsData:
     return LimsData(frame, found, n1 + n2)
 
 
-def read_lots(path: Path, *, timezone: str = "UTC") -> pl.DataFrame:
-    """Lot windows: a CSV with lot, start and end columns (any case), times in UTC."""
-    raw = pl.read_csv(path)
+LOT_ALIASES: dict[str, tuple[str, ...]] = {
+    "lot": ("lot", "lot_id", "batch", "batch_id"),
+    "start": ("start", "start_ts", "start_time", "started_at", "window_start"),
+    "end": ("end", "end_ts", "end_time", "ended_at", "window_end"),
+}
+
+
+def read_table(path: Path) -> pl.DataFrame:
+    """A CSV, TSV or Parquet file as a frame."""
+    suffix = path.suffix.lower()
+    if suffix == ".parquet":
+        return pl.read_parquet(path)
+    if suffix in (".csv", ".txt", ".tsv"):
+        return pl.read_csv(
+            path, separator="\t" if suffix == ".tsv" else ",", infer_schema_length=10_000
+        )
+    raise UsageError(f"unsupported file type {path.suffix!r}; use CSV or Parquet")
+
+
+def read_lots(path: Path, *, timezone: str = "UTC", keep: bool = False) -> pl.DataFrame:
+    """Lot windows: lot, start and end columns (common spellings, any case), CSV or Parquet.
+
+    Times become UTC. With ``keep`` the file's other columns follow, unchanged.
+    """
+    raw = read_table(path)
     lower = {c.lower(): c for c in raw.columns}
-    missing = [c for c in ("lot", "start", "end") if c not in lower]
+    found = {
+        n: next((lower[a] for a in opts if a in lower), None) for n, opts in LOT_ALIASES.items()
+    }
+    missing = [n for n, c in found.items() if c is None]
     if missing:
         raise UsageError(f"{path}: needs columns lot, start, end (missing {', '.join(missing)})")
-    start, _ = to_utc(raw[lower["start"]].alias("start"), timezone)
-    end, _ = to_utc(raw[lower["end"]].alias("end"), timezone)
-    return pl.DataFrame([raw[lower["lot"]].cast(pl.String).alias("lot"), start, end])
+    start, _ = to_utc(raw[found["start"]].alias("start"), timezone)
+    end, _ = to_utc(raw[found["end"]].alias("end"), timezone)
+    lots = pl.DataFrame([raw[found["lot"]].cast(pl.String).alias("lot"), start, end])
+    if keep:
+        rest = [c for c in raw.columns if c not in found.values() and c not in lots.columns]
+        lots = pl.concat([lots, raw.select(rest)], how="horizontal")
+    return lots

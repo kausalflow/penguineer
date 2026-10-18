@@ -5,15 +5,13 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-import matplotlib
+import matplotlib.dates as mdates
+import numpy as np
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
 
-matplotlib.use("Agg")
-import matplotlib.dates as mdates  # noqa: E402
-import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
-
-from penguineer.engines.investigate import Investigation  # noqa: E402
-from penguineer.report.model import Hypothesis  # noqa: E402
+from penguineer.engines.investigate import Investigation
+from penguineer.report.model import Hypothesis
 
 _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 QUALITY = "#b42318"
@@ -26,7 +24,7 @@ def _times(us: np.ndarray) -> list[datetime]:
     return [_EPOCH + timedelta(microseconds=int(u)) for u in us]
 
 
-def _style(ax: plt.Axes) -> None:
+def _style(ax: Axes) -> None:
     ax.spines[["top", "right"]].set_visible(False)
     ax.grid(axis="y", color="#e5e7eb", linewidth=0.8)
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%m-%d %H:%M"))
@@ -36,7 +34,8 @@ def _style(ax: plt.Axes) -> None:
 def quality_overview(inv: Investigation, path: Path) -> Path:
     """The quality over the whole period: online signal, lab results, spec, windows."""
     ev = inv.event
-    fig, ax = plt.subplots(figsize=(9, 3.2), dpi=110)
+    fig = Figure(figsize=(9, 3.2), dpi=110)
+    ax = fig.subplots()
     for w in inv.reference:
         ax.axvspan(w.start, w.end, color=REFERENCE, lw=0)
     ax.axvspan(ev.window_start, ev.window_end, color=EVENT, lw=0)
@@ -57,7 +56,6 @@ def quality_overview(inv: Investigation, path: Path) -> Path:
     _style(ax)
     fig.tight_layout()
     fig.savefig(path)
-    plt.close(fig)
     return path
 
 
@@ -70,7 +68,8 @@ def hypothesis_trend(inv: Investigation, h: Hypothesis, path: Path) -> Path | No
     lo, hi = _us(ev.window_start - length), _us(ev.window_end)
     keep = (inv.grid.times >= lo) & (inv.grid.times <= hi)
     t = _times(inv.grid.times[keep])
-    fig, ax = plt.subplots(figsize=(9, 3.2), dpi=110)
+    fig = Figure(figsize=(9, 3.2), dpi=110)
+    ax = fig.subplots()
     ax.axvspan(ev.window_start, ev.window_end, color=EVENT, lw=0)
     ax.plot(t, inv.series[h.cause_tag][keep], color=CAUSE, lw=1.1)
     ax.set_ylabel(
@@ -92,7 +91,6 @@ def hypothesis_trend(inv: Investigation, h: Hypothesis, path: Path) -> Path | No
     _style(ax)
     fig.tight_layout()
     fig.savefig(path)
-    plt.close(fig)
     return path
 
 
