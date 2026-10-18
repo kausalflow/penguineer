@@ -342,6 +342,8 @@
       
         
       
+        
+      
     
     
     
@@ -509,6 +511,33 @@
     
   
   Finding the actual lag
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../concepts/lot-windows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Lots in material time, and comparing groups
 
     
   </span>
@@ -887,10 +916,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#penguineer-align" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>penguineer align</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#penguineer-bench-homeostat" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         <code>penguineer bench homeostat</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#penguineer-compare" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>penguineer compare</code>
       </span>
     </span>
   </a>
@@ -1112,10 +1163,32 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#penguineer-align" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>penguineer align</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#penguineer-bench-homeostat" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
         <code>penguineer bench homeostat</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#penguineer-compare" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>penguineer compare</code>
       </span>
     </span>
   </a>
@@ -1290,6 +1363,68 @@
 
 <p>Every command also takes <code>--json</code> (print the result model as JSON on stdout), <code>--project PATH</code> (the folder run records and outputs go under, default <code>.</code>) and <code>--seed INT</code> (default <code>0</code>).</p>
 <p>Exit codes: 0 success, 1 validation failed, 2 usage error, 3 not enough data, 4 internal error or not implemented yet.</p>
+<h2 id="penguineer-align"><code>penguineer align</code><a class="headerlink" href="#penguineer-align" title="Permanent link">&para;</a></h2>
+<p>Average each tag over the window that made each lot, shifted back by its dead time.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--data</code></td>
+<td>existing file</td>
+<td>required</td>
+<td>Historian export, CSV or Parquet, wide or long</td>
+</tr>
+<tr>
+<td><code>--lots</code></td>
+<td>existing file</td>
+<td>required</td>
+<td>Lot windows: lot, start and end columns, CSV or Parquet; other columns are kept in the output</td>
+</tr>
+<tr>
+<td><code>--tags</code></td>
+<td>str, repeatable</td>
+<td></td>
+<td>Tags to average (default: all)</td>
+</tr>
+<tr>
+<td><code>--dead-time-min</code></td>
+<td>float</td>
+<td></td>
+<td>One dead time for every tag, in minutes (with --graph: for tags the graph cannot place)</td>
+</tr>
+<tr>
+<td><code>--graph</code></td>
+<td>existing file</td>
+<td></td>
+<td>Plant graph: each tag's dead time to --sample-point along flows_to edges</td>
+</tr>
+<tr>
+<td><code>--sample-point</code></td>
+<td>str</td>
+<td></td>
+<td>Graph node where the lots are measured (with --graph)</td>
+</tr>
+<tr>
+<td><code>--timezone</code></td>
+<td>str</td>
+<td><code>UTC</code></td>
+<td>Time zone of naive timestamps in the exports</td>
+</tr>
+<tr>
+<td><code>--out</code></td>
+<td>path</td>
+<td></td>
+<td>Where to write aligned.parquet and aligned.csv (default: run folder)</td>
+</tr>
+</tbody>
+</table>
 <h2 id="penguineer-bench-homeostat"><code>penguineer bench homeostat</code><a class="headerlink" href="#penguineer-bench-homeostat" title="Permanent link">&para;</a></h2>
 <p>Run investigate on homeostat plants with injected faults and score it.</p>
 <table>
@@ -1343,6 +1478,56 @@
 <td>path</td>
 <td></td>
 <td>Folder for bench.json and scenarios.csv (default: the run folder)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="penguineer-compare"><code>penguineer compare</code><a class="headerlink" href="#penguineer-compare" title="Permanent link">&para;</a></h2>
+<p>Compare a column between two groups: difference in means, Welch's t-test, Cohen's d.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--data</code></td>
+<td>existing file</td>
+<td>required</td>
+<td>A table, CSV or Parquet: for example align's aligned.parquet</td>
+</tr>
+<tr>
+<td><code>--value</code></td>
+<td>str</td>
+<td>required</td>
+<td>Column to compare</td>
+</tr>
+<tr>
+<td><code>--group</code></td>
+<td>str</td>
+<td>required</td>
+<td>Column that splits the rows into groups</td>
+</tr>
+<tr>
+<td><code>--a</code></td>
+<td>str</td>
+<td>required</td>
+<td>Group A: rows whose --group equals this</td>
+</tr>
+<tr>
+<td><code>--b</code></td>
+<td>str</td>
+<td></td>
+<td>Group B (default: every row not in group A)</td>
+</tr>
+<tr>
+<td><code>--where</code></td>
+<td>str, repeatable</td>
+<td></td>
+<td>Keep only rows where column=value; repeat to require several</td>
 </tr>
 </tbody>
 </table>
