@@ -16,16 +16,20 @@ splits use different seeds:
 - **train**: the test weights and rule scores in `calibration.json` were fitted on it;
 - **validation**: the confidence thresholds were chosen on it, and every change was checked
   against it;
-- **hidden**: its seed is a repository secret. It was run once for this release, by the *Release
+- **hidden**: its seed is a repository secret. It was run for this release, by the *Release
   gate* workflow, which prints only the scores below.
 
 | Split | Scenarios | hit@1 | hit@3 | Wrong-confident | Data-fault catch |
 |---|---|---|---|---|---|
 | validation | 85 | 89% | 96% | 5% | 95% (19 of 20) |
-| hidden | HIDDEN_N | HIDDEN_HIT1 | HIDDEN_HIT3 | HIDDEN_WC | HIDDEN_DF |
+| hidden | 171 | 87% | 93% (88% to 96%) | 5% (3% to 10%) | 95% (85% to 99%, n=44) |
 | **gate** | ≥ 150 | | ≥ 70% | < 10% | ≥ 90% |
 
-HIDDEN_NOTE
+The hidden split was generated from 200 plants (25 per fault type); 29 never made an off-spec
+lot and were skipped. A first run on 160 plants scored the same within a point (hit@3 93%,
+wrong-confident 5%, data-fault catch 94%) but had only 136 scenarios, under the gate's 150, so
+the default grew to 200. The intervals are 95% Wilson intervals. The hidden scores sit a few
+points under validation's, as expected for a split nothing was tuned on.
 
 On validation, by fault type:
 

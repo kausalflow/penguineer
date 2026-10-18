@@ -4,7 +4,7 @@ Find the root cause of off-spec lots from historian and LIMS exports, on a lapto
 
 penguineer reads files and writes files. Its engines are deterministic Python; an LLM is optional and never decides a ranking. Every command is defined once as a Pydantic parameter model, a result model and a function, and the CLI, the `--json` output and the Python API are generated from that one definition. [Alchemist](https://github.com/kausalflow/alchemist) imports penguineer as a library and adds the UI, runners and project management on top.
 
-> Status: early. `init`, `data health`, `graph check`, `graph draft`, `graph lags`, `lag`, `investigate`, `bench homeostat` and `mcp` work.
+> Status: early. `init`, `data health`, `graph check`, `graph draft`, `graph lags`, `lag`, `investigate`, `bench homeostat` and `mcp` work. On Homeostat plants, the injected cause is in the top three in 93% of hidden scenarios ([results](https://kausalflow.com/penguineer/results/)).
 
 ## Documentation
 

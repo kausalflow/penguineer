@@ -17,6 +17,8 @@ The first release that investigates: from an off-spec lot to ranked, evidenced r
   `calibration.json`. A smoke bench runs on every pull request, the full public bench nightly.
 - The release gate: the *Release gate* workflow runs the hidden split by hand and checks it with
   `python -m penguineer.bench.gate`.
+  On the hidden split (171 scenarios): hit@3 93%, wrong-confident 5%, data-fault catch 95%;
+  see [Results](https://kausalflow.com/penguineer/results/).
 - `lag`: fits the actual delay from a cause to an effect, as a fixed dead time, plug flow through
   a volume, or dead time plus mixing, against the chance level of a rotated cause.
 - `mcp`: serves every command as a tool over stdio (`pip install "penguineer[mcp]"`).
