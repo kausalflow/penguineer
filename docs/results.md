@@ -3,8 +3,7 @@
 How well penguineer 0.2.0 does on plants whose truth is known. Every number on this page comes
 from [Homeostat](https://homeostat.kausalflow.com/docs/) plants: simulated, with the cause of
 each off-spec lot injected and recorded, so that the answer can be checked. Real plants are
-messier; these numbers are a floor for what the method must do, not a promise of what it does on
-your plant.
+messier, so treat these numbers as an upper bound for your plant, not a promise.
 
 ## Root causes: the bench
 
