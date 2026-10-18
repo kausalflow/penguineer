@@ -10,10 +10,10 @@ penguineer bench homeostat --scenarios validation --per-fault 12
 ```text
 bench homeostat: 85 validation scenarios (11 plants skipped: no lot off spec)
 
-  hit@1                 88%
-  hit@3                 95%  (95% 89% to 98%)
+  hit@1                 89%
+  hit@3                 96%  (95% 90% to 99%)
   wrong-confident rate  5%
-  data-fault catch rate 75%
+  data-fault catch rate 95%
 
   fault type              n  hit@1  hit@3
   catalyst_loss          12    92%   100%
@@ -22,7 +22,7 @@ bench homeostat: 85 validation scenarios (11 plants skipped: no lot off spec)
   feed_property          12    83%   100%
   reactor_fouling        12    83%    83%
   reactor_sensor_bias    12    92%    92%
-  reactor_sensor_drift    8    88%    88%
+  reactor_sensor_drift    8   100%   100%
   reactor_setpoint       12    92%   100%
 ```
 
@@ -66,7 +66,7 @@ A process hypothesis claims that its tag moved and caused the deviation, so it c
 | Wrong-confident rate | Share of scenarios where the leading hypothesis is labeled high confidence and is wrong | < 10% |
 | Data-fault catch rate | Among measurement faults, share where the faulty tag leads as a measurement fault | ≥ 90% |
 
-Rates carry a 95% Wilson interval in `bench.json`: at 85 scenarios an observed 95% is anything from 89% to 98%.
+Rates carry a 95% Wilson interval in `bench.json`: at 85 scenarios an observed 96% is anything from 90% to 99%.
 
 ## Splits and calibration
 
@@ -76,12 +76,12 @@ Rates carry a 95% Wilson interval in `bench.json`: at 85 scenarios an observed 9
 | validation | public (2000) | Choosing the confidence thresholds, and the numbers above |
 | hidden | KausalFlow's secret | The release gate, run only on KausalFlow's runner |
 
-`scripts/fit_calibration.py` searches the weights and rule scores on the train split (maximizing hit@3, then hit@1), then chooses the confidence thresholds on validation so that the wrong-confident rate stays at or under 5%. The result ships as `src/penguineer/engines/calibration.json`, and every `report.json` names the splits and the Homeostat version it was fitted with.
+`scripts/fit_calibration.py` searches the weights and rule scores on the train split (maximizing hit@3, plus half of hit@1 and half of the data-fault catch rate), then chooses the confidence thresholds on validation so that the wrong-confident rate stays at or under 5%. The result ships as `src/penguineer/engines/calibration.json`, and every `report.json` names the splits and the Homeostat version it was fitted with.
 
 ## What the numbers do not say
 
 - The bench is one plant family. A real plant has more tags, more loops and other faults, so treat these numbers as an upper bound, not a promise.
-- The data-fault catch rate (75%, 15 of 20) is under its 90% gate. In three of the five misses the leading hypothesis names TT-301 but calls it a process change rather than a wrong reading; one points at an unmeasured change in R-301 and one at a feed flow.
+- The data-fault catch rate is 95% (19 of 20) on validation and 100% (21 of 21) on train, but 20 scenarios give a wide interval: 76% to 99%. The one miss is a small bias that started seven hours before the first off-spec lot, inside the newest reference lot (the lots in between ran another grade), so the loop output's move is partly in the reference and the leading hypothesis is an unmeasured change in R-301.
 - The plant has no analyzer on the sampled stream, so the onset test never runs on the bench, and its weight is kept rather than fitted.
 - The hidden split, and so the release gate, is not run in this repository.
 

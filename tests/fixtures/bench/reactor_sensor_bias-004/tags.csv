@@ -1,0 +1,14 @@
+tag,unit
+AT-101,
+FT-101,m3/h
+FT-102,m3/h
+GRADE,
+TIC-201.mode,
+TIC-201.out,%
+TIC-201.sp,degC
+TIC-301.mode,
+TIC-301.out,%
+TIC-301.sp,degC
+TT-200,degC
+TT-201,degC
+TT-301,degC

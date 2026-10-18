@@ -5,7 +5,8 @@
 Both folders are made by ``penguineer bench homeostat`` (or ``penguineer.bench.export``).
 
 1. Weights and rule scores: coordinate search over a small grid of each value in turn, keeping
-   the others fixed, maximizing hit@3 (the release gate) plus half of hit@1 on the training split.
+   the others fixed, maximizing hit@3 plus half of hit@1 and half of the data-fault catch rate
+   (hit@3 and the catch rate are release gates) on the training split.
 2. Thresholds, with those weights fixed, on the validation split: ``high`` and ``margin`` are the
    pair that labels the most correct leading hypotheses high while the wrong-confident rate
    stays at or under 5% (the release gate is 10%); ``medium`` is the lowest score above which the
@@ -62,7 +63,9 @@ def objective(results) -> float:
     n = len(results)
     h1 = sum(s.hit_at_1 for s, _ in results) / n
     h3 = sum(s.hit_at_3 for s, _ in results) / n
-    return h3 + 0.5 * h1
+    data = [s for s, _ in results if s.data_fault]
+    caught = sum(bool(s.data_fault_caught) for s in data) / len(data) if data else 0.0
+    return h3 + 0.5 * h1 + 0.5 * caught
 
 
 def fit_weights(train, cal: Calibration) -> Calibration:

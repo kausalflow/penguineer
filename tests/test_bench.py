@@ -138,3 +138,17 @@ def test_export_one_scenario(tmp_path):
     assert b.truth.kind == "setpoint_change" and "AT-301" not in set(b.historian["tag"])
     score, _ = run_scenario(tmp_path / "reactor_setpoint-000")
     assert score.rank == 1
+
+
+BENCH_FIXTURES = Path(__file__).resolve().parent / "fixtures" / "bench"
+
+
+@pytest.mark.parametrize("scenario", ["reactor_sensor_bias-004", "reactor_sensor_drift-005"])
+def test_a_wrong_reading_held_by_its_loop_is_caught(scenario):
+    # Two validation scenarios where TT-301 reads high and TIC-301 cools the reactor to match.
+    # bias-004: the loop recovers within ten minutes, but the spike falls in a short lot window.
+    # drift-005: feed B's flow moved at the same time, though the loop never followed it before.
+    score, inv = run_scenario(BENCH_FIXTURES / scenario)
+    assert score.data_fault_caught, [(h.kind, h.cause_tag, h.score) for h in inv.hypotheses]
+    reasons = {r.cause: r.reason for r in inv.ruled_out}
+    assert "held at setpoint by TIC-301" in reasons["TT-301"]

@@ -126,6 +126,7 @@ def generated_bundles(
 @command("bench homeostat", params=BenchHomeostatParams, result=BenchHomeostatResult)
 def bench_homeostat(p: BenchHomeostatParams, ctx: RunContext) -> BenchHomeostatResult:
     """Run investigate on homeostat plants with injected faults and score it."""
+    from penguineer.bench.plant import SPLIT_SEEDS
     from penguineer.bench.score import run_bench
     from penguineer.io.homeostat import bundles_in
 
@@ -146,7 +147,11 @@ def bench_homeostat(p: BenchHomeostatParams, ctx: RunContext) -> BenchHomeostatR
     if not paths:
         raise UsageError(f"no scenario bundles (folders with truth.json) in {folder}")
     index = folder / "index.json"
-    skipped = len(json.loads(index.read_text()).get("skipped", [])) if index.exists() else 0
+    meta = json.loads(index.read_text()) if index.exists() else {}
+    skipped = len(meta.get("skipped", []))
+    # Bundles made for a public split say so by their seed.
+    seed = meta.get("split_seed")
+    split = next((Split(k) for k, v in SPLIT_SEEDS.items() if v == seed), p.scenarios)
 
     scores, summary = run_bench(paths, progress=ctx.progress)
     out = p.out if p.out is not None else ctx.run_dir
@@ -155,7 +160,7 @@ def bench_homeostat(p: BenchHomeostatParams, ctx: RunContext) -> BenchHomeostatR
     report.write_text(
         json.dumps(
             {
-                "split": str(p.scenarios),
+                "split": str(split),
                 "bundles": str(folder),
                 "skipped": skipped,
                 "summary": summary.model_dump(mode="json"),
@@ -173,7 +178,7 @@ def bench_homeostat(p: BenchHomeostatParams, ctx: RunContext) -> BenchHomeostatR
             w.writerow({**s.model_dump(), "hit_at_3": s.hit_at_3})
     h3 = summary.hit_at_3
     return BenchHomeostatResult(
-        split=p.scenarios,
+        split=split,
         n_scenarios=summary.n_scenarios,
         skipped=skipped,
         errors=summary.errors,
