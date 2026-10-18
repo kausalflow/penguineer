@@ -1,6 +1,6 @@
 [project]
 name = "plantgraph"
-version = "0.3.0"
+version = "0.4.0"
 description = "Typed plant context graph schema shared by penguineer and homeostat"
 readme = "README.md"
 license = "Apache-2.0"
