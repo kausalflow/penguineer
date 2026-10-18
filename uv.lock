@@ -1593,7 +1593,7 @@ wheels = [
 
 [[package]]
 name = "penguineer"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
@@ -1742,7 +1742,7 @@ wheels = [
 
 [[package]]
 name = "plantgraph"
-version = "0.1.0"
+version = "0.2.0"
 source = { editable = "packages/plantgraph" }
 dependencies = [
     { name = "pydantic" },
