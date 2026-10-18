@@ -19,7 +19,7 @@
         <link rel="prev" href="../data-health/">
       
       
-        <link rel="next" href="../investigate/">
+        <link rel="next" href="../lag/">
       
       
         
@@ -316,6 +316,8 @@
       
         
       
+        
+      
     
     
     
@@ -555,6 +557,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../lag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Finding the actual lag
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../investigate/" class="md-nav__link">
         
   
@@ -618,6 +647,8 @@
   
     
     
+      
+        
       
         
       
@@ -709,6 +740,33 @@
     
   
   Python API
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MCP server
 
     
   </span>
@@ -1032,6 +1090,8 @@
       
         
       
+        
+      
     
     
     
@@ -1114,7 +1174,7 @@
 <h2 id="where-the-result-goes">Where the result goes<a class="headerlink" href="#where-the-result-goes" title="Permanent link">&para;</a></h2>
 <p>By default the updated graph is written to the run folder (<code>runs/&lt;run_id&gt;/graph.yaml</code>), and the input graph is not touched. With <code>--in-place</code>, the estimates are written back into <code>--graph</code>, and each change is appended to <code>graph.history.jsonl</code> next to it, with the time, the run ID, the reason and the edge before and after.</p>
 <h2 id="limits">Limits<a class="headerlink" href="#limits" title="Permanent link">&para;</a></h2>
-<p>The estimate is a transport delay between two measured points, from the data as it is. Feedback control, recycles and mixing all smear a delay. Mixing in a vessel spreads a step out over its residence time, so the peak marks where the response is strongest, not where it starts. Material-time alignment, which accounts for flow-dependent delays and mixing, comes with <code>investigate</code>.</p>
+<p>The estimate is a transport delay between two measured points, from the data as it is. Feedback control, recycles and mixing all smear a delay. Mixing in a vessel spreads a step out over its residence time, so the peak marks where the response is strongest, not where it starts. <code>investigate</code> aligns in material time, which accounts for flow-dependent delays. To read how a delay depends on the flow, and how much mixing spreads it, use <a href="../lag/"><code>penguineer lag</code></a> on the two tags.</p>
 
 
 
@@ -1171,13 +1231,13 @@
         
         
           
-          <a href="../investigate/" class="md-footer__link md-footer__link--next" aria-label="Next: Investigating an off-spec lot">
+          <a href="../lag/" class="md-footer__link md-footer__link--next" aria-label="Next: Finding the actual lag">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Investigating an off-spec lot
+                Finding the actual lag
               </div>
             </div>
             <div class="md-footer__button md-icon">

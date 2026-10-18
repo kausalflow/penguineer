@@ -19,6 +19,9 @@
         <loc>https://kausalflow.com/penguineer/concepts/investigate/</loc>
       </url>
       <url>
+        <loc>https://kausalflow.com/penguineer/concepts/lag/</loc>
+      </url>
+      <url>
         <loc>https://kausalflow.com/penguineer/concepts/plant-graph/</loc>
       </url>
       <url>
@@ -29,6 +32,9 @@
       </url>
       <url>
         <loc>https://kausalflow.com/penguineer/guides/homeostat-live/</loc>
+      </url>
+      <url>
+        <loc>https://kausalflow.com/penguineer/guides/mcp/</loc>
       </url>
       <url>
         <loc>https://kausalflow.com/penguineer/guides/python-api/</loc>

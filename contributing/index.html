@@ -312,6 +312,8 @@
       
         
       
+        
+      
     
     
     
@@ -471,6 +473,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../concepts/lag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Finding the actual lag
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../concepts/investigate/" class="md-nav__link">
         
   
@@ -534,6 +563,8 @@
   
     
     
+      
+        
       
         
       
@@ -625,6 +656,33 @@
     
   
   Python API
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MCP server
 
     
   </span>
@@ -1098,6 +1156,7 @@
 </span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>scripts/fit_calibration.py<span class="w"> </span>.penguineer/bench/train-*<span class="w"> </span>.penguineer/bench/validation-*
 </span></code></pre></div>
 <p>Commit the new <code>src/penguineer/engines/calibration.json</code> with the change, and quote the validation numbers in the pull request. Never fit on the validation split's answers beyond the thresholds, and never on the hidden split.</p>
+<p>A change to <code>penguineer lag</code>'s engine (<code>engines/lagfit.py</code>) is checked the same way against Homeostat plants with known volumes: run <code>scripts/validate_lag.py</code> (see <a href="../concepts/lag/#checked-on-homeostat-plants">Finding the actual lag</a>) and quote its errors in the pull request.</p>
 <h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
 <p>The site is built with <a href="https://zensical.org">Zensical</a>:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uvx<span class="w"> </span>zensical<span class="w"> </span>serve<span class="w">    </span><span class="c1"># preview on http://localhost:8000</span>

@@ -16,7 +16,7 @@
       
       
       
-        <link rel="prev" href="../../guides/python-api/">
+        <link rel="prev" href="../../guides/mcp/">
       
       
         <link rel="next" href="../run-record/">
@@ -314,6 +314,8 @@
       
         
       
+        
+      
     
     
     
@@ -473,6 +475,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../../concepts/lag/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Finding the actual lag
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../concepts/investigate/" class="md-nav__link">
         
   
@@ -536,6 +565,8 @@
   
     
     
+      
+        
       
         
       
@@ -627,6 +658,33 @@
     
   
   Python API
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/mcp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MCP server
 
     
   </span>
@@ -850,6 +908,17 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#penguineer-lag" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>penguineer lag</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1058,6 +1127,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         <code>penguineer investigate</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#penguineer-lag" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>penguineer lag</code>
       </span>
     </span>
   </a>
@@ -1529,6 +1609,98 @@
 </tr>
 </tbody>
 </table>
+<h2 id="penguineer-lag"><code>penguineer lag</code><a class="headerlink" href="#penguineer-lag" title="Permanent link">&para;</a></h2>
+<p>Fit the actual delay from a cause to an effect: fixed, flow-driven, or with mixing.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--data</code></td>
+<td>existing file</td>
+<td>required</td>
+<td>Historian export, CSV or Parquet, wide or long</td>
+</tr>
+<tr>
+<td><code>--cause</code></td>
+<td>str</td>
+<td>required</td>
+<td>Upstream tag</td>
+</tr>
+<tr>
+<td><code>--effect</code></td>
+<td>str</td>
+<td>required</td>
+<td>Downstream tag, or with --lims a lab property</td>
+</tr>
+<tr>
+<td><code>--lims</code></td>
+<td>existing file</td>
+<td></td>
+<td>LIMS export: the effect is then a lab property, compared at its sample times</td>
+</tr>
+<tr>
+<td><code>--flow</code></td>
+<td>str, repeatable</td>
+<td></td>
+<td>Flow tags through the line, summed (enables the flow and volume models)</td>
+</tr>
+<tr>
+<td><code>--flow-unit</code></td>
+<td>str</td>
+<td><code>m3/h</code></td>
+<td>Unit of the flow tags, for the volumes</td>
+</tr>
+<tr>
+<td><code>--start</code></td>
+<td>datetime</td>
+<td></td>
+<td>Window start (inclusive)</td>
+</tr>
+<tr>
+<td><code>--end</code></td>
+<td>datetime</td>
+<td></td>
+<td>Window end (exclusive)</td>
+</tr>
+<tr>
+<td><code>--max-lag-minutes</code></td>
+<td>float</td>
+<td><code>240.0</code></td>
+<td>Longest delay to search</td>
+</tr>
+<tr>
+<td><code>--step-seconds</code></td>
+<td>float</td>
+<td></td>
+<td>Grid step (default: the slower tag's median period)</td>
+</tr>
+<tr>
+<td><code>--z-threshold</code></td>
+<td>float</td>
+<td><code>5.0</code></td>
+<td>Peak strength needed for an online effect, |corr|·√n</td>
+</tr>
+<tr>
+<td><code>--timezone</code></td>
+<td>str</td>
+<td><code>UTC</code></td>
+<td>Time zone of naive timestamps in the exports</td>
+</tr>
+<tr>
+<td><code>--out</code></td>
+<td>path</td>
+<td></td>
+<td>Folder for the plots (default: the run folder)</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -1568,7 +1740,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../../guides/python-api/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Python API">
+          <a href="../../guides/mcp/" class="md-footer__link md-footer__link--prev" aria-label="Previous: MCP server">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
@@ -1578,7 +1750,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Python API
+                MCP server
               </div>
             </div>
           </a>
