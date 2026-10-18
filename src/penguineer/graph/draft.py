@@ -34,10 +34,12 @@ from plantgraph import (
     PlantGraph,
     Provenance,
     Source,
+    Stream,
     Tag,
 )
 
 from penguineer.core.errors import UsageError
+from penguineer.io.dexpi import FLOW_CONFIDENCE, Pid
 
 # ISA-5.1 first letters: the measured or initiating variable.
 VARIABLES = {
@@ -421,3 +423,185 @@ def draft_from_tags(rows: list[TagRow], unit: str | None = None) -> Draft:
             )
         )
     return Draft(PlantGraph(unit=unit, nodes=nodes, edges=edges), warnings, unparsed)
+
+
+def apply_pid(draft: Draft, pid: Pid) -> None:
+    """Add a P&ID to a tag-list draft: equipment, piping (flows_to), sensor places, valves.
+
+    The P&ID's equipment and feeds or products become nodes and its piping ``flows_to`` edges.
+    Its instrument functions are matched to the tag list by letter and number (TIC-201 on the
+    P&ID is the group of TIC-201.SP, TT-201, ...; a plant prefix is ignored): a sensor's place
+    gives ``measures`` edges, and a controller's valve becomes the loop's actuator, with the
+    equipment it acts on. Everything stays ``inferred``, with ``source: dexpi``.
+    """
+    g = draft.graph
+    nodes = {n.id: n for n in g.nodes}
+
+    def from_pid(**kw):
+        return {"provenance": Provenance.inferred, "source": Source.dexpi, **kw}
+
+    ids: dict[str, str] = {}  # P&ID name -> node ID
+    for q in pid.equipment:
+        node_id = _node_id(q.name)
+        node = nodes.get(node_id)
+        if node is not None and not isinstance(node, Equipment):
+            draft.warnings.append(f"P&ID equipment {q.name} has the ID of a {node.type}; skipped")
+            continue
+        ids[q.name] = node_id
+        if node is None:
+            letters = re.match(r"[A-Z]+", q.name)
+            node = Equipment(
+                id=node_id,
+                kind=q.kind or (EQUIPMENT_KINDS.get(letters.group(0)) if letters else None),
+                description=f"{q.component_class} on the P&ID",
+                **from_pid(confidence=0.9),
+            )
+            g.nodes.append(node)
+            nodes[node_id] = node
+        else:  # named in a description or the equipment column: the P&ID confirms it
+            node.kind = node.kind or q.kind
+            node.source = Source.dexpi
+            node.confidence = max(node.confidence, 0.9)
+    for b in pid.boundaries:
+        node_id = _node_id(b.name)
+        if node_id in nodes:
+            ids[b.name] = node_id
+            continue
+        node = Stream(
+            id=node_id,
+            name=b.name,
+            description="feed, an off-page connector on the P&ID"
+            if b.direction == "in"
+            else "product, an off-page connector on the P&ID",
+            **from_pid(confidence=0.9),
+        )
+        g.nodes.append(node)
+        nodes[node_id] = node
+        ids[b.name] = node_id
+
+    for i, f in enumerate(pid.flows, start=1):
+        if f.from_name not in ids or f.to_name not in ids:
+            continue
+        g.edges.append(
+            Edge(
+                id=f"draft-f{i}",
+                type=EdgeType.flows_to,
+                from_id=ids[f.from_name],
+                to_id=ids[f.to_name],
+                description=f"piping on the P&ID, through {', '.join(f.valves)}"
+                if f.valves
+                else "piping on the P&ID",
+                **from_pid(confidence=FLOW_CONFIDENCE),
+            )
+        )
+
+    # The tag list's groups by first letter and number; loops by any of their tags.
+    def key(letter: str, number: str) -> tuple[str, str]:
+        return (letter, re.sub(r"\D", "", number).lstrip("0") or number)
+
+    groups: dict[tuple[str, str], list[Tag]] = defaultdict(list)
+    for n in g.nodes:
+        if isinstance(n, Tag):
+            p = parse_tag(n.tag)
+            if p.letters and p.number:
+                groups[key(p.letters[0], p.number)].append(n)
+    loops = {}
+    for n in g.nodes:
+        if isinstance(n, Loop):
+            member = nodes.get(n.pv or n.sp or n.op or n.mode or "")
+            p = parse_tag(member.tag) if isinstance(member, Tag) else None
+            if p is not None and p.letters and p.number:
+                loops[key(p.letters[0], p.number)] = n
+
+    n_measures = n_valves = 0
+    for inst in pid.instruments:
+        k = key(inst.category[0], inst.number)
+        tags = groups.get(k, [])
+        if not tags:
+            draft.warnings.append(f"P&ID instrument {inst.name} has no tag in the tag list")
+            continue
+        variable = VARIABLES.get(inst.category[0])
+        for sensor in inst.sensors:
+            target = ids.get(sensor.located_at or "")
+            if target is None:
+                continue
+            measuring = [
+                t for t in tags if t.role == "measurement" and not parse_tag(t.tag).is_valve
+            ]
+            named = [t for t in measuring if sensor.name and parse_tag(t.tag).base == sensor.name]
+            for t in named or measuring:
+                current = [e for e in g.edges if e.type == "measures" and e.from_id == t.id]
+                if any(e.to_id == target for e in current):
+                    for e in current:
+                        if e.to_id == target:
+                            e.confidence = max(e.confidence, sensor.confidence)
+                            e.source = Source.dexpi
+                    continue
+                if any(e.confidence > sensor.confidence for e in current):
+                    draft.warnings.append(
+                        f"{t.tag}: the P&ID puts it on {target}, the tag list on "
+                        f"{current[0].to_id}; the tag list's is kept"
+                    )
+                    continue
+                g.edges[:] = [e for e in g.edges if e not in current]
+                n_measures += 1
+                g.edges.append(
+                    Edge(
+                        id=f"draft-pm{n_measures}",
+                        type=EdgeType.measures,
+                        from_id=t.id,
+                        to_id=target,
+                        measured_variable=variable,
+                        **from_pid(confidence=sensor.confidence),
+                    )
+                )
+        loop = loops.get(k)
+        if inst.valve is None or loop is None:
+            continue
+        valve_id = _node_id(inst.valve)
+        if isinstance(nodes.get(valve_id), Tag):
+            valve_id = f"{valve_id}-valve"
+        controls = next((e for e in g.edges if e.type == "controls" and e.from_id == loop.id), None)
+        if controls is not None and controls.to_id != valve_id:
+            drafted = nodes.get(controls.to_id)
+            if drafted is not None and drafted.confidence > 0.5:
+                draft.warnings.append(
+                    f"{loop.id}: the P&ID names its valve {inst.valve}, the tag list "
+                    f"{controls.to_id}; the tag list's is kept"
+                )
+                continue
+            # A valve named only by convention: the P&ID's replaces it.
+            g.nodes[:] = [n for n in g.nodes if n.id != controls.to_id]
+            nodes.pop(controls.to_id, None)
+            controls.to_id = valve_id
+        if valve_id not in nodes:
+            nodes[valve_id] = Actuator(
+                id=valve_id, kind="valve", description=f"valve of {loop.id}", **from_pid()
+            )
+            g.nodes.append(nodes[valve_id])
+        actuator = nodes[valve_id]
+        actuator.source, actuator.confidence = Source.dexpi, 0.9
+        if controls is None:
+            n_valves += 1
+            controls = Edge(
+                id=f"draft-pc{n_valves}",
+                type=EdgeType.controls,
+                from_id=loop.id,
+                to_id=valve_id,
+                **from_pid(),
+            )
+            g.edges.append(controls)
+        controls.source, controls.confidence = Source.dexpi, 0.9
+        target = ids.get(inst.valve_target or "")
+        if target is not None:
+            n_valves += 1
+            g.edges.append(
+                Edge(
+                    id=f"draft-v{n_valves}",
+                    type=EdgeType.manipulates,
+                    from_id=valve_id,
+                    to_id=target,
+                    **from_pid(confidence=inst.valve_confidence),
+                )
+            )
+    draft.warnings.extend(pid.warnings)

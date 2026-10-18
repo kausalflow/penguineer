@@ -62,11 +62,11 @@ The tag list is a CSV with a `tag` column and, if the export has them, `descript
 are recognized).
 
 ```text
-graph draft: 14 tags, 2 loops, 2 valves, 2 equipment; 5 edges, all inferred
+graph draft: 14 tags, 2 loops, 2 valves, 2 equipment; 5 edges (0 flows_to), all inferred
 wrote graph.yaml
 1 tags without an ISA-5.1 name: GRADE
 warning: TT-305: the name says temperature but the unit 'bar' is a pressure
-note: no piping (flows_to) in a tag list: add it, or confirm what a P&ID or the LLM proposes
+note: no piping (flows_to) in a tag list: add it, give the P&ID with --pid, or confirm what the LLM proposes
 next: penguineer graph check --graph graph.yaml
 ```
 
@@ -96,6 +96,44 @@ description or a naming convention than from a column or a tag in the list), so 
 appear in `graph check`'s confirm queue. A unit that contradicts the name is reported. Tags
 without an ISA-5.1 name, such as `GRADE`, become tag nodes without a role.
 
-A tag list does not say how material flows, so the draft has no `flows_to` edges, no streams,
-sample points or qualities: those come from the engineer. Reading the piping from a DEXPI P&ID
-(`--pid`) and LLM-proposed relations (`--llm`) are not built yet.
+A tag list does not say how material flows, so on its own the draft has no `flows_to` edges and
+no streams. Sample points and qualities come from the engineer. LLM-proposed relations (`--llm`)
+are not built yet.
+
+### Adding the P&ID
+
+With a DEXPI P&ID (the Proteus XML that P&ID tools export), the draft also reads how the plant
+is piped and where its instruments sit:
+
+```bash
+penguineer graph draft --tags tags.csv --pid pid.xml
+```
+
+```text
+graph draft: 13 tags, 2 loops, 2 valves, 3 equipment; 19 edges (9 flows_to), all inferred
+wrote graph.yaml
+1 tags without an ISA-5.1 name: GRADE
+warning: P&ID instrument PI-305 has no tag in the tag list
+next: penguineer graph check --graph graph.yaml
+```
+
+From the P&ID it drafts:
+
+- `equipment` for every piece of equipment, by its tag name, with its kind from the DEXPI class
+  (`TubularHeatExchanger` is an exchanger);
+- a `stream` for every off-page connector: a feed where material comes in, a product where it
+  leaves;
+- a `flows_to` edge wherever a pipe runs from one piece of equipment (or a feed) to the next,
+  through tees, reducers and valves, in the direction the P&ID draws its connections;
+- for each instrument function that matches the tag list by letter and number (TIC-201 on the
+  P&ID is TIC-201.SP, TT-201 and the rest in the list; a plant prefix is ignored): a `measures`
+  edge from its sensor's tag to where the sensor sits, and, for a controller, the valve its signal
+  goes to as the loop's actuator, with a `manipulates` edge to the equipment that valve's pipe
+  feeds.
+
+A sensor on a nozzle measures that equipment (confidence 0.85). A sensor on a pipe is read as
+measuring the equipment the pipe comes from, and a valve on a pipe as acting on the equipment it
+goes to (0.6): confirm those. When the tag list says otherwise and is more sure (its `equipment`
+column, or a valve tag in the list), the tag list's answer is kept and the difference is
+reported. Instruments on the P&ID without a tag in the list are reported too. Everything from the
+P&ID has `source: dexpi` and is `inferred`, like the rest of the draft.
