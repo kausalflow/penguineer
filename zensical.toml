@@ -15,6 +15,7 @@ copyright = "Copyright &copy; 2026 kausalflow"
 nav = [
   { "Home" = "index.md" },
   { "Getting started" = "getting-started.md" },
+  { "Results" = "results.md" },
   { "Concepts" = [
     "concepts/commands.md",
     "concepts/plant-graph.md",
