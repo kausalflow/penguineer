@@ -1,0 +1,22 @@
+{
+  "scenario": "reactor_sensor_bias-004",
+  "fault_type": "reactor_sensor_bias",
+  "kind": "measurement_fault",
+  "data_fault": true,
+  "root_cause": [
+    "TT-301"
+  ],
+  "onset": "2026-08-03T03:05:42.938906Z",
+  "magnitude": 4.925974325849009,
+  "lot": "L0803-1",
+  "affected_lots": [
+    "L0803-1",
+    "L0803-2",
+    "L0803-3",
+    "L0803-4",
+    "L0803-5"
+  ],
+  "description": "The reactor thermocouple reads high; the loop cools the true temperature to match.",
+  "homeostat": "0.1.0a3",
+  "config_hash": "a0e8f290bb33a0ef48081549b30f78e31c6685e2dada12741076cbd2245a76e2"
+}

@@ -3,12 +3,12 @@
   "onset": 0.3,
   "lag": 0.3,
   "pv_bias": 1.0,
-  "loop_disturbance": 0.4,
+  "loop_disturbance": 0.2,
   "hidden": 0.2,
   "hidden_below": 0.5,
   "fault_critical": 0.6,
   "fault_warning": 0.45,
-  "high": 0.425,
+  "high": 0.4,
   "medium": 0.25,
   "margin": 0.025,
   "fitted_on": {
@@ -16,8 +16,8 @@
     "thresholds": "the homeostat validation split (85 scenarios)",
     "homeostat": "0.1.0a3",
     "plant": "4144102c25e7",
-    "date": "2026-10-17",
-    "hit_at_1": 0.9176,
+    "date": "2026-10-18",
+    "hit_at_1": 0.9412,
     "wrong_confident_rate": 0.0471
   }
 }

@@ -1,0 +1,21 @@
+{
+  "scenario": "reactor_sensor_drift-005",
+  "fault_type": "reactor_sensor_drift",
+  "kind": "measurement_fault",
+  "data_fault": true,
+  "root_cause": [
+    "TT-301"
+  ],
+  "onset": "2026-08-02T21:58:10.859372Z",
+  "magnitude": 4.1311359743994736,
+  "lot": "L0803-1",
+  "affected_lots": [
+    "L0803-1",
+    "L0803-3",
+    "L0803-4",
+    "L0803-5"
+  ],
+  "description": "The reactor thermocouple drifts high.",
+  "homeostat": "0.1.0a3",
+  "config_hash": "df08d34480835a7ed9db01e7186ad00fe179b0e6ab5ed4061f6cc51f1429a505"
+}

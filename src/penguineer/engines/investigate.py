@@ -51,6 +51,9 @@ _US = 1_000_000
 _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 
 SMOOTH_MIN = 30  # minutes of moving mean before the effect test
+SETTLE_MIN = 20  # minutes a loop is given to bring its PV back after its output steps
+UPSTREAM_STRENGTH = 0.5  # effect strength at which a moved upstream tag explains a loop's move
+UPSTREAM_EXPLAINS: float | None = 0.3  # share of the loop output's move it must predict
 
 
 def _us(t: datetime) -> int:
@@ -599,6 +602,45 @@ def investigate(
         for f in findings_in(proxy_tag.tag, dev_start, _us(ev_end)):
             notes.append(f"the online analyzer {proxy_tag.tag} has a {f.check} finding: {f.detail}")
 
+    def held_by_loop(pv_x: np.ndarray, sp_x: np.ndarray | None, op_x: np.ndarray | None) -> bool:
+        """Whether a loop held its PV in the lot, apart from the transient after its output stepped.
+
+        A controlled PV barely moves from lot to lot, so a short excursion while the loop
+        recovers can score as a large effect in reference scales. Held means: once the loop has
+        settled, the median control error sits within the PV's sample-to-sample noise of the
+        reference's.
+        """
+        err = pv_x - sp_x if sp_x is not None else pv_x
+        ref = err[ref_mask]
+        ref = ref[np.isfinite(ref)]
+        if ref.size < 10:
+            return False
+        noise = 1.4826 * float(np.median(np.abs(np.diff(ref)))) / np.sqrt(2)
+        m = dev_mask.copy()
+        cp = change_point(op_x[search_mask]) if op_x is not None else None
+        if cp is not None and abs(cp.z) >= 4:
+            settled = grid.times >= int(search_times[cp.index]) + SETTLE_MIN * 60 * _US
+            if (m & settled).sum() >= 3:
+                m &= settled
+        ev = err[m]
+        ev = ev[np.isfinite(ev)]
+        if ev.size < 3 or noise == 0:
+            return False
+        return abs(float(np.median(ev)) - float(np.median(ref))) < noise
+
+    def explains_output(up: Scored, op_x: np.ndarray | None, op_eff: Effect | None) -> bool:
+        """Whether an upstream tag's shift predicts the loop output's (regression on the reference).
+
+        A tag that moved at the same time but whose swings the output never followed in the
+        reference does not explain the output's move.
+        """
+        if UPSTREAM_EXPLAINS is None or op_x is None or op_eff is None or up.series is None:
+            return True
+        frac = explained_fraction(
+            up.series[ref_mask], op_x[ref_mask], up.effect.delta, op_eff.delta
+        )
+        return frac is None or frac >= UPSTREAM_EXPLAINS
+
     # 7. Loop check, explain away, rank.
     step(6, 7, "loops and ranking")
     process = {sc.hypothesis.cause_tag: sc for sc in scored if sc.hypothesis.kind == "process"}
@@ -621,7 +663,7 @@ def investigate(
         )
         sp_eff = effect_of(sp_x) if sp_x is not None else None
         op_eff = effect_of(op_x) if op_x is not None else None
-        pv_held = pv.effect is None or abs(pv.effect.z) < 2
+        pv_held = pv.effect is None or abs(pv.effect.z) < 2 or held_by_loop(pv.series, sp_x, op_x)
         sp_moved = sp_eff is not None and abs(sp_eff.z) >= 3 and abs(sp_eff.delta) > 1e-6
         op_moved = op_eff is not None and abs(op_eff.z) >= 3
         saturated = False
@@ -705,7 +747,8 @@ def investigate(
                 and sc.hypothesis.cause_tag != c.tag.tag
                 and c.path.node in sc.hypothesis.graph_path
                 and sc.effect is not None
-                and sc.effect.strength >= 0.5
+                and sc.effect.strength >= UPSTREAM_STRENGTH
+                and explains_output(sc, op_x, op_eff)
             ]
             for sc in upstream:
                 sc.hypothesis.evidence.append(item.title)
