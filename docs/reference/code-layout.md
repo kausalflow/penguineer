@@ -8,6 +8,8 @@ src/penguineer/
   core/                   command registry, RunContext, run records, errors
   cli/                    the Typer app generated from the registry, the CLI reference renderer
   commands/               one module per command: Params, Result, run()
+  connectors/             AVEVA PI through the PI Web API; Parquet, CSV and Delta tables on
+                          S3, GCS, Azure or disk
   io/                     historian, LIMS, plant graph, DEXPI P&ID, Homeostat Live and scenario-bundle readers
   engines/                deterministic engines: data health, dead times, alignment, lot windows,
                           group comparison (Welch), tests, investigate,

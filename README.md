@@ -4,7 +4,7 @@ Find the root cause of off-spec lots from historian and LIMS exports, on a lapto
 
 penguineer reads files and writes files. Its engines are deterministic Python; an LLM is optional and never decides a ranking. Every command is defined once as a Pydantic parameter model, a result model and a function, and the CLI, the `--json` output and the Python API are generated from that one definition. [Alchemist](https://github.com/kausalflow/alchemist) imports penguineer as a library and adds the UI, runners and project management on top.
 
-> Status: early. `init`, `data health`, `graph check`, `graph draft`, `graph lags`, `lag`, `align`, `compare`, `investigate`, `bench homeostat` and `mcp` work. On Homeostat plants, the injected cause is in the top three in 93% of hidden scenarios ([results](https://kausalflow.com/penguineer/results/)).
+> Status: early. `init`, `fetch pi`, `fetch lake`, `data health`, `graph check`, `graph draft`, `graph lags`, `lag`, `align`, `compare`, `investigate`, `bench homeostat` and `mcp` work. On Homeostat plants, the injected cause is in the top three in 93% of hidden scenarios ([results](https://kausalflow.com/penguineer/results/)).
 
 ## Documentation
 
@@ -81,6 +81,8 @@ Every Saturday the [live demo](https://kausalflow.com/penguineer/demo/isidis-01/
 | Command | What it does | State |
 |---|---|---|
 | `penguineer init` | Create a project folder: `penguineer.yaml`, empty `graph.yaml`, folders | works |
+| `penguineer fetch pi --server URL --tags TAG --start T --end T` | Download a window of AVEVA PI data through the PI Web API: `historian.parquet`, `tags.csv`, and lots from AF event frames | works |
+| `penguineer fetch lake --source s3://... --start T --end T` | Read a window of a Parquet, CSV or Delta table on S3, GCS, Azure or disk (historian, LIMS or lots) | works |
 | `penguineer data health --data FILE [--graph graph.yaml]` | Gaps, frozen tags, spikes, out-of-range values, duplicate and non-existent timestamps → `health.json` | works |
 | `penguineer graph check --graph graph.yaml` | Schema and plant rules, plus the queue of inferred edges to confirm | works |
 | `penguineer graph lags --data FILE --graph graph.yaml` | Estimate dead times along `flows_to` edges from the data (prewhitened cross-correlation) | works |
@@ -132,6 +134,7 @@ src/penguineer/
   core/                command registry, RunContext, run records, errors
   cli/                 Typer app generated from the registry
   commands/            one module per command: Params, Result, run()
+  connectors/          AVEVA PI (PI Web API) and data lakes (S3, GCS, Azure; Parquet, CSV, Delta)
   io/                  historian, LIMS, graph, DEXPI P&ID, Homeostat Live and scenario-bundle readers
   engines/             deterministic engines: data health, dead times, lot windows, group comparison,
                        investigate, calibration

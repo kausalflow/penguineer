@@ -66,6 +66,48 @@ Flag frozen tags, gaps, spikes, out-of-range values and timestamp problems.
 | `--spike-z` | float | `8.0` | Robust z-score on first differences |
 | `--out` | path |  | Where to write health.json (default: run folder) |
 
+## `penguineer fetch lake`
+
+Read a window of a Parquet, CSV or Delta table on S3, GCS, Azure or disk into the project.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `--source` | str | required | Table path or URL, globs allowed: s3://bucket/historian/**/*.parquet, gs://..., az://..., abfss://..., or a local path |
+| `--kind` | `historian` \| `lims` \| `lots` | `historian` | What the table holds: historian, lims or lots |
+| `--format` | `auto` \| `parquet` \| `csv` \| `delta` | `auto` | parquet, csv or delta (auto: by the file extension) |
+| `--start` | datetime |  | Window start (inclusive) |
+| `--end` | datetime |  | Window end (exclusive) |
+| `--tags` | str, repeatable |  | Only these tags (historian) or properties (lims) |
+| `--column` | str, repeatable |  | name=source_column for columns without a common name, such as timestamp=event_time or tag=point_id |
+| `--storage-option` | str, repeatable |  | key=value object-store options such as aws_region=eu-west-1 or aws_endpoint_url=http://minio:9000; credentials come from the environment |
+| `--hive` | bool | `False` | Read key=value folders as columns (Parquet) |
+| `--timezone` | str | `UTC` | Time zone of naive timestamps |
+| `--out` | path |  | Parquet file to write (default: data/lake/<kind>.parquet in the project) |
+
+## `penguineer fetch pi`
+
+Download a window of AVEVA PI data through the PI Web API, as penguineer's input files.
+
+| Option | Type | Default | Description |
+|---|---|---|---|
+| `--server` | str | required | PI Web API base URL, such as https://pi.example.com/piwebapi |
+| `--start` | datetime | required | Window start (inclusive) |
+| `--end` | datetime | required | Window end (exclusive) |
+| `--tags` | str, repeatable |  | PI tag names (on --data-server), full point paths \\server\tag, or AF attribute paths \\afserver\database\element\|attribute |
+| `--tag-filter` | str |  | Also every point on --data-server matching this, such as U100.* |
+| `--data-server` | str |  | PI Data Archive that tag names are on |
+| `--mode` | `recorded` \| `interpolated` | `recorded` | Archived values, or values on a grid |
+| `--interval` | str | `1m` | Grid step for --mode interpolated, such as 10s, 1m |
+| `--event-frames` | str |  | AF database \\afserver\database whose event frames become lots.csv |
+| `--event-frame-template` | str |  | Only event frames of this template, such as Batch |
+| `--auth` | `none` \| `basic` \| `bearer` \| `kerberos` | `kerberos` | kerberos (your ticket), basic (password from PI_WEBAPI_PASSWORD), bearer (token from PI_WEBAPI_TOKEN) or none |
+| `--username` | str |  | User for --auth basic (or PI_WEBAPI_USER) |
+| `--ca-bundle` | existing file |  | CA certificates for a server with an in-house certificate |
+| `--timeout` | float | `60.0` | Seconds to wait for each request |
+| `--page-size` | int | `10000` | Values asked for per request |
+| `--timezone` | str | `UTC` | Time zone of naive --start and --end |
+| `--out` | path | `data/pi` | Folder for historian.parquet, tags.csv and lots.csv (relative: the project) |
+
 ## `penguineer graph check`
 
 Validate the plant graph and list inferred edges to confirm, most important first.

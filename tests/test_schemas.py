@@ -33,6 +33,8 @@ def test_every_command_is_registered():
         "bench homeostat",
         "compare",
         "data health",
+        "fetch lake",
+        "fetch pi",
         "graph check",
         "graph draft",
         "graph lags",

@@ -24,9 +24,9 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           python-version: ${{ matrix.python }}
-      # The mcp, llm-api and agent extras, so that the MCP server's, the LLM SDKs' and the agent
-      # models' tests run too.
-      - run: uv sync --locked --extra mcp --extra llm-api --extra agent
+      # The mcp, llm-api, agent and delta extras, so that the MCP server's, the LLM SDKs', the agent
+      # models' and the Delta table tests run too.
+      - run: uv sync --locked --extra mcp --extra llm-api --extra agent --extra delta
       - uses: actions/cache@v4
         with:
           path: .homeostat-cache
