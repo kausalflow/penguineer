@@ -19,7 +19,7 @@
         <link rel="prev" href="../../concepts/bench/">
       
       
-        <link rel="next" href="../python-api/">
+        <link rel="next" href="../data-sources/">
       
       
         
@@ -325,6 +325,32 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../demo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Live demo
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
       
@@ -357,10 +383,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -378,8 +404,8 @@
           </label>
         
         
-          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-            <label class="md-nav__title" for="__nav_4">
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_5">
               <span class="md-nav__icon md-icon"></span>
               
   
@@ -633,6 +659,8 @@
       
         
       
+        
+      
     
     
     
@@ -646,10 +674,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
@@ -667,8 +695,8 @@
           </label>
         
         
-          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
-            <label class="md-nav__title" for="__nav_5">
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+            <label class="md-nav__title" for="__nav_6">
               <span class="md-nav__icon md-icon"></span>
               
   
@@ -830,6 +858,33 @@
   
   
     <li class="md-nav__item">
+      <a href="../data-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Plant data sources
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../python-api/" class="md-nav__link">
         
   
@@ -967,10 +1022,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -988,8 +1043,8 @@
           </label>
         
         
-          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-            <label class="md-nav__title" for="__nav_6">
+          <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+            <label class="md-nav__title" for="__nav_7">
               <span class="md-nav__icon md-icon"></span>
               
   
@@ -1279,6 +1334,8 @@
       
         
       
+        
+      
     
     
     
@@ -1366,10 +1423,10 @@
 <li>builds the plant graph from the data dictionary plus the flow order in the <a href="https://homeostat.kausalflow.com/live/isidis-01.md">plant card</a>: electrolysers and CO₂ acquisition, feed gas, Sabatier reactor, receiver, condenser, dryer, product. The card publishes no volumes, so the edges carry no dead times.</li>
 <li>labels each lab sample as a lot (<code>S20261005T0300</code> is the sample taken at 03:00 UTC on 5 October) and gives it the grade the plant was making, read from the recipe tag <code>H2.rate</code>.</li>
 <li>marks a lot off spec when purity (<code>AT-201</code>) is below the grade's range or the dew point (<code>AT-202</code>) is above it. A dew point below the range is drier gas, not off spec.</li>
-<li>treats the recipe tags (<code>H2.rate</code>, <code>DRY.bypass</code>, <code>FFC-102.ratio</code>, <code>TIC-201.sp</code>) as regime tags, so a lot is compared only with earlier lots of the same grade.</li>
+<li>treats the recipe tags (<code>H2.rate</code>, <code>DRY.bypass</code>, <code>FFC-102.ratio</code>, <code>TIC-201.sp</code>) as regime tags, so a lot is compared only with lots of the same grade (earlier ones, or the ones after it for a grade's first run).</li>
 <li>groups off-spec lots into episodes, skips episodes within lab accuracy of the limit, and runs <code>investigate</code> on the first lot of the five worst, moving on to the episode's next lot when there is nothing to compare one with. It writes <code>summary.md</code>, <code>lots.csv</code> and a report per lot, and flags lots sampled within 12 hours of a grade change.</li>
 </ul>
-<p>The <em>Homeostat Live</em> workflow runs the script in GitHub Actions (start it from the Actions tab, optionally with a lot) and uploads the data and the reports as an artifact.</p>
+<p>The <em>Homeostat Live</em> workflow runs the script in GitHub Actions (start it from the Actions tab, optionally with a lot) and uploads the data and the reports as an artifact. The <em>Demo</em> workflow runs it every Saturday and publishes the result as the <a href="../../demo/">live demo</a>.</p>
 <h3 id="what-it-found-on-19-october-2026">What it found on 19 October 2026<a class="headerlink" href="#what-it-found-on-19-october-2026" title="Permanent link">&para;</a></h3>
 <p>The run covered 14 September to 19 October; lab results were released up to 9 October. Of the off-spec lots, four episodes were more than lab error (about 1 °C on the dew point) and were investigated. The script passes <code>cycle_hours</code> = 24.66, a Martian sol, so power, feeds and the condenser are compared with their usual level at that time of sol.</p>
 <table>
@@ -1403,7 +1460,7 @@
 </tr>
 </tbody>
 </table>
-<p>Before the day cycle was removed, 26 September put the condenser outlet <code>TT-301</code> first at medium, with solar power and both feeds close behind: the lot (17:00 to 20:00) was compared with lots from other times of sol, when all of them sit lower. Compared with the same time of sol, none of them moved. The plant card says the dryer bed nears its capacity between regenerations, about every nine days, and its condition is not published, so a dryer near breakthrough fits, but it cannot be checked from public data. Before the regime fallback, the first lots of 15 and 23 September stopped with nothing to compare with.</p>
+<p>Before the day cycle was removed, 26 September put the condenser outlet <code>TT-301</code> first at medium, with solar power and both feeds close behind: the lot (17:00 to 20:00) was compared with lots from other times of sol. Compared with the same time of sol, none of them moved. The plant card says the dryer bed nears its capacity between regenerations, about every nine days, and its condition is not published, so a dryer near breakthrough fits, but it cannot be checked from public data. Before the regime fallback, the first lots of 15 and 23 September stopped with nothing to compare with.</p>
 
 
 
@@ -1460,13 +1517,13 @@
         
         
           
-          <a href="../python-api/" class="md-footer__link md-footer__link--next" aria-label="Next: Python API">
+          <a href="../data-sources/" class="md-footer__link md-footer__link--next" aria-label="Next: Plant data sources">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Python API
+                Plant data sources
               </div>
             </div>
             <div class="md-footer__button md-icon">
