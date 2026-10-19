@@ -713,6 +713,8 @@
       
         
       
+        
+      
     
     
     
@@ -772,6 +774,33 @@
     
   
   Homeostat Live
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+                
+              
+                
+                  
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./guides/data-sources/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Plant data sources
 
     
   </span>
@@ -1160,11 +1189,11 @@
 
 <h1 id="penguineer">penguineer<a class="headerlink" href="#penguineer" title="Permanent link">&para;</a></h1>
 <p>penguineer finds the root cause of off-spec lots from historian and LIMS exports, on a laptop and offline. It is a KausalFlow open-source project under the Apache-2.0 license.</p>
-<p>It reads files and writes files. The engines are deterministic Python, and an LLM is optional and never decides a ranking. Every command is defined once, as a Pydantic parameter model, a result model and a function. The CLI, the <code>--json</code> output and the Python API are all generated from that definition, so they cannot drift apart.</p>
+<p>It reads files and writes files; only the <code>fetch</code> commands, which pull a window from AVEVA PI or a data lake, use the network. The engines are deterministic Python, and an LLM is optional and never decides a ranking. Every command is defined once, as a Pydantic parameter model, a result model and a function. The CLI, the <code>--json</code> output and the Python API are all generated from that definition, so they cannot drift apart.</p>
 <p><a href="https://github.com/kausalflow/alchemist">Alchemist</a> imports penguineer as a library and adds the UI, runners, project management, the data catalog, staging and sealing on top. penguineer has none of those itself.</p>
 <div class="admonition note">
 <p class="admonition-title">Status</p>
-<p>This is an early release. <code>init</code>, <code>data health</code>, <code>graph check</code>, <code>graph draft</code>, <code>graph lags</code>, <code>lag</code>, <code>align</code>, <code>compare</code>, <code>investigate</code>, <code>bench homeostat</code> and <code>mcp</code> work. <code>graph draft</code> reads tag names and DEXPI P&amp;IDs, and can ask an LLM for the relations they leave open. On Homeostat plants it names the injected cause among its top three in 93% of the hidden scenarios: see <a href="results/">Results</a>.</p>
+<p>This is an early release. <code>init</code>, <code>fetch pi</code>, <code>fetch lake</code>, <code>data health</code>, <code>graph check</code>, <code>graph draft</code>, <code>graph lags</code>, <code>lag</code>, <code>align</code>, <code>compare</code>, <code>investigate</code>, <code>bench homeostat</code> and <code>mcp</code> work. <code>graph draft</code> reads tag names and DEXPI P&amp;IDs, and can ask an LLM for the relations they leave open. On Homeostat plants it names the injected cause among its top three in 93% of the hidden scenarios: see <a href="results/">Results</a>.</p>
 </div>
 <h2 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Permanent link">&para;</a></h2>
 <ul>
@@ -1172,6 +1201,7 @@
 <li><a href="concepts/commands/">Commands and run records</a>: how one definition becomes the CLI and the Python API.</li>
 <li><a href="demo/">Live demo</a>: what <code>investigate</code> says this week about a public simulated plant's off-spec lots.</li>
 <li><a href="guides/homeostat-live/">Homeostat Live</a>: run on a public simulated plant.</li>
+<li><a href="guides/data-sources/">Plant data sources</a>: fetch a window from AVEVA PI or a data lake.</li>
 <li><a href="guides/mcp/">MCP server</a>: let an assistant such as Claude Code run the commands.</li>
 <li><a href="reference/cli/">CLI reference</a>: every command and option.</li>
 </ul>
