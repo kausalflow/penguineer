@@ -1,0 +1,60 @@
+name: Homeostat Live
+
+# Runs investigate on real off-spec lots of the public Homeostat Live plant isidis-01
+# (scripts/investigate_homeostat_live.py). Only public API data is used, so the data and the
+# reports are uploaded as an artifact.
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Days of data to download, ending now"
+        default: "35"
+      lot:
+        description: "Lot to investigate, e.g. S20261005T0300 (default: the newest off-spec episodes)"
+        default: ""
+  pull_request:
+    paths:
+      - scripts/investigate_homeostat_live.py
+      - .github/workflows/homeostat-live.yml
+      - src/penguineer/engines/investigate.py
+      - src/penguineer/io/homeostat_live.py
+
+permissions:
+  contents: read
+
+jobs:
+  investigate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked
+      - name: Investigate
+        env:
+          DAYS: ${{ inputs.days || '35' }}
+          LOT: ${{ inputs.lot }}
+        run: |
+          since=$(date -u -d "$DAYS days ago" +%Y-%m-%dT%H:00:00+00:00)
+          until=$(date -u +%Y-%m-%dT%H:00:00+00:00)
+          uv run python scripts/investigate_homeostat_live.py --out out \
+            --since "$since" --until "$until" ${LOT:+--lot "$LOT"}
+          cat out/summary.md >> "$GITHUB_STEP_SUMMARY"
+          # The summary as annotations too, readable through the checks API: one per section.
+          python3 - <<'PY'
+          import re
+          text = open("out/summary.md").read()
+          for i, part in enumerate(re.split(r"\n(?=## )", text)):
+              title = "Lots" if i == 0 else part.splitlines()[0].lstrip("# ")
+              body = part.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+              print(f"::notice title={title}::{body}")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: homeostat-live-isidis-01
+          path: out/
+          if-no-files-found: ignore
