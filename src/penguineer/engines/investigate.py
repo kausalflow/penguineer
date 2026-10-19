@@ -1007,10 +1007,19 @@ def investigate(
             at = int(search_times[cp.index]) if cp is not None and abs(cp.z) >= 4 else None
             if at is not None:
                 at -= int(h.dead_time_min * 60 * _US)  # back on the tag's own clock
-            if h.cause_tag in moved_tags or (at is not None and start - tol <= at <= settled + tol):
+            # A setpoint compared across a change inside the search window moved with it.
+            spans = h.kind == "setpoint_change" and settled >= search_start
+            if (
+                spans
+                or h.cause_tag in moved_tags
+                or (at is not None and start - tol <= at <= settled + tol)
+            ):
                 if h.kind == "setpoint_change":
                     scored.remove(sc)
-                ruled_out.append(RuledOut(cause=h.cause_tag, reason="moved with the regime change"))
+                if not any(r.cause == h.cause_tag for r in ruled_out):
+                    ruled_out.append(
+                        RuledOut(cause=h.cause_tag, reason="moved with the regime change")
+                    )
         first = sorted(moved_tags)[0]
         node = next((n.id for n in graph.nodes if isinstance(n, Tag) and n.tag == first), first)
         series[first] = aligned(*raw[first], grid, 0.0)

@@ -53,15 +53,15 @@ It downloads the last 35 days, then:
 
 The *Homeostat Live* workflow runs the script in GitHub Actions (start it from the Actions tab, optionally with a lot) and uploads the data and the reports as an artifact.
 
-### What it found on 18 October 2026
+### What it found on 19 October 2026
 
-The run covered 13 September to 18 October; lab results were released up to 9 October. Of 206 lab samples, 19 were off spec, in seven episodes. Three of them were within lab accuracy of the dew point limit (about 1 °C) and were not investigated.
+The run covered 14 September to 19 October; lab results were released up to 9 October. Of the off-spec lots, four episodes were more than lab error (about 1 °C on the dew point) and were investigated. The script passes `cycle_hours` = 24.66, a Martian sol, so power, feeds and the condenser are compared with their usual level at that time of sol.
 
 | Episode | What happened | What `investigate` said |
 |---|---|---|
-| 15 Sep, surface fuel, purity 92.3 % | Lots right after a change from feedstock | Stopped: no earlier surface fuel lot in the window to compare with |
-| 23 Sep, propellant, purity 94.5 % | Lots right after a change from surface fuel, the first propellant run in the data | Stopped: no earlier propellant lot to compare with |
-| 26 Sep, propellant, dew point −70.5 °C | No grade change for 84 h | Medium confidence: the condenser outlet (`TT-301`) ran 10.6 °C warm, with solar power and both feeds high: the plant was at its daytime peak |
-| 5 Oct, propellant, purity 98.0 % | Sampled 30 min after the change from surface fuel ended | High confidence: the reactor setpoint and both feed setpoints changed in the lot, so the grade change; `TT-201`, `FT-101` and `FT-102` only followed them |
+| 15 Sep, surface fuel, purity 92.3 % | Sampled 0.5 h after the change from feedstock settled, the first surface fuel run in the data | High: the grade change (`DRY.bypass` 0.9 to 0.03, `H2.rate` 14 to 9, `TIC-201.sp` 435 to 395). No earlier surface fuel lot was in spec, so the reference is the in-spec lots after it |
+| 23 Sep, propellant, dew point −48.5 °C | Sampled 0.2 h after the change from feedstock, the first propellant run in the data | High: the grade change, compared with the in-spec propellant lots after it |
+| 26 Sep, propellant, dew point −71.5 °C | No grade change for 84 h | Low: no measured tag moved beyond its usual level for that time of sol, so something unmeasured at the dryer `D-401` |
+| 5 Oct, propellant, purity 98.0 % | Sampled 0.3 h after the change from surface fuel | High: the grade change; the setpoints and the reactor temperature moved with it |
 
-The grade change on 5 October is the right answer. On 26 September the warmer condenser is a physically sound cause (it lets more water reach the dryer), but power, feeds and condenser temperature all rise together over the Martian day, so `investigate` cannot tell them apart, and its medium label says as much. The dryer's state is not published, so it cannot be checked.
+Before the day cycle was removed, 26 September put the condenser outlet `TT-301` first at medium, with solar power and both feeds close behind: the lot (17:00 to 20:00) was compared with lots from other times of sol, when all of them sit lower. Compared with the same time of sol, none of them moved. The plant card says the dryer bed nears its capacity between regenerations, about every nine days, and its condition is not published, so a dryer near breakthrough fits, but it cannot be checked from public data. Before the regime fallback, the first lots of 15 and 23 September stopped with nothing to compare with.
