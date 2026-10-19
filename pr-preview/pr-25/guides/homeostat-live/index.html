@@ -795,6 +795,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Investigate a real off-spec lot">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-it-found-on-18-october-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What it found on 18 October 2026
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1189,6 +1206,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Investigate a real off-spec lot">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-it-found-on-18-october-2026" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What it found on 18 October 2026
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -1333,9 +1367,43 @@
 <li>labels each lab sample as a lot (<code>S20261005T0300</code> is the sample taken at 03:00 UTC on 5 October) and gives it the grade the plant was making, read from the recipe tag <code>H2.rate</code>.</li>
 <li>marks a lot off spec when purity (<code>AT-201</code>) is below the grade's range or the dew point (<code>AT-202</code>) is above it. A dew point below the range is drier gas, not off spec.</li>
 <li>treats the recipe tags (<code>H2.rate</code>, <code>DRY.bypass</code>, <code>FFC-102.ratio</code>, <code>TIC-201.sp</code>) as regime tags, so a lot is compared only with earlier lots of the same grade.</li>
-<li>runs <code>investigate</code> on the first lot of the newest off-spec episodes and writes <code>summary.md</code>, <code>lots.csv</code> and a report per lot.</li>
+<li>groups off-spec lots into episodes, skips episodes within lab accuracy of the limit, and runs <code>investigate</code> on the first lot of the five worst, moving on to the episode's next lot when there is nothing to compare one with. It writes <code>summary.md</code>, <code>lots.csv</code> and a report per lot, and flags lots sampled within 12 hours of a grade change.</li>
 </ul>
 <p>The <em>Homeostat Live</em> workflow runs the script in GitHub Actions (start it from the Actions tab, optionally with a lot) and uploads the data and the reports as an artifact.</p>
+<h3 id="what-it-found-on-18-october-2026">What it found on 18 October 2026<a class="headerlink" href="#what-it-found-on-18-october-2026" title="Permanent link">&para;</a></h3>
+<p>The run covered 13 September to 18 October; lab results were released up to 9 October. Of 206 lab samples, 19 were off spec, in seven episodes. Three of them were within lab accuracy of the dew point limit (about 1 °C) and were not investigated.</p>
+<table>
+<thead>
+<tr>
+<th>Episode</th>
+<th>What happened</th>
+<th>What <code>investigate</code> said</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>15 Sep, surface fuel, purity 92.3 %</td>
+<td>Lots right after a change from feedstock</td>
+<td>Stopped: no earlier surface fuel lot in the window to compare with</td>
+</tr>
+<tr>
+<td>23 Sep, propellant, purity 94.5 %</td>
+<td>Lots right after a change from surface fuel, the first propellant run in the data</td>
+<td>Stopped: no earlier propellant lot to compare with</td>
+</tr>
+<tr>
+<td>26 Sep, propellant, dew point −70.5 °C</td>
+<td>No grade change for 84 h</td>
+<td>Medium confidence: the condenser outlet (<code>TT-301</code>) ran 10.6 °C warm, with solar power and both feeds high: the plant was at its daytime peak</td>
+</tr>
+<tr>
+<td>5 Oct, propellant, purity 98.0 %</td>
+<td>Sampled 30 min after the change from surface fuel ended</td>
+<td>High confidence: the reactor setpoint and both feed setpoints changed in the lot, so the grade change; <code>TT-201</code>, <code>FT-101</code> and <code>FT-102</code> only followed them</td>
+</tr>
+</tbody>
+</table>
+<p>The grade change on 5 October is the right answer. On 26 September the warmer condenser is a physically sound cause (it lets more water reach the dryer), but power, feeds and condenser temperature all rise together over the Martian day, so <code>investigate</code> cannot tell them apart, and its medium label says as much. The dryer's state is not published, so it cannot be checked.</p>
 
 
 
