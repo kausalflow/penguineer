@@ -74,6 +74,8 @@ uv run penguineer data health --data data/isidis-01/live.csv --graph data/isidis
 
 The tests in `tests/test_homeostat_live.py` run on that week. They are skipped without network access, and CI requires them.
 
+Every Saturday the [live demo](https://kausalflow.com/penguineer/demo/isidis-01/) publishes what `investigate` says about the plant's newest off-spec lots, unedited.
+
 ## Commands
 
 | Command | What it does | State |
