@@ -3,6 +3,7 @@ name: Docs
 # Builds the documentation with Zensical and publishes it to the gh-pages branch:
 #   main        -> https://kausalflow.com/penguineer/
 #   pull request -> https://kausalflow.com/penguineer/pr-preview/pr-<number>/ (removed on close)
+# demo/ on gh-pages belongs to the Demo workflow and is kept.
 # Each deploy also carries screenshots of every page under _screenshots/.
 # Needs Settings > Pages > Source set to "Deploy from a branch", branch gh-pages, folder /.
 
@@ -55,7 +56,9 @@ jobs:
         with:
           branch: gh-pages
           folder: site
-          clean-exclude: pr-preview/
+          clean-exclude: |
+            pr-preview/
+            demo/
           force: false
 
   preview:
