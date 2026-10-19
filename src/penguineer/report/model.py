@@ -22,6 +22,7 @@ class HypothesisKind(StrEnum):
     lost_control = "lost_control"  # a loop's output saturated and its PV deviated
     unmeasured_disturbance = "unmeasured_disturbance"  # a loop absorbed something unmeasured
     measurement_fault = "measurement_fault"  # the data itself is wrong
+    regime_change = "regime_change"  # the grade or recipe changed in or just before the lot
 
 
 class TestName(StrEnum):

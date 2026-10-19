@@ -129,6 +129,8 @@ Align the data in time, rank root-cause hypotheses along graph paths, write the 
 | `--hops` | int | `6` | flows_to hops to search upstream |
 | `--reference-lots` | int | `3` | In-spec lots to compare with |
 | `--step-seconds` | float |  | Grid step (default: the slowest candidate tag's period) |
+| `--cycle-hours` | float | `24.0` | Length of the day cycle removed from tags that follow it, in hours (24.66 for a Mars sol) |
+| `--no-cycle` | bool | `False` | Keep the day cycle in every tag |
 | `--timezone` | str | `UTC` | Time zone of naive timestamps in the exports |
 | `--llm` | `none` \| `local` \| `api` | `none` | LLM for the prose summary only |
 | `--llm-model` | str |  | Model for --llm (default: llm.model in penguineer.yaml) |

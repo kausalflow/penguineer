@@ -45,6 +45,13 @@ class InvestigateParams(CommandParams):
     step_seconds: float | None = Field(
         None, gt=0, description="Grid step (default: the slowest candidate tag's period)"
     )
+    cycle_hours: float | None = Field(
+        24.0,
+        gt=0,
+        description="Length of the day cycle removed from tags that follow it, in hours "
+        "(24.66 for a Mars sol)",
+    )
+    no_cycle: bool = Field(False, description="Keep the day cycle in every tag")
     timezone: str = Field("UTC", description="Time zone of naive timestamps in the exports")
     llm: LLMMode = Field(LLMMode.none, description="LLM for the prose summary only")
     llm_model: str | None = Field(
@@ -142,7 +149,11 @@ def investigate(p: InvestigateParams, ctx: RunContext) -> InvestigateResult:
         lots=lots,
         quality=p.quality,
         settings=Settings(
-            hops=p.hops, reference_lots=p.reference_lots, step_s=p.step_seconds, top=p.top
+            hops=p.hops,
+            reference_lots=p.reference_lots,
+            step_s=p.step_seconds,
+            top=p.top,
+            cycle_hours=None if p.no_cycle else p.cycle_hours,
         ),
         progress=ctx.progress,
     )

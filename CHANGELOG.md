@@ -2,6 +2,27 @@
 
 penguineer and plantgraph are released together, with one version.
 
+## Unreleased
+
+What the first real-plant run (Homeostat Live isidis-01) showed `investigate` could not do.
+
+### Added
+
+- `investigate` removes each tag's day cycle before comparing it, when the cycle explains at least
+  30% of its variance over the regime's in-spec lots and repeats from one half of them to the
+  other: a lot sampled in the evening is no longer compared with afternoon lots as if power,
+  feeds and coolers had all moved. `--cycle-hours` sets the cycle (24 by default; 24.66 for a
+  Mars sol), `--no-cycle` turns it off.
+- A `regime_change` hypothesis: the grade or recipe changed in the lot or the one before, or
+  earlier with no in-spec lot since. Tags and setpoints that stepped with it are ruled out.
+
+### Changed
+
+- When no earlier lot of the same regime was in spec (the first run of a grade in the export),
+  `investigate` compares the lot with the nearest in-spec lots of the regime after it instead of
+  stopping. With neither, it still stops, and the message names the regime change.
+- A lot that spans a regime change counts as the regime it ended in, not its most common one.
+
 ## 0.4.0
 
 The investigation agent moves into penguineer, so any host can run an investigation with a model
