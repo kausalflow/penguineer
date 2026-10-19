@@ -28,6 +28,7 @@ nav = [
   ] },
   { "Guides" = [
     "guides/homeostat-live.md",
+    "guides/data-sources.md",
     "guides/python-api.md",
     "guides/mcp.md",
     "guides/llm.md",
