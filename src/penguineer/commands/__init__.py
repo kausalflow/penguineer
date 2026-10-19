@@ -5,6 +5,8 @@ from penguineer.commands import (  # noqa: F401
     bench_homeostat,
     compare,
     data_health,
+    fetch_lake,
+    fetch_pi,
     graph_check,
     graph_draft,
     graph_lags,

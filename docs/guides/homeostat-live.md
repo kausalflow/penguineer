@@ -51,7 +51,7 @@ It downloads the last 35 days, then:
 - treats the recipe tags (`H2.rate`, `DRY.bypass`, `FFC-102.ratio`, `TIC-201.sp`) as regime tags, so a lot is compared only with lots of the same grade (earlier ones, or the ones after it for a grade's first run).
 - groups off-spec lots into episodes, skips episodes within lab accuracy of the limit, and runs `investigate` on the first lot of the five worst, moving on to the episode's next lot when there is nothing to compare one with. It writes `summary.md`, `lots.csv` and a report per lot, and flags lots sampled within 12 hours of a grade change.
 
-The *Homeostat Live* workflow runs the script in GitHub Actions (start it from the Actions tab, optionally with a lot) and uploads the data and the reports as an artifact.
+The *Homeostat Live* workflow runs the script in GitHub Actions (start it from the Actions tab, optionally with a lot) and uploads the data and the reports as an artifact. The *Demo* workflow runs it every Saturday and publishes the result as the [live demo](../demo.md).
 
 ### What it found on 19 October 2026
 

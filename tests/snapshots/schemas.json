@@ -1056,6 +1056,518 @@
         "type": "object"
       }
     },
+    "fetch lake": {
+      "params": {
+        "$defs": {
+          "TableFormat": {
+            "enum": [
+              "auto",
+              "parquet",
+              "csv",
+              "delta"
+            ],
+            "title": "TableFormat",
+            "type": "string"
+          },
+          "TableKind": {
+            "enum": [
+              "historian",
+              "lims",
+              "lots"
+            ],
+            "title": "TableKind",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "column": {
+            "description": "name=source_column for columns without a common name, such as timestamp=event_time or tag=point_id",
+            "items": {
+              "type": "string"
+            },
+            "title": "Column",
+            "type": "array"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window end (exclusive)",
+            "title": "End"
+          },
+          "format": {
+            "$ref": "#/$defs/TableFormat",
+            "default": "auto",
+            "description": "parquet, csv or delta (auto: by the file extension)"
+          },
+          "hive": {
+            "default": false,
+            "description": "Read key=value folders as columns (Parquet)",
+            "title": "Hive",
+            "type": "boolean"
+          },
+          "kind": {
+            "$ref": "#/$defs/TableKind",
+            "default": "historian",
+            "description": "What the table holds: historian, lims or lots"
+          },
+          "out": {
+            "anyOf": [
+              {
+                "format": "path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Parquet file to write (default: data/lake/<kind>.parquet in the project)",
+            "title": "Out"
+          },
+          "source": {
+            "description": "Table path or URL, globs allowed: s3://bucket/historian/**/*.parquet, gs://..., az://..., abfss://..., or a local path",
+            "title": "Source",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Window start (inclusive)",
+            "title": "Start"
+          },
+          "storage_option": {
+            "description": "key=value object-store options such as aws_region=eu-west-1 or aws_endpoint_url=http://minio:9000; credentials come from the environment",
+            "items": {
+              "type": "string"
+            },
+            "title": "Storage Option",
+            "type": "array"
+          },
+          "tags": {
+            "description": "Only these tags (historian) or properties (lims)",
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Time zone of naive timestamps",
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source"
+        ],
+        "title": "FetchLakeParams",
+        "type": "object"
+      },
+      "result": {
+        "$defs": {
+          "TableKind": {
+            "enum": [
+              "historian",
+              "lims",
+              "lots"
+            ],
+            "title": "TableKind",
+            "type": "string"
+          }
+        },
+        "properties": {
+          "columns": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "description": "penguineer name -> source column",
+            "title": "Columns",
+            "type": "object"
+          },
+          "kind": {
+            "$ref": "#/$defs/TableKind"
+          },
+          "layout": {
+            "description": "long or wide for a historian table",
+            "title": "Layout",
+            "type": "string"
+          },
+          "n_rows": {
+            "title": "N Rows",
+            "type": "integer"
+          },
+          "n_tags": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Tags (historian) or properties (lims)",
+            "title": "N Tags"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "table": {
+            "description": "The written Parquet file, read by every command as is",
+            "title": "Table",
+            "type": "string"
+          },
+          "window_end": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Window End"
+          },
+          "window_start": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Window Start"
+          }
+        },
+        "required": [
+          "source",
+          "kind",
+          "layout",
+          "columns",
+          "n_rows",
+          "table"
+        ],
+        "title": "FetchLakeResult",
+        "type": "object"
+      }
+    },
+    "fetch pi": {
+      "params": {
+        "$defs": {
+          "PIAuth": {
+            "enum": [
+              "none",
+              "basic",
+              "bearer",
+              "kerberos"
+            ],
+            "title": "PIAuth",
+            "type": "string"
+          },
+          "PIMode": {
+            "enum": [
+              "recorded",
+              "interpolated"
+            ],
+            "title": "PIMode",
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "properties": {
+          "auth": {
+            "$ref": "#/$defs/PIAuth",
+            "default": "kerberos",
+            "description": "kerberos (your ticket), basic (password from PI_WEBAPI_PASSWORD), bearer (token from PI_WEBAPI_TOKEN) or none"
+          },
+          "ca_bundle": {
+            "anyOf": [
+              {
+                "format": "file-path",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "CA certificates for a server with an in-house certificate",
+            "title": "Ca Bundle"
+          },
+          "data_server": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "PI Data Archive that tag names are on",
+            "title": "Data Server"
+          },
+          "end": {
+            "description": "Window end (exclusive)",
+            "format": "date-time",
+            "title": "End",
+            "type": "string"
+          },
+          "event_frame_template": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Only event frames of this template, such as Batch",
+            "title": "Event Frame Template"
+          },
+          "event_frames": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "AF database \\\\afserver\\database whose event frames become lots.csv",
+            "title": "Event Frames"
+          },
+          "interval": {
+            "default": "1m",
+            "description": "Grid step for --mode interpolated, such as 10s, 1m",
+            "title": "Interval",
+            "type": "string"
+          },
+          "mode": {
+            "$ref": "#/$defs/PIMode",
+            "default": "recorded",
+            "description": "Archived values, or values on a grid"
+          },
+          "out": {
+            "default": "data/pi",
+            "description": "Folder for historian.parquet, tags.csv and lots.csv (relative: the project)",
+            "format": "path",
+            "title": "Out",
+            "type": "string"
+          },
+          "page_size": {
+            "default": 10000,
+            "description": "Values asked for per request",
+            "exclusiveMinimum": 0,
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "server": {
+            "description": "PI Web API base URL, such as https://pi.example.com/piwebapi",
+            "title": "Server",
+            "type": "string"
+          },
+          "start": {
+            "description": "Window start (inclusive)",
+            "format": "date-time",
+            "title": "Start",
+            "type": "string"
+          },
+          "tag_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Also every point on --data-server matching this, such as U100.*",
+            "title": "Tag Filter"
+          },
+          "tags": {
+            "description": "PI tag names (on --data-server), full point paths \\\\server\\tag, or AF attribute paths \\\\afserver\\database\\element|attribute",
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "timeout": {
+            "default": 60.0,
+            "description": "Seconds to wait for each request",
+            "exclusiveMinimum": 0,
+            "title": "Timeout",
+            "type": "number"
+          },
+          "timezone": {
+            "default": "UTC",
+            "description": "Time zone of naive --start and --end",
+            "title": "Timezone",
+            "type": "string"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "User for --auth basic (or PI_WEBAPI_USER)",
+            "title": "Username"
+          }
+        },
+        "required": [
+          "server",
+          "start",
+          "end"
+        ],
+        "title": "FetchPIParams",
+        "type": "object"
+      },
+      "result": {
+        "properties": {
+          "historian": {
+            "description": "historian.parquet: timestamp, tag, value, quality",
+            "title": "Historian",
+            "type": "string"
+          },
+          "lots_csv": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Lots Csv"
+          },
+          "n_lots": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "N Lots"
+          },
+          "n_samples": {
+            "title": "N Samples",
+            "type": "integer"
+          },
+          "n_tags": {
+            "title": "N Tags",
+            "type": "integer"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "quality": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Values per PI quality: good, bad, I/O Timeout ...",
+            "title": "Quality",
+            "type": "object"
+          },
+          "samples_per_tag": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Samples Per Tag",
+            "type": "object"
+          },
+          "server": {
+            "title": "Server",
+            "type": "string"
+          },
+          "tags_csv": {
+            "description": "tags.csv: the tag list graph draft reads",
+            "title": "Tags Csv",
+            "type": "string"
+          },
+          "unresolved": {
+            "description": "Tags the server does not know",
+            "items": {
+              "type": "string"
+            },
+            "title": "Unresolved",
+            "type": "array"
+          },
+          "window_end": {
+            "format": "date-time",
+            "title": "Window End",
+            "type": "string"
+          },
+          "window_start": {
+            "format": "date-time",
+            "title": "Window Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "server",
+          "window_start",
+          "window_end",
+          "n_tags",
+          "n_samples",
+          "quality",
+          "samples_per_tag",
+          "unresolved",
+          "notes",
+          "historian",
+          "tags_csv"
+        ],
+        "title": "FetchPIResult",
+        "type": "object"
+      }
+    },
     "graph check": {
       "params": {
         "additionalProperties": false,

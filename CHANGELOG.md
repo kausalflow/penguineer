@@ -4,10 +4,24 @@ penguineer and plantgraph are released together, with one version.
 
 ## Unreleased
 
-What the first real-plant run (Homeostat Live isidis-01) showed `investigate` could not do.
+Connectors, so a plant's own data reaches penguineer without hand-made exports, and what the
+first real-plant run (Homeostat Live isidis-01) showed `investigate` could not do.
 
 ### Added
 
+- `fetch pi`: a window of AVEVA PI data through the PI Web API, read-only. PI points by name or
+  path, PI AF attributes, and name filters; recorded values paged by time, or interpolated on a
+  grid; bad values and system states such as `I/O Timeout` kept as nulls with the state as
+  quality; point descriptors, units, zero and span as a `tags.csv` that `graph draft` reads; AF
+  event frames as `lots.csv`. Kerberos (`penguineer[pi-kerberos]`), basic or bearer sign-in, with
+  secrets from the environment only.
+- `fetch lake`: a window of a historian, LIMS or lot table, Parquet, CSV or Delta
+  (`penguineer[delta]`), from S3, Google Cloud Storage, Azure or disk, with globs and hive
+  partitions. Time and tag filters are pushed down to the scan; columns are found by common
+  spellings or mapped with `--column`. Storage options that look like credentials are refused.
+- `penguineer.connectors.pi` and `penguineer.connectors.lake` return Polars frames for callers
+  such as Alchemist that stage data themselves. See the
+  [data sources guide](https://kausalflow.com/penguineer/guides/data-sources/).
 - `investigate` removes each tag's day cycle before comparing it, when the cycle explains at least
   30% of its variance over the regime's in-spec lots and repeats from one half of them to the
   other: a lot sampled in the evening is no longer compared with afternoon lots as if power,
