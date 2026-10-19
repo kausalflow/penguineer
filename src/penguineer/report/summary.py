@@ -50,6 +50,7 @@ def _phrase(h: Hypothesis) -> str:
         "lost_control": f"{h.cause_node} lost control",
         "unmeasured_disturbance": f"an unmeasured change at {h.cause_node}",
         "measurement_fault": f"{_cause(h)} may read wrong",
+        "regime_change": f"the regime changed ({_cause(h)} and the tags that moved with it)",
     }
     return kind.get(str(h.kind), f"{_cause(h)} {h.kind}")
 

@@ -50,6 +50,8 @@ PURITY, DEW = "AT-201", "AT-202"
 ACCURACY = {PURITY: 0.05, DEW: 1.0}
 # A lot sampled this soon after a grade change is still flushing the previous grade out.
 TRANSITION = timedelta(hours=12)
+# Sunlight, and with it power, feeds and the condenser, follows the Martian day.
+SOL_HOURS = 88775.244 / 3600
 
 
 @dataclass(frozen=True)
@@ -286,6 +288,7 @@ def investigate_lot(t: dict, window, lims: Path, out: Path, lines: list[str]) ->
             data=window.sensors,
             graph=graph,
             hops=10,  # the electrolysers are 7 flows_to hops upstream of the product
+            cycle_hours=SOL_HOURS,
             project=out,
             out=out / "reports" / t["lot"],
         )

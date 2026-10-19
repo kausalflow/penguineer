@@ -54,6 +54,12 @@ SMOOTH_MIN = 30  # minutes of moving mean before the effect test
 SETTLE_MIN = 20  # minutes a loop is given to bring its PV back after its output steps
 UPSTREAM_STRENGTH = 0.5  # effect strength at which a moved upstream tag explains a loop's move
 UPSTREAM_EXPLAINS: float | None = 0.3  # share of the loop output's move it must predict
+CYCLE_R2 = 0.3  # share of a tag's variance the day cycle must explain before it is removed
+CYCLE_HARMONICS = 2  # Fourier terms of the day cycle fit
+CYCLE_DAYS = 7  # cycles of earlier same-regime lots the day cycle is fitted on
+REGIME_SCORE = 1.0  # a regime change in the lot or the one before it
+REGIME_UNSETTLED_SCORE = 0.6  # a regime change after which no lot has been in spec
+LATER_LOTS = 60  # lab results after the lot searched for a reference when none come before
 
 
 def _us(t: datetime) -> int:
@@ -73,6 +79,7 @@ class Settings:
     default_window_hours: float = 8.0
     top: int = 5
     lab_history: int = 12  # earlier lab results of the same regime for the sample-level test
+    cycle_hours: float | None = 24.0  # day cycle removed from tags that follow it; None: off
     calibration: Calibration = field(default_factory=default_calibration)
 
 
@@ -180,6 +187,81 @@ def _regime(
         label[tag] = float(value)
         mixed = mixed or n < 0.9 * v.size
     return label, mixed
+
+
+def _regime_change(
+    raw: dict[str, tuple[np.ndarray, np.ndarray]],
+    regime: dict[str, float],
+    previous: dict[str, float],
+    end: int,
+) -> tuple[int, int, dict[str, tuple[float, float]]] | None:
+    """When the plant last left the ``previous`` regime for ``regime`` before ``end``.
+
+    Returns (start, settled, changes): the last time a changed mode tag still read its old
+    value, the last time one did not yet read its new value, and old and new value by tag.
+    """
+    changes = {k: (previous[k], v) for k, v in regime.items() if k in previous and previous[k] != v}
+    if not changes:
+        return None
+    settled, starts = None, []
+    for tag, (old, new) in changes.items():
+        t, x = raw[tag]
+        before = t < end
+        t, x = t[before], np.round(x[before], 6)
+        off = np.flatnonzero(x != new)
+        if off.size == 0:
+            continue
+        last_off = int(t[off[-1]])
+        settled = last_off if settled is None else max(settled, last_off)
+        at_old = np.flatnonzero((x == old) & (t <= last_off))
+        starts.append(int(t[at_old[-1]]) if at_old.size else last_off)
+    if settled is None:
+        return None
+    return min(starts), settled, changes
+
+
+def _cycle_basis(times_us: np.ndarray, period_us: float) -> np.ndarray:
+    phase = 2 * np.pi * (times_us % period_us) / period_us
+    cols = [np.ones_like(phase)]
+    for k in range(1, CYCLE_HARMONICS + 1):
+        cols += [np.cos(k * phase), np.sin(k * phase)]
+    return np.column_stack(cols)
+
+
+def _fit_cycle(t: np.ndarray, v: np.ndarray, period_us: float) -> np.ndarray | None:
+    covered = np.unique(((t % period_us) / period_us * 24).astype(int)).size
+    if t.size < 20 or covered < 18 or v.std() == 0:
+        return None
+    coef, *_ = np.linalg.lstsq(_cycle_basis(t, period_us), v, rcond=None)
+    return coef
+
+
+def day_cycle(
+    x: np.ndarray, times_us: np.ndarray, fit_mask: np.ndarray, period_us: float
+) -> tuple[np.ndarray, float] | None:
+    """The day cycle of ``x``, fitted by least squares on ``fit_mask``, and the share of the
+    variance there it explains; None when the fit points span less than 1.5 cycles or the
+    cycle does not repeat (fitted on each half of them, the two shapes differ).
+
+    The cycle is a few Fourier terms of the given period, without the constant, so
+    subtracting it leaves each value relative to the tag's usual level at that time of day.
+    """
+    ok = fit_mask & np.isfinite(x)
+    t, v = times_us[ok], x[ok]
+    if t.size < 40 or (t[-1] - t[0]) < 1.5 * period_us:
+        return None
+    coef = _fit_cycle(t, v, period_us)
+    half = t < t[0] + (t[-1] - t[0]) / 2
+    halves = [_fit_cycle(t[m], v[m], period_us) for m in (half, ~half)]
+    if coef is None or any(c is None for c in halves):
+        return None
+    one = _cycle_basis(np.linspace(0, period_us, 48, endpoint=False), period_us)[:, 1:]
+    a, b = (one @ c[1:] for c in halves)
+    if a.std() == 0 or b.std() == 0 or np.corrcoef(a, b)[0, 1] < 0.7:
+        return None
+    basis = _cycle_basis(t, period_us)
+    r2 = 1.0 - float(np.var(v - basis @ coef) / np.var(v))
+    return _cycle_basis(times_us, period_us)[:, 1:] @ coef[1:], r2
 
 
 # ---------------------------------------------------------------- scoring
@@ -310,13 +392,24 @@ def investigate(
     if not mode_tags:
         notes.append("no mode tags in the graph: every lot counts as the same regime")
     if mixed:
-        notes.append("the lot spans more than one regime; its most common one is used")
-    # Earlier lab results of the same regime, newest first.
+        # The sample holds what the plant made last, so the lot counts as the regime it ended in.
+        for tag in event_regime:
+            t, x = raw[tag]
+            last = x[(t < _us(ev_end)) & np.isfinite(x)]
+            event_regime[tag] = float(np.round(last[-1], 6))
+        notes.append("the lot spans a regime change; it counts as the regime it ended in")
+    cycle_us = s.cycle_hours * 3600 * _US if s.cycle_hours else None
+    lookback = _us(ev_start) - int(CYCLE_DAYS * cycle_us) if cycle_us else _us(ev_start)
+    # Earlier lab results of the same regime, newest first, and the regime the plant came from
+    # (the newest earlier lot of another regime).
     history: list[tuple[str, datetime, datetime, datetime, float]] = []
+    cycle_lots: list[tuple[datetime, datetime]] = []
+    previous: dict[str, float] | None = None
     skipped_regime = 0
     earlier = prop_rows.filter(pl.col("sampled_at") < ev_start).reverse()
     for r in earlier.iter_rows(named=True):
-        if len(history) >= s.lab_history + s.reference_lots + 6:
+        full = len(history) >= s.lab_history + s.reference_lots + 6
+        if full and _us(r["sampled_at"]) < lookback:
             break
         if r["lot"] in (None, lot) or r["value"] is None:
             continue
@@ -324,14 +417,50 @@ def investigate(
         label, mix = _regime(raw, mode_tags, _us(start), _us(end))
         if mix or label != event_regime:
             skipped_regime += 1
+            if previous is None and not mix:
+                previous = label
             continue
-        history.append((r["lot"], start, end, r["sampled_at"], float(r["value"])))
+        if _deviation(q, float(r["value"])) == 0 and _us(start) >= lookback:
+            cycle_lots.append((start, end))
+        if not full:
+            history.append((r["lot"], start, end, r["sampled_at"], float(r["value"])))
     if skipped_regime:
         notes.append(f"{skipped_regime} earlier lots skipped: different regime")
 
+    # A regime change after which no lot was in spec: in this lot or the one before, or
+    # earlier when the plant has not made in-spec product in the new regime since.
+    length = _us(ev_end) - _us(ev_start)
+    change = _regime_change(raw, event_regime, previous, _us(ev_end)) if previous else None
+    regime_score = 0.0
+    if change is not None:
+        since = prop_rows.filter(
+            (pl.col("sampled_at") > _dt(change[1])) & (pl.col("sampled_at") < sampled_at)
+        )["value"].drop_nulls()
+        if any(_deviation(q, float(v)) == 0 for v in since):
+            pass  # the plant made in-spec product in this regime since the change
+        elif change[1] >= _us(ev_start) - length:
+            regime_score = REGIME_SCORE
+        else:
+            regime_score = REGIME_UNSETTLED_SCORE
+
+    step_us_guess = max((median_period_us(raw[k][0]) for k in event_regime), default=_US)
+
+    def regime_text(label: dict[str, float]) -> str:
+        return ", ".join(f"{k}={_fmt(v)}" for k, v in label.items()) or "one regime"
+
+    def change_text() -> str:
+        start, settled, moved = change
+        what = ", ".join(f"{k} {_fmt(a)} to {_fmt(b)}" for k, (a, b) in sorted(moved.items()))
+        hours = (_us(sampled_at) - settled) / 3600 / _US
+        when = (
+            f"at {_dt(settled):%Y-%m-%d %H:%M}"
+            if settled - start <= step_us_guess
+            else f"from {_dt(start):%Y-%m-%d %H:%M} to {_dt(settled):%H:%M}"
+        )
+        return f"the regime changed {when} ({what}), {hours:.1f} h before the sample"
+
     # Where the quality started to move: the lot before this one by default, or earlier when
     # the lab results step before the first off-spec lot (lots already affected but in spec).
-    length = _us(ev_end) - _us(ev_start)
     search_start = _us(ev_start) - length
     off = _deviation(q, value) > 0
     sign = -1.0 if q.spec_low is not None and value < q.spec_low else 1.0
@@ -355,11 +484,44 @@ def investigate(
     ][: s.reference_lots]
     lab_hist = [(_us(h[3]), h[4]) for h in history if _us(h[2]) <= search_start][: s.lab_history]
     if not reference:
-        regime_text = ", ".join(f"{k}={_fmt(v)}" for k, v in event_regime.items()) or "one regime"
+        # None before (the first run of a grade in the export): the nearest in-spec lots of
+        # the same regime after the lot, which an investigation after the fact often has.
+        # The day cycle is then fitted on the lots after it too.
+        horizon = _dt(_us(sampled_at) + int(CYCLE_DAYS * cycle_us)) if cycle_us else None
+        later = prop_rows.filter(pl.col("sampled_at") > sampled_at)
+        for k, r in enumerate(later.iter_rows(named=True)):
+            if len(reference) >= s.reference_lots and (
+                horizon is None or r["sampled_at"] > horizon
+            ):
+                break
+            if k >= LATER_LOTS and not reference:
+                break
+            if r["lot"] in (None, lot) or r["value"] is None:
+                continue
+            if _deviation(q, float(r["value"])) > 0:
+                continue
+            start, end = _window(prop_rows, r["lot"], r["sampled_at"], lots, s)
+            label, mix = _regime(raw, mode_tags, _us(start), _us(end))
+            if mix or label != event_regime:
+                continue
+            cycle_lots.append((start, end))
+            if len(reference) < s.reference_lots:
+                reference.append(
+                    ReferenceWindow(lot=r["lot"], start=start, end=end, value=float(r["value"]))
+                )
+        if reference:
+            notes.append(
+                f"no in-spec lot of {q.property} before {lot} in the same regime: compared with "
+                f"the in-spec lots after it ({', '.join(w.lot for w in reference)})"
+            )
+    if not reference:
         raise NotEnoughData(
-            f"no in-spec lot of {q.property} before {lot} in the same regime ({regime_text}), "
-            "so there is nothing to compare the lot with"
+            f"no in-spec lot of {q.property} in the same regime as {lot} "
+            f"({regime_text(event_regime)}), so there is nothing to compare the lot with"
+            + (f"; {change_text()}, the likely cause" if regime_score else "")
         )
+    if regime_score:
+        notes.append(change_text())
 
     # 4. Align everything on one grid in sampled-node time.
     step(3, 7, "align")
@@ -367,22 +529,47 @@ def investigate(
     if proxy_tag is not None:
         periods.append(median_period_us(raw[proxy_tag.tag][0]))
     step_us = int(s.step_s * _US) if s.step_s else max(max(periods), _US)
-    grid_start = min(_us(reference[-1].start), search_start)
+    grid_start = min([_us(w.start) for w in reference] + [search_start])
+    grid_end = max([_us(w.end) for w in reference] + [_us(ev_end)])
     earlier_lots = [(h[1], h[2]) for h in history if _us(h[2]) <= search_start][: s.lab_history]
     if earlier_lots:
         grid_start = min(grid_start, _us(earlier_lots[-1][0]))
     if proxy_tag is None and lab_hist:
         grid_start = min(grid_start, lab_hist[-1][0] - 3600 * _US)
-    grid = Grid.spanning(grid_start, _us(ev_end), step_us)
+    # The day cycle is fitted on in-spec lots of the regime, so the grid reaches back to them.
+    cycle_lots = [(a, b) for a, b in cycle_lots if _us(b) <= search_start or _us(a) >= _us(ev_end)]
+    if cycle_us is not None and cycle_lots:
+        grid_start = min(grid_start, min(_us(a) for a, _ in cycle_lots))
+        grid_end = max(grid_end, max(_us(b) for _, b in cycle_lots))
+    grid = Grid.spanning(grid_start, grid_end, step_us)
     event_mask = grid.mask(_us(ev_start), _us(ev_end))
     ref_mask = np.zeros(grid.n, dtype=bool)
     for w in reference:
         ref_mask |= grid.mask(_us(w.start), _us(w.end))
+    cycle_mask = np.zeros(grid.n, dtype=bool)
+    for a, b in cycle_lots:
+        cycle_mask |= grid.mask(_us(a), _us(b))
     search_mask = grid.mask(search_start, _us(ev_end))
     lot_masks = [grid.mask(_us(a), _us(b)) for a, b in earlier_lots]
     search_times = grid.times[search_mask]
 
-    proxy = aligned(*raw[proxy_tag.tag], grid, 0.0) if proxy_tag is not None else None
+    # Tags that follow the day cycle are compared with their usual level at that time of day:
+    # power, feeds and coolers that all rise by day otherwise all look moved whenever the lot
+    # and its reference lots fall at different times of day.
+    cycled: dict[str, float] = {}
+
+    def without_cycle(tag: str, x: np.ndarray, dead_time_min: float) -> np.ndarray:
+        if cycle_us is None:
+            return x
+        own_clock = grid.times - int(dead_time_min * 60 * _US)
+        fit = day_cycle(x, own_clock, cycle_mask, cycle_us)
+        if fit is None or fit[1] < CYCLE_R2:
+            return x
+        cycled[tag] = max(cycled.get(tag, 0.0), fit[1])
+        return x - fit[0]
+
+    proxy_raw = aligned(*raw[proxy_tag.tag], grid, 0.0) if proxy_tag is not None else None
+    proxy = without_cycle(proxy_tag.tag, proxy_raw, 0.0) if proxy_raw is not None else None
     quality_sign = -1.0 if q.spec_low is not None and value < q.spec_low else 1.0
     if _deviation(q, value) == 0:
         ref_values = np.array([w.value for w in reference])
@@ -411,7 +598,7 @@ def investigate(
     h_frame = historian.filter(
         pl.col("tag").is_in(health_tags)
         & (pl.col("timestamp") >= h_start)
-        & (pl.col("timestamp") <= ev_end)
+        & (pl.col("timestamp") <= _dt(grid_end))
     )
     ranges = {
         c.tag.tag: (c.tag.range_low, c.tag.range_high)
@@ -547,8 +734,8 @@ def investigate(
         return _dt(dev_start - shift), _dt(_us(ev_end) - shift)
 
     for k, c in enumerate(candidates):
-        x = aligned(*raw[c.tag.tag], grid, c.path.dead_time_min)
-        series[c.tag.tag] = x
+        series[c.tag.tag] = aligned(*raw[c.tag.tag], grid, c.path.dead_time_min)
+        x = without_cycle(c.tag.tag, series[c.tag.tag], c.path.dead_time_min)
         tests, eff = test_series(x, c.path)
         w0, w1 = window_at(c.path)
         faults = findings_in(c.tag.tag, _us(w0), _us(w1))
@@ -651,15 +838,21 @@ def investigate(
         pv = process[c.tag.tag]
         sp_tag = by_id.get(loop.sp) if loop.sp else None
         op_tag = by_id.get(loop.op) if loop.op else None
-        sp_x = (
+        sp_raw = (
             aligned(*raw[sp_tag.tag], grid, c.path.dead_time_min)
             if (isinstance(sp_tag, Tag) and sp_tag.tag in raw)
             else None
         )
-        op_x = (
+        op_raw = (
             aligned(*raw[op_tag.tag], grid, c.path.dead_time_min)
             if (isinstance(op_tag, Tag) and op_tag.tag in raw)
             else None
+        )
+        sp_x = (
+            without_cycle(sp_tag.tag, sp_raw, c.path.dead_time_min) if sp_raw is not None else None
+        )
+        op_x = (
+            without_cycle(op_tag.tag, op_raw, c.path.dead_time_min) if op_raw is not None else None
         )
         sp_eff = effect_of(sp_x) if sp_x is not None else None
         op_eff = effect_of(op_x) if op_x is not None else None
@@ -667,10 +860,10 @@ def investigate(
         sp_moved = sp_eff is not None and abs(sp_eff.z) >= 3 and abs(sp_eff.delta) > 1e-6
         op_moved = op_eff is not None and abs(op_eff.z) >= 3
         saturated = False
-        if op_x is not None and isinstance(op_tag, Tag):
-            lo = op_tag.range_low if op_tag.range_low is not None else np.nanmin(op_x)
-            hi = op_tag.range_high if op_tag.range_high is not None else np.nanmax(op_x)
-            v = op_x[search_mask]
+        if op_raw is not None and isinstance(op_tag, Tag):
+            lo = op_tag.range_low if op_tag.range_low is not None else np.nanmin(op_raw)
+            hi = op_tag.range_high if op_tag.range_high is not None else np.nanmax(op_raw)
+            v = op_raw[search_mask]
             margin = 0.01 * (hi - lo)
             at_limit = np.isfinite(v) & ((v <= lo + margin) | (v >= hi - margin))
             # Saturated: at a limit for half an hour on end while the quality moved.
@@ -707,7 +900,7 @@ def investigate(
                     sp_x,
                 )
             )
-            series[sp_tag.tag] = sp_x
+            series[sp_tag.tag] = sp_raw
             pv.hypothesis.score = round(pv.hypothesis.score * 0.5, 3)
             ruled_out.append(
                 RuledOut(cause=c.tag.tag, reason=f"follows the {loop.id} setpoint change")
@@ -756,7 +949,7 @@ def investigate(
                 w0, w1 = window_at(c.path)
                 op_tests, op_test_eff = test_series(op_x, c.path)
                 op_score = _score(op_tests, cal)
-                series[op_tag.tag] = op_x
+                series[op_tag.tag] = op_raw
                 scored.append(
                     Scored(
                         Hypothesis(
@@ -802,6 +995,64 @@ def investigate(
                         )
                     )
                 )
+
+    # A regime change (a grade or recipe change) in the lot or the one before, or one the
+    # plant has not made in-spec product since. Tags that stepped with it are part of it.
+    if regime_score:
+        start, settled, moved_tags = change
+        for sc in [sc for sc in scored if sc.hypothesis.kind in ("setpoint_change", "process")]:
+            h = sc.hypothesis
+            cp = change_point(sc.series[search_mask]) if sc.series is not None else None
+            tol = 3600 * _US
+            at = int(search_times[cp.index]) if cp is not None and abs(cp.z) >= 4 else None
+            if at is not None:
+                at -= int(h.dead_time_min * 60 * _US)  # back on the tag's own clock
+            # A setpoint compared across a change inside the search window moved with it.
+            spans = h.kind == "setpoint_change" and settled >= search_start
+            if (
+                spans
+                or h.cause_tag in moved_tags
+                or (at is not None and start - tol <= at <= settled + tol)
+            ):
+                if h.kind == "setpoint_change":
+                    scored.remove(sc)
+                if not any(r.cause == h.cause_tag for r in ruled_out):
+                    ruled_out.append(
+                        RuledOut(cause=h.cause_tag, reason="moved with the regime change")
+                    )
+        first = sorted(moved_tags)[0]
+        node = next((n.id for n in graph.nodes if isinstance(n, Tag) and n.tag == first), first)
+        series[first] = aligned(*raw[first], grid, 0.0)
+        tail = (
+            "; the lot was made during it or right after it"
+            if regime_score >= REGIME_SCORE
+            else f"; no lot of {q.property} has been in spec in this regime since"
+        )
+        scored.append(
+            Scored(
+                Hypothesis(
+                    rank=0,
+                    kind=HypothesisKind.regime_change,
+                    cause_node=node,
+                    cause_tag=first,
+                    direction="changed",
+                    window_start=_dt(start),
+                    window_end=_dt(settled),
+                    graph_path=[node],
+                    dead_time_min=0.0,
+                    tests=[],
+                    score=regime_score,
+                    confidence="low",
+                    summary=change_text()[0].upper() + change_text()[1:] + tail + ".",
+                )
+            )
+        )
+    if cycled:
+        period = f"{s.cycle_hours:.4g} h"
+        notes.append(
+            f"{', '.join(sorted(cycled))} follow the day cycle ({period}): each is compared "
+            "with its usual level at that time of day"
+        )
 
     # Nothing measured moved clearly: the change is in something unmeasured near the sample.
     moved = [sc.effect.strength for sc in scored if sc.effect is not None]
@@ -926,7 +1177,7 @@ def investigate(
         health=[f for f in health if f.severity != Severity.info],
         notes=notes,
         series=series,
-        proxy=proxy,
+        proxy=proxy_raw,
         lab=lab,
         calibration=cal,
     )

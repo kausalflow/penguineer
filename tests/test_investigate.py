@@ -1,5 +1,5 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
@@ -16,7 +16,7 @@ from penguineer.engines.evidence import (
     explained_fraction,
     onset_strength,
 )
-from penguineer.engines.investigate import investigate
+from penguineer.engines.investigate import Settings, investigate
 from penguineer.io.graph import load_graph
 from penguineer.io.historian import read_historian
 from penguineer.io.lims import read_lims
@@ -206,3 +206,110 @@ def test_command_exit_code_3(tmp_path):
     assert res.exit_code == 3
     record = json.loads(next((tmp_path / "runs").glob("*/run.json")).read_text())
     assert record["exit_code"] == 3
+
+
+# ------------------------------------------------------------ day cycle and regime changes
+
+DAY_GRAPH = {
+    "unit": "cycle",
+    "nodes": [
+        {"id": "A", "type": "equipment", "kind": "electrolyser"},
+        {"id": "B", "type": "equipment", "kind": "exchanger"},
+        {"id": "S", "type": "stream"},
+        {"id": "PWR", "type": "tag", "tag": "PWR"},
+        {"id": "FLOW", "type": "tag", "tag": "FLOW"},
+        {"id": "COOL", "type": "tag", "tag": "COOL"},
+        {"id": "GRADE", "type": "tag", "tag": "GRADE", "role": "mode"},
+        {"id": "SP", "type": "sample_point"},
+        {"id": "Q", "type": "quality", "property": "dew", "spec_high": -70.0},
+    ],
+    "edges": [
+        {"id": "f1", "type": "flows_to", "from": "A", "to": "B", "dead_time_min": 0},
+        {"id": "f2", "type": "flows_to", "from": "B", "to": "S", "dead_time_min": 0},
+        {"id": "m1", "type": "measures", "from": "PWR", "to": "A"},
+        {"id": "m2", "type": "measures", "from": "FLOW", "to": "A"},
+        {"id": "m3", "type": "measures", "from": "COOL", "to": "B"},
+        {"id": "s1", "type": "samples", "from": "SP", "to": "S"},
+        {"id": "r1", "type": "reported_as", "from": "SP", "to": "Q"},
+    ],
+}
+
+
+def _cycle_plant(tmp_path, *, days=6, fault=0.0, grade_at=None, later_in_spec=True, seed=3):
+    """Six days of 10-minute data: power, flow and a cooler that all follow the day, a lab
+    sample every 3 h. ``fault`` warms the cooler in the last lot; ``grade_at`` (hours) switches
+    the grade, after which lots are off spec until ``later_in_spec`` lets them recover."""
+    rng = np.random.default_rng(seed)
+    t0 = datetime(2026, 9, 20, tzinfo=UTC)
+    minutes = np.arange(0, days * 24 * 60, 10)
+    hours = minutes / 60
+    day = np.sin(2 * np.pi * hours / 24)
+    grade = np.ones_like(hours) if grade_at is None else np.where(hours >= grade_at, 2.0, 1.0)
+    pwr = 50 + 30 * day + rng.normal(0, 1, hours.size)
+    flow = 5 + 2 * day + 0.5 * grade + rng.normal(0, 0.05, hours.size)
+    cool = 10 + 6 * day + rng.normal(0, 0.3, hours.size)
+    lot_h = 3
+    last_h = int(hours[-1] // lot_h) * lot_h
+    if fault:
+        cool = cool + np.where((hours > last_h - lot_h) & (hours <= last_h), fault, 0.0)
+    ts = [t0 + timedelta(minutes=int(m)) for m in minutes]
+    rows = [
+        {"timestamp": t, "tag": tag, "value": float(v[i])}
+        for tag, v in {"PWR": pwr, "FLOW": flow, "COOL": cool, "GRADE": grade}.items()
+        for i, t in enumerate(ts)
+    ]
+    pl.DataFrame(rows).write_csv(tmp_path / "historian.csv")
+    lab = []
+    for k in range(1, last_h // lot_h + 1):
+        h = k * lot_h
+        dew = -75 + rng.normal(0, 0.3)
+        if fault and h == last_h:
+            dew = -68.0
+        if grade_at is not None and grade_at <= h < grade_at + (9 if later_in_spec else 999):
+            dew = -60.0
+        lab.append(
+            {
+                "lot": f"L{k:03d}",
+                "sample_point": "SP",
+                "property": "dew",
+                "value": round(dew, 2),
+                "sampled_at": (t0 + timedelta(hours=h)).isoformat(),
+            }
+        )
+    pl.DataFrame(lab).write_csv(tmp_path / "lims.csv")
+    graph = PlantGraph.model_validate(DAY_GRAPH)
+    historian = read_historian(tmp_path / "historian.csv").frame
+    lims = read_lims(tmp_path / "lims.csv").frame
+    return graph, historian, lims, lab
+
+
+def test_day_cycle_is_removed_before_comparing(tmp_path):
+    graph, historian, lims, lab = _cycle_plant(tmp_path, fault=4.0)
+    lot = lab[-1]["lot"]  # sampled at 21:00, its references at 18:00 and earlier
+    inv = investigate(graph, historian, lims, lot)
+    assert inv.hypotheses[0].cause_tag == "COOL"
+    assert any("follow the day cycle" in n for n in inv.notes)
+    ruled = {r.cause for r in inv.ruled_out}
+    assert {"PWR", "FLOW"} <= ruled
+    # Without the cycle removed, power and flow look moved too: the lot sits at another time
+    # of day than its reference lots.
+    plain = investigate(graph, historian, lims, lot, settings=Settings(cycle_hours=None))
+    assert {"PWR", "FLOW"} & {h.cause_tag for h in plain.hypotheses}
+
+
+def test_first_lot_of_a_grade_is_compared_with_later_lots(tmp_path):
+    graph, historian, lims, lab = _cycle_plant(tmp_path, days=8, grade_at=100.5)
+    first = next(r["lot"] for r in lab if r["value"] > -70)
+    inv = investigate(graph, historian, lims, first)
+    top = inv.hypotheses[0]
+    assert top.kind == "regime_change" and top.cause_tag == "GRADE"
+    assert top.confidence == "high"
+    assert all(w.start > inv.event.sampled_at for w in inv.reference)
+    assert any("in-spec lots after it" in n for n in inv.notes)
+
+
+def test_a_grade_never_in_spec_stops_and_names_the_change(tmp_path):
+    graph, historian, lims, lab = _cycle_plant(tmp_path, grade_at=100.5, later_in_spec=False)
+    first = next(r["lot"] for r in lab if r["value"] > -70)
+    with pytest.raises(NotEnoughData, match="regime changed .*GRADE 1 to 2"):
+        investigate(graph, historian, lims, first)
