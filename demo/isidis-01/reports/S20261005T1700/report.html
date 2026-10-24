@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot S20261005T1700: AT-201 investigation</title>
+<style>
+  :root { --ink: #111827; --muted: #6b7280; --line: #e5e7eb; --bad: #b42318; --soft: #f9fafb;
+          --high: #067647; --medium: #b54708; --low: #6b7280; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #fff; }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .lead { font-size: 16px; margin: 16px 0; }
+  .bad { color: var(--bad); font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 16px 0; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; }
+  .high { background: var(--high); } .medium { background: var(--medium); } .low { background: var(--low); }
+  .kind { color: var(--muted); font-size: 13px; }
+  .bar { display: inline-block; height: 8px; background: #1d4ed8; border-radius: 4px; vertical-align: middle; }
+  img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; margin-top: 8px; }
+  code { font-size: 13px; background: var(--soft); padding: 1px 4px; border-radius: 4px; }
+  ul { padding-left: 20px; }
+  .summary { border-left: 3px solid #1d4ed8; padding: 4px 0 4px 14px; margin: 16px 0; }
+  .summary li { margin: 4px 0; }
+  .cite { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Lot S20261005T1700: AT-201 low</h1>
+<div class="meta">penguineer 0.4.0 · run 20261024T104235Z-a491f1 · 2026-10-24 10:42 UTC</div>
+
+<p class="lead">
+  AT-201 was <span class="bad">98 %</span>
+(spec ≥ 99.5)
+,
+  sampled at SP-product on 2026-10-05 17:00.
+</p>
+
+<section class="summary">
+  <p>The leading hypothesis, with high confidence: the regime changed (DRY.bypass and the tags that moved with it).</p>
+<ul>    <li><code>DRY.bypass</code> <span class="badge high">high</span> The regime changed from 2026-10-05 13:40 to 16:40 (DRY.bypass 0.03 to 0, H2.rate 9 to 4, TIC-201.sp 395 to 340), 0.3 h before the sample; the lot was made during it or right after it. <span class="cite">[E002]</span></li>
+</ul>  <div class="meta">Summary from the template.</div>
+</section>
+
+<img src="evidence/quality.png" alt="AT-201: lot S20261005T1700 against the reference lots">
+<h2>Hypotheses</h2>
+<div class="card">
+  <h3>#1 DRY.bypass <span class="badge high">high</span></h3>
+  <div class="kind">regime change · score 1.00 · path DRY.bypass · dead time 0 min</div>
+  <p>The regime changed from 2026-10-05 13:40 to 16:40 (DRY.bypass 0.03 to 0, H2.rate 9 to 4, TIC-201.sp 395 to 340), 0.3 h before the sample; the lot was made during it or right after it.</p>
+<img src="evidence/01-DRY.bypass.png" alt="#1 DRY.bypass shifted 0 min"></div>
+
+<h2>Ruled out</h2>
+<table>
+  <tr><th>Candidate</th><th>Why</th></tr>
+<tr><td><code>TT-201</code></td><td>follows the loop:TIC-201 setpoint change</td></tr><tr><td><code>FT-102</code></td><td>follows the loop:FIC-102 setpoint change</td></tr><tr><td><code>FT-101</code></td><td>follows the loop:FIC-101 setpoint change</td></tr><tr><td><code>TIC-201.sp</code></td><td>moved with the regime change</td></tr><tr><td><code>FFC-102.out</code></td><td>moved with the regime change</td></tr><tr><td><code>FIC-101.rsp</code></td><td>moved with the regime change</td></tr><tr><td><code>TT-301</code></td><td>did not move in the lot</td></tr><tr><td><code>TT-200</code></td><td>did not move in the lot</td></tr><tr><td><code>JT-001</code></td><td>did not move in the lot</td></tr></table>
+
+<h2>How this was worked out</h2>
+<table>
+  <tr><th>Lot window</th><td>2026-10-05 14:00 to 2026-10-05 17:01 at S-product</td></tr>
+  <tr><th>Quality onset</th><td>unknown</td></tr>
+  <tr><th>Regime</th><td>DRY.bypass = 0, FFC-102.ratio = 0.25, FIC-101.mode = 2, FIC-102.mode = 2, H2.rate = 4, TIC-201.mode = 1, TIC-201.sp = 340</td></tr>
+  <tr><th>Reference lots</th><td>S20260927T1700 (99.7), S20260927T1400 (99.8), S20260927T1100 (99.7)</td></tr>
+  <tr><th>Candidates tested</th><td>6 tags, on a 600 s grid in material time</td></tr>
+  <tr><th>Confidence</th><td>Confidence: high when the score is at least 0.4 and 0.025 ahead of the next hypothesis, medium from 0.25. Test weights: effect size 0.5, onset 0.3, lag correlation 0.3. Weights fitted on the homeostat train split (85 scenarios), thresholds chosen on the homeostat validation split (85 scenarios) (homeostat 0.1.0a3, bench plant 4144102c25e7).</td></tr>
+</table>
+<ul><li>some flows_to edges have no dead time; they count as 0 min</li><li>the lot spans a regime change; it counts as the regime it ended in</li><li>62 earlier lots skipped: different regime</li><li>AT-201 started to move with lot S20260927T1700, before it left spec</li><li>the regime changed from 2026-10-05 13:40 to 16:40 (DRY.bypass 0.03 to 0, H2.rate 9 to 4, TIC-201.sp 395 to 340), 0.3 h before the sample</li><li>no online analyzer on the sampled stream: onset and correlation tests skipped</li></ul>
+<h2>Data health on the candidate tags</h2>
+<table>
+  <tr><th>ID</th><th>Tag</th><th>Check</th><th>Severity</th><th>From</th><th>Detail</th></tr>
+<tr><td>H0001</td><td><code>JT-001</code></td><td>flatline</td><td>warning</td><td>2026-09-27 22:40</td><td>value frozen at 100 for 60 min</td></tr><tr><td>H0002</td><td><code>JT-001</code></td><td>flatline</td><td>warning</td><td>2026-09-29 19:00</td><td>value frozen at 100 for 60 min</td></tr><tr><td>H0003</td><td><code>JT-001</code></td><td>flatline</td><td>warning</td><td>2026-09-30 02:10</td><td>value frozen at 100 for 70 min</td></tr><tr><td>H0004</td><td><code>JT-001</code></td><td>flatline</td><td>warning</td><td>2026-09-30 18:40</td><td>value frozen at 100 for 60 min</td></tr></table>
+</main>
+</body>
+</html>

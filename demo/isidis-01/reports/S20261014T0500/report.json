@@ -1,0 +1,407 @@
+{
+  "penguineer_version": "0.4.0",
+  "run_id": "20261024T104236Z-012a60",
+  "created_at": "2026-10-24T10:42:36Z",
+  "event": {
+    "lot": "S20261014T0500",
+    "property": "AT-201",
+    "quality_node": "Q:AT-201",
+    "value": 95.8,
+    "spec_low": 96.0,
+    "spec_high": null,
+    "unit": "%",
+    "direction": "low",
+    "sampled_at": "2026-10-14T05:00:00Z",
+    "sample_point": "SP-product",
+    "sampled_node": "S-product",
+    "window_start": "2026-10-14T02:00:00Z",
+    "window_end": "2026-10-14T05:01:00Z",
+    "onset": null,
+    "proxy_tag": null
+  },
+  "regime": {
+    "DRY.bypass": 0.03,
+    "FFC-102.ratio": 0.25,
+    "FIC-101.mode": 2.0,
+    "FIC-102.mode": 2.0,
+    "H2.rate": 9.0,
+    "TIC-201.mode": 1.0,
+    "TIC-201.sp": 395.0
+  },
+  "reference": [
+    {
+      "lot": "S20261013T2000",
+      "start": "2026-10-13T17:00:00Z",
+      "end": "2026-10-13T20:01:00Z",
+      "value": 97.8
+    },
+    {
+      "lot": "S20261005T1100",
+      "start": "2026-10-05T08:00:00Z",
+      "end": "2026-10-05T11:01:00Z",
+      "value": 96.9
+    },
+    {
+      "lot": "S20261005T0800",
+      "start": "2026-10-05T05:00:00Z",
+      "end": "2026-10-05T08:01:00Z",
+      "value": 96.3
+    }
+  ],
+  "grid_step_s": 600.0,
+  "candidates": 6,
+  "hypotheses": [
+    {
+      "rank": 1,
+      "kind": "process",
+      "cause_node": "EL-101",
+      "cause_tag": "JT-001",
+      "direction": "high",
+      "magnitude": 24.8,
+      "unit": "%",
+      "window_start": "2026-10-14T02:00:00Z",
+      "window_end": "2026-10-14T05:01:00Z",
+      "graph_path": [
+        "EL-101",
+        "S-H2",
+        "S-feed",
+        "R-201",
+        "V-301",
+        "E-301",
+        "D-401",
+        "S-product"
+      ],
+      "dead_time_min": 0.0,
+      "tests": [
+        {
+          "name": "effect_size",
+          "strength": 0.0014682836988449965,
+          "value": 2.01,
+          "detail": "median moved 24.8 (+2.0 reference scales)"
+        },
+        {
+          "name": "onset",
+          "strength": null,
+          "value": null,
+          "detail": "no quality onset"
+        },
+        {
+          "name": "lag_correlation",
+          "strength": 0.615,
+          "value": -0.615,
+          "detail": "r = -0.62 over 12 earlier lab results"
+        }
+      ],
+      "score": 0.232,
+      "confidence": "low",
+      "ruled_out": [],
+      "health_warnings": [],
+      "evidence": [
+        "E002"
+      ],
+      "summary": "JT-001 (EL-101) ran 24.8 % high from 2026-10-14 02:00, 0 min upstream of the sample point."
+    },
+    {
+      "rank": 2,
+      "kind": "process",
+      "cause_node": "S-H2",
+      "cause_tag": "FT-101",
+      "direction": "high",
+      "magnitude": 2.2167,
+      "unit": "Nm3/h",
+      "window_start": "2026-10-14T02:00:00Z",
+      "window_end": "2026-10-14T05:01:00Z",
+      "graph_path": [
+        "S-H2",
+        "S-feed",
+        "R-201",
+        "V-301",
+        "E-301",
+        "D-401",
+        "S-product"
+      ],
+      "dead_time_min": 0.0,
+      "tests": [
+        {
+          "name": "effect_size",
+          "strength": 0.006156473775617566,
+          "value": 2.02,
+          "detail": "median moved 2.22 (+2.0 reference scales)"
+        },
+        {
+          "name": "onset",
+          "strength": null,
+          "value": null,
+          "detail": "no quality onset"
+        },
+        {
+          "name": "lag_correlation",
+          "strength": 0.6,
+          "value": -0.6,
+          "detail": "r = -0.60 over 12 earlier lab results"
+        }
+      ],
+      "score": 0.229,
+      "confidence": "low",
+      "ruled_out": [],
+      "health_warnings": [],
+      "evidence": [
+        "E003"
+      ],
+      "summary": "FT-101 (S-H2) ran 2.22 Nm3/h high from 2026-10-14 02:00, 0 min upstream of the sample point."
+    },
+    {
+      "rank": 3,
+      "kind": "unmeasured_disturbance",
+      "cause_node": "D-401",
+      "cause_tag": null,
+      "direction": "changed",
+      "magnitude": null,
+      "unit": null,
+      "window_start": "2026-10-14T02:00:00Z",
+      "window_end": "2026-10-14T05:01:00Z",
+      "graph_path": [
+        "D-401",
+        "S-product"
+      ],
+      "dead_time_min": 0.0,
+      "tests": [],
+      "score": 0.2,
+      "confidence": "low",
+      "ruled_out": [],
+      "health_warnings": [],
+      "evidence": [],
+      "summary": "no measured tag upstream moved enough to explain AT-201; something unmeasured changed in D-401 or just before the sample (a catalyst, a fouled surface, a feed component nobody analyzes)"
+    },
+    {
+      "rank": 4,
+      "kind": "process",
+      "cause_node": "S-feed",
+      "cause_tag": "TT-200",
+      "direction": "low",
+      "magnitude": -6.86,
+      "unit": "degC",
+      "window_start": "2026-10-14T02:00:00Z",
+      "window_end": "2026-10-14T05:01:00Z",
+      "graph_path": [
+        "S-feed",
+        "R-201",
+        "V-301",
+        "E-301",
+        "D-401",
+        "S-product"
+      ],
+      "dead_time_min": 0.0,
+      "tests": [
+        {
+          "name": "effect_size",
+          "strength": 0.005868069607443238,
+          "value": -2.02,
+          "detail": "median moved -6.86 (-2.0 reference scales)"
+        },
+        {
+          "name": "onset",
+          "strength": null,
+          "value": null,
+          "detail": "no quality onset"
+        },
+        {
+          "name": "lag_correlation",
+          "strength": 0.0,
+          "value": -0.675,
+          "detail": "r = -0.67 over 12 earlier lab results, sign does not fit the deviation"
+        }
+      ],
+      "score": 0.004,
+      "confidence": "low",
+      "ruled_out": [],
+      "health_warnings": [],
+      "evidence": [
+        "E004"
+      ],
+      "summary": "TT-200 (S-feed) ran 6.86 degC low from 2026-10-14 02:00, 0 min upstream of the sample point."
+    }
+  ],
+  "ruled_out": [
+    {
+      "cause": "TT-301",
+      "reason": "did not move in the lot"
+    },
+    {
+      "cause": "TT-201",
+      "reason": "did not move in the lot"
+    },
+    {
+      "cause": "FT-102",
+      "reason": "did not move in the lot"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E001",
+      "kind": "plot",
+      "title": "AT-201: lot S20261014T0500 against the reference lots",
+      "path": "evidence/quality.png",
+      "data": {}
+    },
+    {
+      "id": "E002",
+      "kind": "plot",
+      "title": "#1 JT-001 shifted 0 min",
+      "path": "evidence/01-JT-001.png",
+      "data": {}
+    },
+    {
+      "id": "E003",
+      "kind": "plot",
+      "title": "#2 FT-101 shifted 0 min",
+      "path": "evidence/02-FT-101.png",
+      "data": {}
+    },
+    {
+      "id": "E004",
+      "kind": "plot",
+      "title": "#4 TT-200 shifted 0 min",
+      "path": "evidence/04-TT-200.png",
+      "data": {}
+    }
+  ],
+  "health": [
+    {
+      "id": "H0001",
+      "tag": "JT-001",
+      "check": "flatline",
+      "severity": "warning",
+      "start": "2026-10-06T22:00:00Z",
+      "end": "2026-10-06T23:20:00Z",
+      "n_samples": 9,
+      "detail": "value frozen at 100 for 80 min",
+      "metrics": {
+        "duration_s": 4800.0,
+        "value": 100.0
+      }
+    },
+    {
+      "id": "H0002",
+      "tag": "JT-001",
+      "check": "flatline",
+      "severity": "warning",
+      "start": "2026-10-08T00:30:00Z",
+      "end": "2026-10-08T01:30:00Z",
+      "n_samples": 7,
+      "detail": "value frozen at 100 for 60 min",
+      "metrics": {
+        "duration_s": 3600.0,
+        "value": 100.0
+      }
+    },
+    {
+      "id": "H0003",
+      "tag": "JT-001",
+      "check": "flatline",
+      "severity": "warning",
+      "start": "2026-10-09T03:50:00Z",
+      "end": "2026-10-09T05:50:00Z",
+      "n_samples": 13,
+      "detail": "value frozen at 100 for 2.0 h",
+      "metrics": {
+        "duration_s": 7200.0,
+        "value": 100.0
+      }
+    },
+    {
+      "id": "H0004",
+      "tag": "JT-001",
+      "check": "flatline",
+      "severity": "warning",
+      "start": "2026-10-11T03:20:00Z",
+      "end": "2026-10-11T05:00:00Z",
+      "n_samples": 11,
+      "detail": "value frozen at 100 for 100 min",
+      "metrics": {
+        "duration_s": 6000.0,
+        "value": 100.0
+      }
+    },
+    {
+      "id": "H0005",
+      "tag": "JT-001",
+      "check": "flatline",
+      "severity": "warning",
+      "start": "2026-10-12T04:30:00Z",
+      "end": "2026-10-12T05:30:00Z",
+      "n_samples": 7,
+      "detail": "value frozen at 100 for 60 min",
+      "metrics": {
+        "duration_s": 3600.0,
+        "value": 100.0
+      }
+    },
+    {
+      "id": "H0006",
+      "tag": "JT-001",
+      "check": "flatline",
+      "severity": "warning",
+      "start": "2026-10-13T02:00:00Z",
+      "end": "2026-10-13T03:40:00Z",
+      "n_samples": 11,
+      "detail": "value frozen at 100 for 100 min",
+      "metrics": {
+        "duration_s": 6000.0,
+        "value": 100.0
+      }
+    },
+    {
+      "id": "H0007",
+      "tag": "JT-001",
+      "check": "flatline",
+      "severity": "warning",
+      "start": "2026-10-13T07:00:00Z",
+      "end": "2026-10-13T08:10:00Z",
+      "n_samples": 8,
+      "detail": "value frozen at 100 for 70 min",
+      "metrics": {
+        "duration_s": 4200.0,
+        "value": 100.0
+      }
+    }
+  ],
+  "notes": [
+    "some flows_to edges have no dead time; they count as 0 min",
+    "66 earlier lots skipped: different regime",
+    "no online analyzer on the sampled stream: onset and correlation tests skipped"
+  ],
+  "calibration": "Confidence: high when the score is at least 0.4 and 0.025 ahead of the next hypothesis, medium from 0.25. Test weights: effect size 0.5, onset 0.3, lag correlation 0.3. Weights fitted on the homeostat train split (85 scenarios), thresholds chosen on the homeostat validation split (85 scenarios) (homeostat 0.1.0a3, bench plant 4144102c25e7).",
+  "summary": {
+    "overview": "The leading hypothesis, with low confidence: JT-001 moved high.",
+    "claims": [
+      {
+        "cause": "JT-001",
+        "confidence": "low",
+        "evidence": [
+          "E002"
+        ],
+        "sentence": "JT-001 (EL-101) ran 24.8 % high from 2026-10-14 02:00, 0 min upstream of the sample point."
+      },
+      {
+        "cause": "FT-101",
+        "confidence": "low",
+        "evidence": [
+          "E003"
+        ],
+        "sentence": "FT-101 (S-H2) ran 2.22 Nm3/h high from 2026-10-14 02:00, 0 min upstream of the sample point."
+      },
+      {
+        "cause": "D-401",
+        "confidence": "low",
+        "evidence": [],
+        "sentence": "no measured tag upstream moved enough to explain AT-201; something unmeasured changed in D-401 or just before the sample (a catalyst, a fouled surface, a feed component nobody analyzes)"
+      }
+    ],
+    "source": "template",
+    "provider": null,
+    "model": null,
+    "prompt": null,
+    "fallback": null
+  }
+}

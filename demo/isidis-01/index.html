@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>penguineer live demo: Homeostat isidis-01</title>
+<style>
+:root { --fg: #1d1d1f; --muted: #5f6368; --bg: #fff; --panel: #f4f5f7; --line: #d9dce1;
+  --link: #1f5fbf; }
+@media (prefers-color-scheme: dark) {
+  :root { --fg: #e8eaed; --muted: #a0a4aa; --bg: #16181b; --panel: #22252a; --line: #3a3e45;
+    --link: #8ab4f8; }
+}
+body { margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1000px; margin: 0 auto; padding: 24px 16px 64px; }
+a { color: var(--link); }
+.lead { color: var(--muted); }
+.box { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+  padding: 12px 16px; margin: 16px 0; }
+table { border-collapse: collapse; display: block; overflow-x: auto; font-size: 14px; }
+th, td { border: 1px solid var(--line); padding: 4px 8px; text-align: left; white-space: nowrap; }
+pre { background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+  padding: 12px; overflow-x: auto; font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<h1>penguineer live demo</h1>
+<p class="lead">Every week, <a href="https://kausalflow.com/penguineer/">penguineer</a> runs
+<code>investigate</code> on the off-spec lots of
+<a href="https://homeostat.kausalflow.com/live/">Homeostat Live</a> isidis-01, a simulated methane
+plant that publishes its sensor data, lab results and data dictionary. Nobody edits these
+results: this page is what the open-source engine says, right or wrong.</p>
+<div class="box">Run 2026-10-24 10:42 UTC from commit <a href="https://github.com/kausalflow/penguineer/commit/94231f414cd6679c302b88a1b1c7e7dc4d519e35"><code>94231f4</code></a>.
+Reports: <a href="reports/S20260923T0800/report.html">S20260923T0800</a>, <a href="reports/S20260926T2000/report.html">S20260926T2000</a>, <a href="reports/S20261005T1700/report.html">S20261005T1700</a>, <a href="reports/S20261014T0500/report.html">S20261014T0500</a>. All lab samples with their grade: <a href="lots.csv">lots.csv</a>.
+How it works: <a href="https://kausalflow.com/penguineer/guides/homeostat-live/">Homeostat Live
+guide</a>.</div>
+<h2>investigate on Homeostat Live isidis-01</h2>
+<p>Window 2026-09-19 10:00 to 2026-10-24 10:00 UTC. 218 lab samples, 2026-09-19 11:00 to 2026-10-16 14:00.</p>
+<table>
+<thead>
+<tr>
+<th>Grade</th>
+<th style="text-align: right;">Lots</th>
+<th style="text-align: right;">Off spec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>None</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>feedstock</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>propellant</td>
+<td style="text-align: right;">99</td>
+<td style="text-align: right;">20</td>
+</tr>
+<tr>
+<td>surface fuel</td>
+<td style="text-align: right;">85</td>
+<td style="text-align: right;">4</td>
+</tr>
+</tbody>
+</table>
+<p>Grade changes (H2.rate ramps): feedstock to surface fuel 09-23 05:00-06:20; surface fuel to propellant 09-23 06:30-07:50; propellant to surface fuel 09-27 19:40-22:20; surface fuel to propellant 10-05 13:50-16:30; propellant to surface fuel 10-13 13:40-16:20; surface fuel to feedstock 10-17 21:10-23:40</p>
+<p>Tags (role): JT-001 (measurement), FT-101 (measurement), H2.rate (setting), FIC-101.rsp (setpoint), FIC-101.out (output), FIC-101.mode (mode), FFC-102.ratio (setting), FFC-102.out (setpoint), FT-102 (measurement), FIC-102.out (output), FIC-102.mode (mode), TT-201 (measurement), TIC-201.sp (setpoint), TIC-201.out (output), TIC-201.mode (mode), TT-200 (measurement), TT-301 (measurement), DRY.bypass (setting)</p>
+<p>8 off-spec episodes (off-spec lots, broken by more than 3 in-spec lots). Severity is the worst lot's distance outside the range, in range widths; marginal means every lot was within lab accuracy of the limit; h after change is hours from the last grade change to the first lot.</p>
+<table>
+<thead>
+<tr>
+<th>First lot</th>
+<th>Last lot</th>
+<th style="text-align: right;">Lots</th>
+<th>Grade</th>
+<th>Off spec on</th>
+<th>Worst lot</th>
+<th style="text-align: right;">Purity</th>
+<th style="text-align: right;">Dew</th>
+<th style="text-align: right;">Severity</th>
+<th>Marginal</th>
+<th style="text-align: right;">h after change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S20260923T0800</td>
+<td>S20260923T2300</td>
+<td style="text-align: right;">6</td>
+<td>propellant</td>
+<td>AT-201, AT-202</td>
+<td>S20260923T0800</td>
+<td style="text-align: right;">94.5</td>
+<td style="text-align: right;">-48.5</td>
+<td style="text-align: right;">12.50</td>
+<td></td>
+<td style="text-align: right;">0.2</td>
+</tr>
+<tr>
+<td>S20260926T2000</td>
+<td>S20260927T0200</td>
+<td style="text-align: right;">3</td>
+<td>propellant</td>
+<td>AT-202</td>
+<td>S20260926T2300</td>
+<td style="text-align: right;">99.7</td>
+<td style="text-align: right;">-70.5</td>
+<td style="text-align: right;">0.19</td>
+<td></td>
+<td style="text-align: right;">84.2</td>
+</tr>
+<tr>
+<td>S20261005T1700</td>
+<td>S20261006T0500</td>
+<td style="text-align: right;">5</td>
+<td>propellant</td>
+<td>AT-201, AT-202</td>
+<td>S20261005T1700</td>
+<td style="text-align: right;">98.0</td>
+<td style="text-align: right;">-73.5</td>
+<td style="text-align: right;">3.75</td>
+<td></td>
+<td style="text-align: right;">0.5</td>
+</tr>
+<tr>
+<td>S20261006T2300</td>
+<td>S20261006T2300</td>
+<td style="text-align: right;">1</td>
+<td>propellant</td>
+<td>AT-202</td>
+<td>S20261006T2300</td>
+<td style="text-align: right;">99.7</td>
+<td style="text-align: right;">-71.0</td>
+<td style="text-align: right;">0.12</td>
+<td>yes</td>
+<td style="text-align: right;">30.5</td>
+</tr>
+<tr>
+<td>S20261008T0800</td>
+<td>S20261008T0800</td>
+<td style="text-align: right;">1</td>
+<td>propellant</td>
+<td>AT-202</td>
+<td>S20261008T0800</td>
+<td style="text-align: right;">99.7</td>
+<td style="text-align: right;">-71.5</td>
+<td style="text-align: right;">0.06</td>
+<td>yes</td>
+<td style="text-align: right;">63.5</td>
+</tr>
+<tr>
+<td>S20261009T0800</td>
+<td>S20261009T0800</td>
+<td style="text-align: right;">1</td>
+<td>propellant</td>
+<td>AT-202</td>
+<td>S20261009T0800</td>
+<td style="text-align: right;">99.6</td>
+<td style="text-align: right;">-71.5</td>
+<td style="text-align: right;">0.06</td>
+<td>yes</td>
+<td style="text-align: right;">87.5</td>
+</tr>
+<tr>
+<td>S20261011T0500</td>
+<td>S20261011T1100</td>
+<td style="text-align: right;">3</td>
+<td>propellant</td>
+<td>AT-202</td>
+<td>S20261011T0800</td>
+<td style="text-align: right;">99.7</td>
+<td style="text-align: right;">-71.0</td>
+<td style="text-align: right;">0.12</td>
+<td>yes</td>
+<td style="text-align: right;">132.5</td>
+</tr>
+<tr>
+<td>S20261014T0500</td>
+<td>S20261014T1400</td>
+<td style="text-align: right;">4</td>
+<td>surface fuel</td>
+<td>AT-201</td>
+<td>S20261014T1400</td>
+<td style="text-align: right;">95.4</td>
+<td style="text-align: right;">-53.5</td>
+<td style="text-align: right;">0.30</td>
+<td></td>
+<td style="text-align: right;">12.7</td>
+</tr>
+</tbody>
+</table>
+<h2>Episode S20260923T0800 (propellant)</h2>
+<p>Lot S20260923T0800, sampled 0.2 h after a grade change:</p>
+<pre><code class="language-text">investigate: lot S20260923T0800, AT-202 -48.5 degC (spec &lt;= -72), sampled 2026-09-23 08:00 at SP-product
+
+  #1 DRY.bypass  high   score 1.00  regime_change
+     The regime changed from 2026-09-23 04:50 to 07:50 (DRY.bypass 0.9 to 0, H2.rate 14 to 4, TIC-201.sp 435 to 340), 0.2 h before the sample; the lot was made during it or right after it.
+
+ruled out:
+  TT-201: follows the loop:TIC-201 setpoint change
+  FT-102: follows the loop:FIC-102 setpoint change
+  FT-101: follows the loop:FIC-101 setpoint change
+  TT-301: moved with the regime change
+  TT-200: moved with the regime change
+  TIC-201.sp: moved with the regime change
+  FFC-102.out: moved with the regime change
+  FIC-101.rsp: moved with the regime change
+  JT-001: did not move in the lot
+note: some flows_to edges have no dead time; they count as 0 min
+note: the lot spans a regime change; it counts as the regime it ended in
+note: 30 earlier lots skipped: different regime
+note: no in-spec lot of AT-202 before S20260923T0800 in the same regime: compared with the in-spec lots after it (S20260923T1100, S20260923T1400, S20260923T1700)
+note: the regime changed from 2026-09-23 04:50 to 07:50 (DRY.bypass 0.9 to 0, H2.rate 14 to 4, TIC-201.sp 435 to 340), 0.2 h before the sample
+note: no online analyzer on the sampled stream: onset and correlation tests skipped
+note: FFC-102.out, FIC-101.out, FIC-101.rsp, FT-101, FT-102, JT-001, TT-301 follow the day cycle (24.66 h): each is compared with its usual level at that time of day
+report: reports/S20260923T0800/report.html
+</code></pre>
+<h2>Episode S20261005T1700 (propellant)</h2>
+<p>Lot S20261005T1700, sampled 0.5 h after a grade change:</p>
+<pre><code class="language-text">investigate: lot S20261005T1700, AT-201 98 % (spec &gt;= 99.5), sampled 2026-10-05 17:00 at SP-product
+
+  #1 DRY.bypass  high   score 1.00  regime_change
+     The regime changed from 2026-10-05 13:40 to 16:40 (DRY.bypass 0.03 to 0, H2.rate 9 to 4, TIC-201.sp 395 to 340), 0.3 h before the sample; the lot was made during it or right after it.
+
+ruled out:
+  TT-201: follows the loop:TIC-201 setpoint change
+  FT-102: follows the loop:FIC-102 setpoint change
+  FT-101: follows the loop:FIC-101 setpoint change
+  TIC-201.sp: moved with the regime change
+  FFC-102.out: moved with the regime change
+  FIC-101.rsp: moved with the regime change
+  TT-301: did not move in the lot
+  TT-200: did not move in the lot
+  JT-001: did not move in the lot
+note: some flows_to edges have no dead time; they count as 0 min
+note: the lot spans a regime change; it counts as the regime it ended in
+note: 62 earlier lots skipped: different regime
+note: AT-201 started to move with lot S20260927T1700, before it left spec
+note: the regime changed from 2026-10-05 13:40 to 16:40 (DRY.bypass 0.03 to 0, H2.rate 9 to 4, TIC-201.sp 395 to 340), 0.3 h before the sample
+note: no online analyzer on the sampled stream: onset and correlation tests skipped
+report: reports/S20261005T1700/report.html
+</code></pre>
+<h2>Episode S20261014T0500 (surface fuel)</h2>
+<p>Lot S20261014T0500:</p>
+<pre><code class="language-text">investigate: lot S20261014T0500, AT-201 95.8 % (spec &gt;= 96), sampled 2026-10-14 05:00 at SP-product
+
+  #1 JT-001  low    score 0.23  process
+     JT-001 (EL-101) ran 24.8 % high from 2026-10-14 02:00, 0 min upstream of the sample point.
+  #2 FT-101  low    score 0.23  process
+     FT-101 (S-H2) ran 2.22 Nm3/h high from 2026-10-14 02:00, 0 min upstream of the sample point.
+  #3 D-401   low    score 0.20  unmeasured_disturbance
+     no measured tag upstream moved enough to explain AT-201; something unmeasured changed in D-401 or just before the sample (a catalyst, a fouled surface, a feed component nobody analyzes)
+  #4 TT-200  low    score 0.00  process
+     TT-200 (S-feed) ran 6.86 degC low from 2026-10-14 02:00, 0 min upstream of the sample point.
+
+ruled out:
+  TT-301: did not move in the lot
+  TT-201: did not move in the lot
+  FT-102: did not move in the lot
+note: some flows_to edges have no dead time; they count as 0 min
+note: 66 earlier lots skipped: different regime
+note: no online analyzer on the sampled stream: onset and correlation tests skipped
+report: reports/S20261014T0500/report.html
+</code></pre>
+<h2>Episode S20260926T2000 (propellant)</h2>
+<p>Lot S20260926T2000:</p>
+<pre><code class="language-text">investigate: lot S20260926T2000, AT-202 -71.5 degC (spec &lt;= -72), sampled 2026-09-26 20:00 at SP-product
+
+  #1 D-401  low    score 0.20  unmeasured_disturbance
+     no measured tag upstream moved enough to explain AT-202; something unmeasured changed in D-401 or just before the sample (a catalyst, a fouled surface, a feed component nobody analyzes)
+
+ruled out:
+  TT-301: did not move in the lot
+  TT-201: did not move in the lot
+  TT-200: did not move in the lot
+  FT-102: did not move in the lot
+  FT-101: did not move in the lot
+  JT-001: did not move in the lot
+note: some flows_to edges have no dead time; they count as 0 min
+note: 31 earlier lots skipped: different regime
+note: no online analyzer on the sampled stream: onset and correlation tests skipped
+note: FFC-102.out, FIC-101.out, FIC-101.rsp, FT-101, FT-102, JT-001, TT-301 follow the day cycle (24.66 h): each is compared with its usual level at that time of day
+report: reports/S20260926T2000/report.html
+</code></pre>
+</main>
+</body>
+</html>
