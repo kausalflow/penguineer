@@ -2,7 +2,7 @@
 
 penguineer and plantgraph are released together, with one version.
 
-## Unreleased
+## 0.5.0
 
 Connectors, so a plant's own data reaches penguineer without hand-made exports, and what the
 first real-plant run (Homeostat Live isidis-01) showed `investigate` could not do.
