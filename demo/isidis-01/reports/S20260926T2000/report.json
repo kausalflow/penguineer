@@ -1,0 +1,378 @@
+{
+  "penguineer_version": "0.5.0",
+  "run_id": "20261031T120233Z-d5d1d1",
+  "created_at": "2026-10-31T12:02:33Z",
+  "event": {
+    "lot": "S20260926T2000",
+    "property": "AT-202",
+    "quality_node": "Q:AT-202",
+    "value": -71.5,
+    "spec_low": null,
+    "spec_high": -72.0,
+    "unit": "degC",
+    "direction": "high",
+    "sampled_at": "2026-09-26T20:00:00Z",
+    "sample_point": "SP-product",
+    "sampled_node": "S-product",
+    "window_start": "2026-09-26T17:00:00Z",
+    "window_end": "2026-09-26T20:01:00Z",
+    "onset": null,
+    "proxy_tag": null
+  },
+  "regime": {
+    "DRY.bypass": 0.0,
+    "FFC-102.ratio": 0.25,
+    "FIC-101.mode": 2.0,
+    "FIC-102.mode": 2.0,
+    "H2.rate": 4.0,
+    "TIC-201.mode": 1.0,
+    "TIC-201.sp": 340.0
+  },
+  "reference": [
+    {
+      "lot": "S20260927T0500",
+      "start": "2026-09-27T02:00:00Z",
+      "end": "2026-09-27T05:01:00Z",
+      "value": -77.5
+    },
+    {
+      "lot": "S20260927T0800",
+      "start": "2026-09-27T05:00:00Z",
+      "end": "2026-09-27T08:01:00Z",
+      "value": -74.0
+    },
+    {
+      "lot": "S20260927T1100",
+      "start": "2026-09-27T08:00:00Z",
+      "end": "2026-09-27T11:01:00Z",
+      "value": -77.0
+    }
+  ],
+  "grid_step_s": 600.0,
+  "candidates": 6,
+  "hypotheses": [
+    {
+      "rank": 1,
+      "kind": "process",
+      "cause_node": "EL-101",
+      "cause_tag": "JT-001",
+      "direction": "high",
+      "magnitude": 24.9033,
+      "unit": "%",
+      "window_start": "2026-09-26T17:00:00Z",
+      "window_end": "2026-09-26T20:01:00Z",
+      "graph_path": [
+        "EL-101",
+        "S-H2",
+        "S-feed",
+        "R-201",
+        "V-301",
+        "E-301",
+        "D-401",
+        "S-product"
+      ],
+      "dead_time_min": 0.0,
+      "tests": [
+        {
+          "name": "effect_size",
+          "strength": 1.0,
+          "value": 110.75,
+          "detail": "median moved 24.9 (+110.7 reference scales)"
+        },
+        {
+          "name": "onset",
+          "strength": null,
+          "value": null,
+          "detail": "no quality onset"
+        },
+        {
+          "name": "lag_correlation",
+          "strength": null,
+          "value": null,
+          "detail": "not run"
+        }
+      ],
+      "score": 1.0,
+      "confidence": "medium",
+      "ruled_out": [
+        {
+          "cause": "FT-101",
+          "reason": "its shift of 1 is 121% predicted from JT-001 (regression on the reference lots)"
+        }
+      ],
+      "health_warnings": [],
+      "evidence": [
+        "E004"
+      ],
+      "summary": "JT-001 (EL-101) ran 24.9 % high from 2026-09-26 17:00, 0 min upstream of the sample point."
+    },
+    {
+      "rank": 2,
+      "kind": "setpoint_change",
+      "cause_node": "loop:FIC-101",
+      "cause_tag": "FIC-101.rsp",
+      "direction": "high",
+      "magnitude": 1.0,
+      "unit": "Nm3/h",
+      "window_start": "2026-09-26T17:00:00Z",
+      "window_end": "2026-09-26T20:01:00Z",
+      "graph_path": [
+        "S-H2",
+        "S-feed",
+        "R-201",
+        "V-301",
+        "E-301",
+        "D-401",
+        "S-product"
+      ],
+      "dead_time_min": 0.0,
+      "tests": [
+        {
+          "name": "effect_size",
+          "strength": 1.0,
+          "value": 333333333.33,
+          "detail": "median moved 1 (+333333333.3 reference scales)"
+        },
+        {
+          "name": "onset",
+          "strength": null,
+          "value": null,
+          "detail": "no quality onset"
+        },
+        {
+          "name": "lag_correlation",
+          "strength": null,
+          "value": null,
+          "detail": "not run"
+        }
+      ],
+      "score": 1.0,
+      "confidence": "medium",
+      "ruled_out": [],
+      "health_warnings": [],
+      "evidence": [
+        "E005"
+      ],
+      "summary": "The setpoint FIC-101.rsp (loop:FIC-101) was changed 1 Nm3/h high from 2026-09-26 17:00, 0 min upstream of the sample point."
+    },
+    {
+      "rank": 3,
+      "kind": "setpoint_change",
+      "cause_node": "loop:FIC-102",
+      "cause_tag": "FFC-102.out",
+      "direction": "high",
+      "magnitude": 0.2505,
+      "unit": "Nm3/h",
+      "window_start": "2026-09-26T17:00:00Z",
+      "window_end": "2026-09-26T20:01:00Z",
+      "graph_path": [
+        "S-CO2",
+        "S-feed",
+        "R-201",
+        "V-301",
+        "E-301",
+        "D-401",
+        "S-product"
+      ],
+      "dead_time_min": 0.0,
+      "tests": [
+        {
+          "name": "effect_size",
+          "strength": 1.0,
+          "value": 11.62,
+          "detail": "median moved 0.251 (+11.6 reference scales)"
+        },
+        {
+          "name": "onset",
+          "strength": null,
+          "value": null,
+          "detail": "no quality onset"
+        },
+        {
+          "name": "lag_correlation",
+          "strength": null,
+          "value": null,
+          "detail": "not run"
+        }
+      ],
+      "score": 1.0,
+      "confidence": "medium",
+      "ruled_out": [],
+      "health_warnings": [],
+      "evidence": [
+        "E006"
+      ],
+      "summary": "The setpoint FFC-102.out (loop:FIC-102) was changed 0.251 Nm3/h high from 2026-09-26 17:00, 0 min upstream of the sample point."
+    },
+    {
+      "rank": 4,
+      "kind": "process",
+      "cause_node": "S-feed",
+      "cause_tag": "TT-200",
+      "direction": "low",
+      "magnitude": -4.866,
+      "unit": "degC",
+      "window_start": "2026-09-26T17:00:00Z",
+      "window_end": "2026-09-26T20:01:00Z",
+      "graph_path": [
+        "S-feed",
+        "R-201",
+        "V-301",
+        "E-301",
+        "D-401",
+        "S-product"
+      ],
+      "dead_time_min": 0.0,
+      "tests": [
+        {
+          "name": "effect_size",
+          "strength": 0.2839344034107255,
+          "value": -3.14,
+          "detail": "median moved -4.87 (-3.1 reference scales)"
+        },
+        {
+          "name": "onset",
+          "strength": null,
+          "value": null,
+          "detail": "no quality onset"
+        },
+        {
+          "name": "lag_correlation",
+          "strength": null,
+          "value": null,
+          "detail": "not run"
+        }
+      ],
+      "score": 0.284,
+      "confidence": "medium",
+      "ruled_out": [],
+      "health_warnings": [],
+      "evidence": [
+        "E007"
+      ],
+      "summary": "TT-200 (S-feed) ran 4.87 degC low from 2026-09-26 17:00, 0 min upstream of the sample point."
+    }
+  ],
+  "ruled_out": [
+    {
+      "cause": "FT-102",
+      "reason": "follows the loop:FIC-102 setpoint change"
+    },
+    {
+      "cause": "FT-101",
+      "reason": "follows the loop:FIC-101 setpoint change"
+    },
+    {
+      "cause": "TT-301",
+      "reason": "its shift of 9.27 is 87% predicted from FT-101 (regression on the reference lots)"
+    },
+    {
+      "cause": "FT-101",
+      "reason": "its shift of 1 is 121% predicted from JT-001 (regression on the reference lots)"
+    },
+    {
+      "cause": "TT-201",
+      "reason": "did not move in the lot"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E001",
+      "kind": "plot",
+      "title": "AT-202: lot S20260926T2000 against the reference lots",
+      "path": "evidence/quality.png",
+      "data": {}
+    },
+    {
+      "id": "E002",
+      "kind": "explain_away",
+      "title": "TT-301 explained by FT-101",
+      "path": null,
+      "data": {
+        "explained": 0.869,
+        "upstream": "FT-101",
+        "downstream": "TT-301"
+      }
+    },
+    {
+      "id": "E003",
+      "kind": "explain_away",
+      "title": "FT-101 explained by JT-001",
+      "path": null,
+      "data": {
+        "explained": 1.211,
+        "upstream": "JT-001",
+        "downstream": "FT-101"
+      }
+    },
+    {
+      "id": "E004",
+      "kind": "plot",
+      "title": "#1 JT-001 shifted 0 min",
+      "path": "evidence/01-JT-001.png",
+      "data": {}
+    },
+    {
+      "id": "E005",
+      "kind": "plot",
+      "title": "#2 FIC-101.rsp shifted 0 min",
+      "path": "evidence/02-FIC-101.rsp.png",
+      "data": {}
+    },
+    {
+      "id": "E006",
+      "kind": "plot",
+      "title": "#3 FFC-102.out shifted 0 min",
+      "path": "evidence/03-FFC-102.out.png",
+      "data": {}
+    },
+    {
+      "id": "E007",
+      "kind": "plot",
+      "title": "#4 TT-200 shifted 0 min",
+      "path": "evidence/04-TT-200.png",
+      "data": {}
+    }
+  ],
+  "health": [],
+  "notes": [
+    "some flows_to edges have no dead time; they count as 0 min",
+    "no in-spec lot of AT-202 before S20260926T2000 in the same regime: compared with the in-spec lots after it (S20260927T0500, S20260927T0800, S20260927T1100)",
+    "no online analyzer on the sampled stream: onset and correlation tests skipped"
+  ],
+  "calibration": "Confidence: high when the score is at least 0.4 and 0.025 ahead of the next hypothesis, medium from 0.25. Test weights: effect size 0.5, onset 0.3, lag correlation 0.3. Weights fitted on the homeostat train split (85 scenarios), thresholds chosen on the homeostat validation split (85 scenarios) (homeostat 0.1.0a3, bench plant 4144102c25e7).",
+  "summary": {
+    "overview": "The leading hypothesis, with medium confidence: JT-001 moved high.",
+    "claims": [
+      {
+        "cause": "JT-001",
+        "confidence": "medium",
+        "evidence": [
+          "E004"
+        ],
+        "sentence": "JT-001 (EL-101) ran 24.9 % high from 2026-09-26 17:00, 0 min upstream of the sample point."
+      },
+      {
+        "cause": "FIC-101.rsp",
+        "confidence": "medium",
+        "evidence": [
+          "E005"
+        ],
+        "sentence": "The setpoint FIC-101.rsp (loop:FIC-101) was changed 1 Nm3/h high from 2026-09-26 17:00, 0 min upstream of the sample point."
+      },
+      {
+        "cause": "FFC-102.out",
+        "confidence": "medium",
+        "evidence": [
+          "E006"
+        ],
+        "sentence": "The setpoint FFC-102.out (loop:FIC-102) was changed 0.251 Nm3/h high from 2026-09-26 17:00, 0 min upstream of the sample point."
+      }
+    ],
+    "source": "template",
+    "provider": null,
+    "model": null,
+    "prompt": null,
+    "fallback": null
+  }
+}

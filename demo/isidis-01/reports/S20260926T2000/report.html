@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lot S20260926T2000: AT-202 investigation</title>
+<style>
+  :root { --ink: #111827; --muted: #6b7280; --line: #e5e7eb; --bad: #b42318; --soft: #f9fafb;
+          --high: #067647; --medium: #b54708; --low: #6b7280; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: #fff; }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 12px; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+  .meta { color: var(--muted); font-size: 13px; }
+  .lead { font-size: 16px; margin: 16px 0; }
+  .bad { color: var(--bad); font-weight: 600; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin: 16px 0; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; }
+  .high { background: var(--high); } .medium { background: var(--medium); } .low { background: var(--low); }
+  .kind { color: var(--muted); font-size: 13px; }
+  .bar { display: inline-block; height: 8px; background: #1d4ed8; border-radius: 4px; vertical-align: middle; }
+  img { max-width: 100%; border: 1px solid var(--line); border-radius: 6px; margin-top: 8px; }
+  code { font-size: 13px; background: var(--soft); padding: 1px 4px; border-radius: 4px; }
+  ul { padding-left: 20px; }
+  .summary { border-left: 3px solid #1d4ed8; padding: 4px 0 4px 14px; margin: 16px 0; }
+  .summary li { margin: 4px 0; }
+  .cite { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Lot S20260926T2000: AT-202 high</h1>
+<div class="meta">penguineer 0.5.0 · run 20261031T120233Z-d5d1d1 · 2026-10-31 12:02 UTC</div>
+
+<p class="lead">
+  AT-202 was <span class="bad">-71.5 degC</span>
+(spec ≤ -72),
+  sampled at SP-product on 2026-09-26 20:00.
+</p>
+
+<section class="summary">
+  <p>The leading hypothesis, with medium confidence: JT-001 moved high.</p>
+<ul>    <li><code>JT-001</code> <span class="badge medium">medium</span> JT-001 (EL-101) ran 24.9 % high from 2026-09-26 17:00, 0 min upstream of the sample point. <span class="cite">[E004]</span></li>
+    <li><code>FIC-101.rsp</code> <span class="badge medium">medium</span> The setpoint FIC-101.rsp (loop:FIC-101) was changed 1 Nm3/h high from 2026-09-26 17:00, 0 min upstream of the sample point. <span class="cite">[E005]</span></li>
+    <li><code>FFC-102.out</code> <span class="badge medium">medium</span> The setpoint FFC-102.out (loop:FIC-102) was changed 0.251 Nm3/h high from 2026-09-26 17:00, 0 min upstream of the sample point. <span class="cite">[E006]</span></li>
+</ul>  <div class="meta">Summary from the template.</div>
+</section>
+
+<img src="evidence/quality.png" alt="AT-202: lot S20260926T2000 against the reference lots">
+<h2>Hypotheses</h2>
+<div class="card">
+  <h3>#1 JT-001 <span class="badge medium">medium</span></h3>
+  <div class="kind">process · score 1.00 · path EL-101 → S-H2 → S-feed → R-201 → V-301 → E-301 → D-401 → S-product · dead time 0 min</div>
+  <p>JT-001 (EL-101) ran 24.9 % high from 2026-09-26 17:00, 0 min upstream of the sample point.</p>
+  <table>
+    <tr><th>Test</th><th>Strength</th><th>Detail</th></tr>
+    <tr><td>effect size</td>
+        <td><span class="bar" style="width: 80px"></span> 1.00</td>
+        <td>median moved 24.9 (+110.7 reference scales)</td></tr>
+    <tr><td>onset</td>
+        <td>not run</td>
+        <td>no quality onset</td></tr>
+    <tr><td>lag correlation</td>
+        <td>not run</td>
+        <td>not run</td></tr>
+  </table>
+<p><strong>Explains away:</strong></p><ul><li><code>FT-101</code>: its shift of 1 is 121% predicted from JT-001 (regression on the reference lots)</li></ul><img src="evidence/01-JT-001.png" alt="#1 JT-001 shifted 0 min"></div>
+<div class="card">
+  <h3>#2 FIC-101.rsp <span class="badge medium">medium</span></h3>
+  <div class="kind">setpoint change · score 1.00 · path S-H2 → S-feed → R-201 → V-301 → E-301 → D-401 → S-product · dead time 0 min</div>
+  <p>The setpoint FIC-101.rsp (loop:FIC-101) was changed 1 Nm3/h high from 2026-09-26 17:00, 0 min upstream of the sample point.</p>
+  <table>
+    <tr><th>Test</th><th>Strength</th><th>Detail</th></tr>
+    <tr><td>effect size</td>
+        <td><span class="bar" style="width: 80px"></span> 1.00</td>
+        <td>median moved 1 (+333333333.3 reference scales)</td></tr>
+    <tr><td>onset</td>
+        <td>not run</td>
+        <td>no quality onset</td></tr>
+    <tr><td>lag correlation</td>
+        <td>not run</td>
+        <td>not run</td></tr>
+  </table>
+<img src="evidence/02-FIC-101.rsp.png" alt="#2 FIC-101.rsp shifted 0 min"></div>
+<div class="card">
+  <h3>#3 FFC-102.out <span class="badge medium">medium</span></h3>
+  <div class="kind">setpoint change · score 1.00 · path S-CO2 → S-feed → R-201 → V-301 → E-301 → D-401 → S-product · dead time 0 min</div>
+  <p>The setpoint FFC-102.out (loop:FIC-102) was changed 0.251 Nm3/h high from 2026-09-26 17:00, 0 min upstream of the sample point.</p>
+  <table>
+    <tr><th>Test</th><th>Strength</th><th>Detail</th></tr>
+    <tr><td>effect size</td>
+        <td><span class="bar" style="width: 80px"></span> 1.00</td>
+        <td>median moved 0.251 (+11.6 reference scales)</td></tr>
+    <tr><td>onset</td>
+        <td>not run</td>
+        <td>no quality onset</td></tr>
+    <tr><td>lag correlation</td>
+        <td>not run</td>
+        <td>not run</td></tr>
+  </table>
+<img src="evidence/03-FFC-102.out.png" alt="#3 FFC-102.out shifted 0 min"></div>
+<div class="card">
+  <h3>#4 TT-200 <span class="badge medium">medium</span></h3>
+  <div class="kind">process · score 0.28 · path S-feed → R-201 → V-301 → E-301 → D-401 → S-product · dead time 0 min</div>
+  <p>TT-200 (S-feed) ran 4.87 degC low from 2026-09-26 17:00, 0 min upstream of the sample point.</p>
+  <table>
+    <tr><th>Test</th><th>Strength</th><th>Detail</th></tr>
+    <tr><td>effect size</td>
+        <td><span class="bar" style="width: 23px"></span> 0.28</td>
+        <td>median moved -4.87 (-3.1 reference scales)</td></tr>
+    <tr><td>onset</td>
+        <td>not run</td>
+        <td>no quality onset</td></tr>
+    <tr><td>lag correlation</td>
+        <td>not run</td>
+        <td>not run</td></tr>
+  </table>
+<img src="evidence/04-TT-200.png" alt="#4 TT-200 shifted 0 min"></div>
+
+<h2>Ruled out</h2>
+<table>
+  <tr><th>Candidate</th><th>Why</th></tr>
+<tr><td><code>FT-102</code></td><td>follows the loop:FIC-102 setpoint change</td></tr><tr><td><code>FT-101</code></td><td>follows the loop:FIC-101 setpoint change</td></tr><tr><td><code>TT-301</code></td><td>its shift of 9.27 is 87% predicted from FT-101 (regression on the reference lots)</td></tr><tr><td><code>FT-101</code></td><td>its shift of 1 is 121% predicted from JT-001 (regression on the reference lots)</td></tr><tr><td><code>TT-201</code></td><td>did not move in the lot</td></tr></table>
+
+<h2>How this was worked out</h2>
+<table>
+  <tr><th>Lot window</th><td>2026-09-26 17:00 to 2026-09-26 20:01 at S-product</td></tr>
+  <tr><th>Quality onset</th><td>unknown</td></tr>
+  <tr><th>Regime</th><td>DRY.bypass = 0, FFC-102.ratio = 0.25, FIC-101.mode = 2, FIC-102.mode = 2, H2.rate = 4, TIC-201.mode = 1, TIC-201.sp = 340</td></tr>
+  <tr><th>Reference lots</th><td>S20260927T0500 (-77.5), S20260927T0800 (-74), S20260927T1100 (-77)</td></tr>
+  <tr><th>Candidates tested</th><td>6 tags, on a 600 s grid in material time</td></tr>
+  <tr><th>Confidence</th><td>Confidence: high when the score is at least 0.4 and 0.025 ahead of the next hypothesis, medium from 0.25. Test weights: effect size 0.5, onset 0.3, lag correlation 0.3. Weights fitted on the homeostat train split (85 scenarios), thresholds chosen on the homeostat validation split (85 scenarios) (homeostat 0.1.0a3, bench plant 4144102c25e7).</td></tr>
+</table>
+<ul><li>some flows_to edges have no dead time; they count as 0 min</li><li>no in-spec lot of AT-202 before S20260926T2000 in the same regime: compared with the in-spec lots after it (S20260927T0500, S20260927T0800, S20260927T1100)</li><li>no online analyzer on the sampled stream: onset and correlation tests skipped</li></ul>
+</main>
+</body>
+</html>
